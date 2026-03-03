@@ -66,7 +66,10 @@ class _SettingPageState extends State<SettingPage> {
           ),
         ),
         child: SafeArea(
-          child: Column(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
             children: [
               Expanded(
                 child: SingleChildScrollView(
@@ -89,6 +92,8 @@ class _SettingPageState extends State<SettingPage> {
                 ),
               ),
             ],
+          ),
+            ),
           ),
         ),
       ),

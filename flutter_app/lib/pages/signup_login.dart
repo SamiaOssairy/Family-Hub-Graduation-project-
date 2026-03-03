@@ -351,71 +351,72 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: const Color(0xFFD4E5D4),
       body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: Responsive.spacing(context, 24)),
+          child: ContentContainer(
+            maxWidth: 420,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Security Icon
                 Image.asset(
                   'assets/security_icon.png',
-                  width: Responsive.spacing(context, 120),
-                  height: Responsive.spacing(context, 120),
+                  width: 100,
+                  height: 100,
                 ),
-                SizedBox(height: Responsive.spacing(context, 40)),
+                const SizedBox(height: 32),
                 
                 // Welcome Back Text
-                Text(
+                const Text(
                   'Welcome Back !',
                   style: TextStyle(
-                    fontSize: Responsive.fontSize(context, 32),
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
-                SizedBox(height: Responsive.spacing(context, 40)),
+                const SizedBox(height: 32),
                 
                 // Email TextField
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(Responsive.spacing(context, 8)),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextField(
                     controller: _emailController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Email',
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: Responsive.fontSize(context, 14)),
-                      border: const OutlineInputBorder(
+                      hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                      border: OutlineInputBorder(
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: Responsive.spacing(context, 20),
-                        vertical: Responsive.spacing(context, 16),
+                        horizontal: 20,
+                        vertical: 16,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: Responsive.spacing(context, 16)),
+                const SizedBox(height: 16),
                 
                 // Password TextField
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(Responsive.spacing(context, 8)),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       hintText: 'Password',
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: Responsive.fontSize(context, 14)),
+                      hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                       border: const OutlineInputBorder(
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: Responsive.spacing(context, 20),
-                        vertical: Responsive.spacing(context, 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -423,7 +424,7 @@ class _LoginPageState extends State<LoginPage> {
                               ? Icons.visibility_off
                               : Icons.visibility,
                           color: Colors.grey,
-                          size: Responsive.fontSize(context, 24),
+                          size: 22,
                         ),
                         onPressed: () {
                           setState(() {
@@ -434,87 +435,87 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: Responsive.spacing(context, 8)),
+                const SizedBox(height: 8),
                 
                 // Forgot Password
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton(
                     onPressed: () {},
-                    child: Text(
+                    child: const Text(
                       'Forgot Password',
                       style: TextStyle(
-                        color: const Color(0xFF5E9B5E),
-                        fontSize: Responsive.fontSize(context, 14),
+                        color: Color(0xFF5E9B5E),
+                        fontSize: 14,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: Responsive.spacing(context, 16)),
+                const SizedBox(height: 16),
                 
                 // Login Button
                 SizedBox(
                   width: double.infinity,
-                  height: Responsive.spacing(context, 50),
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4CAF50),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(Responsive.spacing(context, 8)),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       elevation: 0,
                     ),
                     child: _isLoading
-                        ? SizedBox(
-                            width: Responsive.spacing(context, 20),
-                            height: Responsive.spacing(context, 20),
-                            child: const CircularProgressIndicator(
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2,
                             ),
                           )
-                        : Text(
+                        : const Text(
                             'Log In',
                             style: TextStyle(
-                              fontSize: Responsive.fontSize(context, 18),
+                              fontSize: 16,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
                             ),
                           ),
                   ),
                 ),
-                SizedBox(height: Responsive.spacing(context, 24)),
+                const SizedBox(height: 20),
                 
                 // Security Message
-                Text(
+                const Text(
                   'Your password is securely encrypted using top-tier technology',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.black45,
-                    fontSize: Responsive.fontSize(context, 12),
+                    fontSize: 12,
                   ),
                 ),
-                SizedBox(height: Responsive.spacing(context, 32)),
+                const SizedBox(height: 24),
                 
                 // Divider with text
-                Row(
+                const Row(
                   children: [
-                    const Expanded(child: Divider(color: Colors.black26)),
+                    Expanded(child: Divider(color: Colors.black26)),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: Responsive.spacing(context, 16)),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'Or sign in with',
                         style: TextStyle(
                           color: Colors.black45,
-                          fontSize: Responsive.fontSize(context, 14),
+                          fontSize: 14,
                         ),
                       ),
                     ),
-                    const Expanded(child: Divider(color: Colors.black26)),
+                    Expanded(child: Divider(color: Colors.black26)),
                   ],
                 ),
-                SizedBox(height: Responsive.spacing(context, 24)),
+                const SizedBox(height: 20),
                 
                 // Social Login Buttons
                 Row(
@@ -524,75 +525,75 @@ class _LoginPageState extends State<LoginPage> {
                     InkWell(
                       onTap: () {},
                       child: Container(
-                        width: Responsive.spacing(context, 56),
-                        height: Responsive.spacing(context, 56),
+                        width: 48,
+                        height: 48,
                         decoration: const BoxDecoration(
                           color: Color(0xFF1877F2),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.facebook,
                           color: Colors.white,
-                          size: Responsive.fontSize(context, 32),
+                          size: 26,
                         ),
                       ),
                     ),
-                    SizedBox(width: Responsive.spacing(context, 24)),
+                    const SizedBox(width: 24),
                     
                     // Google Button
                     InkWell(
                       onTap: () {},
                       child: Container(
-                        width: Responsive.spacing(context, 56),
-                        height: Responsive.spacing(context, 56),
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.grey.shade300),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(Responsive.spacing(context, 12)),
+                          padding: const EdgeInsets.all(10),
                           child: Image.network(
                             'https://www.google.com/favicon.ico',
                             errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.g_mobiledata, size: Responsive.fontSize(context, 32));
+                              return const Icon(Icons.g_mobiledata, size: 26);
                             },
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(width: Responsive.spacing(context, 24)),
+                    const SizedBox(width: 24),
                     
                     // Apple Button
                     InkWell(
                       onTap: () {},
                       child: Container(
-                        width: Responsive.spacing(context, 56),
-                        height: Responsive.spacing(context, 56),
+                        width: 48,
+                        height: 48,
                         decoration: const BoxDecoration(
                           color: Colors.black,
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.apple,
                           color: Colors.white,
-                          size: Responsive.fontSize(context, 32),
+                          size: 26,
                         ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: Responsive.spacing(context, 24)),
+                const SizedBox(height: 20),
                 
                 // Sign Up Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       "Don't have an account? ",
                       style: TextStyle(
                         color: Colors.black54,
-                        fontSize: Responsive.fontSize(context, 14),
+                        fontSize: 14,
                       ),
                     ),
                     TextButton(
@@ -779,8 +780,9 @@ class _SignUpPageState extends State<SignUpPage> {
       backgroundColor: const Color(0xFFD4E5D4),
       body: Center(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: ContentContainer(
+            maxWidth: 420,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

@@ -1147,7 +1147,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F5E9),
       body: SafeArea(
-        child: _loading
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 700),
+            child: _loading
             ? const Center(child: CircularProgressIndicator(color: Color(0xFF388E3C)))
             : RefreshIndicator(
                 onRefresh: _loadData,
@@ -1369,6 +1372,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   ),
                 ),
               ),
+      ),
+      ),
       ),
       bottomNavigationBar: _buildBottomNav(context),
     );

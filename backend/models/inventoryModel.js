@@ -10,6 +10,11 @@ const inventorySchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide the inventory title'],
     trim: true
+  },
+  type: {
+    type: String,
+    default: 'Food',
+    enum: ['Food', 'Electronics', 'Cleaning', 'Personal Care', 'Other']
   }
 }, {
   timestamps: true

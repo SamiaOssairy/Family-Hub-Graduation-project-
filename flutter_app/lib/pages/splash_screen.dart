@@ -41,45 +41,46 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F5E9),
       body: Center(
-        child: Column(
+        child: ContentContainer(
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(),
             Text(
               'Family Hub',
               style: GoogleFonts.poppins(
-                fontSize: Responsive.fontSize(context, 28),
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF388E3C),
               ),
             ),
-            SizedBox(height: Responsive.spacing(context, 20)),
+            const SizedBox(height: 20),
             // Logo
             Container(
-              width: Responsive.spacing(context, 100),
-              height: Responsive.spacing(context, 100),
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.green.withOpacity(0.2),
-                    blurRadius: Responsive.spacing(context, 20),
-                    spreadRadius: Responsive.spacing(context, 5),
+                    blurRadius: 20,
+                    spreadRadius: 5,
                   ),
                 ],
               ),
-              child: Icon(Icons.family_restroom, size: Responsive.fontSize(context, 50), color: const Color(0xFF388E3C)),
+              child: const Icon(Icons.family_restroom, size: 50, color: Color(0xFF388E3C)),
             ),
-            SizedBox(height: Responsive.spacing(context, 30)),
+            const SizedBox(height: 30),
             // Loading dots
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildDot(context),
-                SizedBox(width: Responsive.spacing(context, 8)),
+                const SizedBox(width: 8),
                 _buildDot(context),
-                SizedBox(width: Responsive.spacing(context, 8)),
+                const SizedBox(width: 8),
                 _buildDot(context),
               ],
             ),
@@ -87,12 +88,13 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'Connecting Families Together',
               style: GoogleFonts.poppins(
-                fontSize: Responsive.fontSize(context, 14),
+                fontSize: 14,
                 color: const Color(0xFF388E3C),
               ),
             ),
-            SizedBox(height: Responsive.spacing(context, 40)),
+            const SizedBox(height: 40),
           ],
+        ),
         ),
       ),
     );
@@ -100,8 +102,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Widget _buildDot(BuildContext context) {
     return Container(
-      width: Responsive.spacing(context, 8),
-      height: Responsive.spacing(context, 8),
+      width: 8,
+      height: 8,
       decoration: const BoxDecoration(
         color: Color(0xFF388E3C),
         shape: BoxShape.circle,

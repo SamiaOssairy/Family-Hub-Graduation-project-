@@ -10,7 +10,7 @@ const ItemCategory = require("../models/itemCategoryModel");
 
 // Create a new inventory (e.g., "Kitchen Pantry", "Fridge")
 exports.createInventory = catchAsync(async (req, res, next) => {
-  const { title } = req.body;
+  const { title, type } = req.body;
 
   if (!title) {
     return next(new AppError("Please provide the inventory title", 400));
@@ -18,7 +18,8 @@ exports.createInventory = catchAsync(async (req, res, next) => {
 
   const inventory = await Inventory.create({
     family_id: req.familyAccount._id,
-    title
+    title,
+    type: type || 'Food'
   });
 
   res.status(201).json({
@@ -73,15 +74,27 @@ exports.deleteInventory = catchAsync(async (req, res, next) => {
 
 // Create item category
 exports.createItemCategory = catchAsync(async (req, res, next) => {
-  const { title, description } = req.body;
+  const { title, description, parent_category_id } = req.body;
 
   if (!title) {
     return next(new AppError("Please provide the category title", 400));
   }
 
+  // Validate parent category exists if provided
+  if (parent_category_id) {
+    const parent = await ItemCategory.findOne({
+      _id: parent_category_id,
+      family_id: req.familyAccount._id
+    });
+    if (!parent) {
+      return next(new AppError("Parent category not found", 404));
+    }
+  }
+
   const category = await ItemCategory.create({
     title,
     description: description || '',
+    parent_category_id: parent_category_id || null,
     family_id: req.familyAccount._id
   });
 
@@ -95,6 +108,7 @@ exports.createItemCategory = catchAsync(async (req, res, next) => {
 // Get all item categories for the family
 exports.getAllItemCategories = catchAsync(async (req, res, next) => {
   const categories = await ItemCategory.find({ family_id: req.familyAccount._id })
+    .populate('parent_category_id')
     .sort({ title: 1 });
 
   res.status(200).json({
@@ -139,7 +153,7 @@ exports.deleteItemCategory = catchAsync(async (req, res, next) => {
 // Add item to inventory
 exports.addItem = catchAsync(async (req, res, next) => {
   const { inventoryId } = req.params;
-  const { item_name, item_category, quantity, unit_id, threshold_quantity, purchase_date, expiry_date } = req.body;
+  const { item_name, item_category, quantity, unit_id, threshold_quantity, purchase_date, expiry_date, receipt_id } = req.body;
 
   if (!item_name || !item_category || !quantity || !unit_id) {
     return next(new AppError("Please provide item_name, item_category, quantity, and unit_id", 400));
@@ -178,7 +192,8 @@ exports.addItem = catchAsync(async (req, res, next) => {
     unit_id,
     threshold_quantity: threshold_quantity || 1,
     purchase_date: purchase_date || Date.now(),
-    expiry_date: expiry_date || null
+    expiry_date: expiry_date || null,
+    receipt_id: receipt_id || null
   });
 
   await item.populate(['unit_id', 'item_category']);

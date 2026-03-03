@@ -214,7 +214,10 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator(color: Colors.green))
-        : Column(
+        : Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
         children: [
           // Tab Bar
           Container(
@@ -284,6 +287,8 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
             ),
           ),
         ],
+      ),
+      ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _isDeleteMode ? _buildDeleteModeButtons() : _buildNormalButtons(),

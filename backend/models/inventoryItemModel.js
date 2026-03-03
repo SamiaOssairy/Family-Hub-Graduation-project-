@@ -39,6 +39,11 @@ const inventoryItemSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  receipt_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Receipt',
+    default: null
+  },
   last_notified_at: {
     type: Date,
     default: null

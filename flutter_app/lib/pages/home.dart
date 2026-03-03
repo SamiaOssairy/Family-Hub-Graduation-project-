@@ -451,7 +451,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         child: SafeArea(
-          child: Column(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: Column(
             children: [
               Expanded(
                 child: SingleChildScrollView(
@@ -474,6 +477,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ],
+          ),
+            ),
           ),
         ),
       ),

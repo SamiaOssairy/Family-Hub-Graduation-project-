@@ -61,11 +61,16 @@ class _FamilyPointsScreenState extends State<FamilyPointsScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? _buildErrorView()
-              : _buildContent(),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
+                  ? _buildErrorView()
+                  : _buildContent(),
+        ),
+      ),
     );
   }
 

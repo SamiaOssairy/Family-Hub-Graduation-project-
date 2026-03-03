@@ -200,7 +200,10 @@ class _RedeemScreenState extends State<RedeemScreen> {
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator(color: Colors.green))
-        : Column(
+        : Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
         children: [
           // Points Header
           Container(
@@ -352,6 +355,8 @@ class _RedeemScreenState extends State<RedeemScreen> {
             ),
           ),
         ],
+      ),
+      ),
       ),
     );
   }

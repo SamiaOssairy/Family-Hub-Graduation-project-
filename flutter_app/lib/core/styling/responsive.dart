@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
 
-/// Professional responsive sizing using MediaQuery
-/// No external dependencies needed!
-/// Uses intelligent scaling with constraints to prevent over-scaling
+/// Professional responsive sizing — inspired by Talabat, Instashop, etc.
+/// 
+/// Key philosophy: On desktop, fonts/icons stay at MOBILE size.
+/// Extra screen space goes to LAYOUT (max-width, more columns, whitespace)
+/// — NOT to enlarging elements.
 /// 
 /// Usage:
 /// ```dart
 /// import 'responsive.dart';
 /// 
+/// // Wrap your page content in ContentContainer for max-width centering:
+/// ContentContainer(child: YourContent())
+/// 
 /// // Responsive width (percentage of screen)
-/// width: Responsive.width(context, 100),  // 100% of screen width
-/// width: Responsive.width(context, 50),   // 50% of screen width
+/// width: Responsive.width(context, 100),
 /// 
-/// // Responsive height (percentage of screen)
-/// height: Responsive.height(context, 50),  // 50% of screen height
-/// 
-/// // Responsive font size (intelligent scaling with constraints)
+/// // Font size — stays constant across all screen sizes
 /// fontSize: Responsive.fontSize(context, 18),
 /// 
-/// // Responsive spacing (intelligent scaling)
+/// // Icon size — stays constant across all screen sizes
+/// size: Responsive.iconSize(context, 24),
+/// 
+/// // Spacing — very slight increase on larger screens for breathing room
 /// padding: Responsive.spacing(context, 16),
 /// ```
 
@@ -26,6 +30,11 @@ class Responsive {
   // Design reference size (iPhone standard)
   static const double _designWidth = 375;
   static const double _designHeight = 812;
+  
+  // Max content width for desktop (like Talabat/Instashop login forms)
+  static const double maxContentWidth = 480;
+  // Max content width for wider layouts (dashboards, grids)
+  static const double maxWideContentWidth = 900;
   
   /// Get screen width
   static double screenWidth(BuildContext context) {
@@ -38,7 +47,6 @@ class Responsive {
   }
 
   /// Get responsive width (percentage-based)
-  /// Example: Responsive.width(context, 50) = 50% of screen width
   static double width(BuildContext context, double percentage) {
     return screenWidth(context) * (percentage / 100);
   }
@@ -48,40 +56,32 @@ class Responsive {
     return screenHeight(context) * (percentage / 100);
   }
 
-  /// Responsive font size with intelligent scaling
-  /// Scales smoothly but with constraints to prevent over-scaling
-  /// On mobile: uses 1:1 size, on tablets: caps at 1.2x, on desktop: caps at 1.5x
+  /// Font size — NO SCALING. Same size on mobile, tablet, desktop.
+  /// Professional apps (Talabat, Instashop) keep text at standard web sizes.
   static double fontSize(BuildContext context, double baseSize) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    
-    if (screenWidth < 600) {
-      // Mobile: use as-is (no scaling)
-      return baseSize;
-    } else if (screenWidth < 1200) {
-      // Tablet: gentle scaling up to 1.2x
-      double scaleFactor = 1 + ((screenWidth - 600) / (600)) * 0.2;
-      return baseSize * scaleFactor;
-    } else {
-      // Desktop: cap at 1.5x
-      return baseSize * 1.5;
-    }
+    return baseSize;
   }
 
-  /// Responsive spacing (icons, margins, padding)
-  /// Uses the same intelligent algorithm as fontSize
+  /// Icon size — NO SCALING. Icons stay compact and crisp.
+  static double iconSize(BuildContext context, double baseSize) {
+    return baseSize;
+  }
+
+  /// Responsive spacing (margins, padding, gaps)
+  /// Very slight increase on tablet/desktop for breathing room only.
+  /// On mobile: 1:1, on tablet: 1.05x, on desktop: 1.1x max.
   static double spacing(BuildContext context, double baseSpacing) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    double sw = MediaQuery.of(context).size.width;
     
-    if (screenWidth < 600) {
-      // Mobile: use as-is
+    if (sw < 600) {
       return baseSpacing;
-    } else if (screenWidth < 1200) {
-      // Tablet: gentle scaling up to 1.2x
-      double scaleFactor = 1 + ((screenWidth - 600) / (600)) * 0.2;
+    } else if (sw < 1200) {
+      // Tablet: barely noticeable scaling
+      double scaleFactor = 1 + ((sw - 600) / 600) * 0.05;
       return baseSpacing * scaleFactor;
     } else {
-      // Desktop: cap at 1.5x
-      return baseSpacing * 1.5;
+      // Desktop: cap at 1.1x
+      return baseSpacing * 1.1;
     }
   }
 
@@ -96,6 +96,14 @@ class Responsive {
 
   static bool isDesktop(BuildContext context) {
     return screenWidth(context) >= 1200;
+  }
+
+  /// Get grid cross-axis count based on screen width
+  /// More columns on wider screens (like Talabat product grids)
+  static int gridColumns(BuildContext context, {int mobileCols = 2, int tabletCols = 3, int desktopCols = 4}) {
+    if (isMobile(context)) return mobileCols;
+    if (isTablet(context)) return tabletCols;
+    return desktopCols;
   }
 
   /// Get device orientation
@@ -118,6 +126,34 @@ class Responsive {
   }
 }
 
+/// Content container that centers content with a max-width on desktop.
+/// This is the #1 pattern used by Talabat, Instashop, and other professional apps.
+/// On mobile: full width. On desktop: centered with max-width, like a card.
+class ContentContainer extends StatelessWidget {
+  final Widget child;
+  final double maxWidth;
+  final EdgeInsetsGeometry? padding;
+
+  const ContentContainer({
+    super.key,
+    required this.child,
+    this.maxWidth = 480,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: padding != null
+            ? Padding(padding: padding!, child: child)
+            : child,
+      ),
+    );
+  }
+}
+
 /// Common responsive values
 class AppSize {
   // Spacing
@@ -128,20 +164,26 @@ class AppSize {
   static double xl(BuildContext context) => Responsive.spacing(context, 32);
   static double xxl(BuildContext context) => Responsive.spacing(context, 48);
 
-  // Font sizes
-  static double h1(BuildContext context) => Responsive.fontSize(context, 32);
-  static double h2(BuildContext context) => Responsive.fontSize(context, 28);
-  static double h3(BuildContext context) => Responsive.fontSize(context, 24);
-  static double h4(BuildContext context) => Responsive.fontSize(context, 20);
-  static double bodyLarge(BuildContext context) => Responsive.fontSize(context, 16);
-  static double bodyMedium(BuildContext context) => Responsive.fontSize(context, 14);
-  static double bodySmall(BuildContext context) => Responsive.fontSize(context, 12);
-  static double caption(BuildContext context) => Responsive.fontSize(context, 10);
+  // Font sizes — no scaling
+  static double h1(BuildContext context) => 32;
+  static double h2(BuildContext context) => 28;
+  static double h3(BuildContext context) => 24;
+  static double h4(BuildContext context) => 20;
+  static double bodyLarge(BuildContext context) => 16;
+  static double bodyMedium(BuildContext context) => 14;
+  static double bodySmall(BuildContext context) => 12;
+  static double caption(BuildContext context) => 10;
+
+  // Icon sizes — no scaling
+  static double iconSm(BuildContext context) => 16;
+  static double iconMd(BuildContext context) => 24;
+  static double iconLg(BuildContext context) => 32;
+  static double iconXl(BuildContext context) => 48;
 
   // Button heights
-  static double buttonSmall(BuildContext context) => Responsive.height(context, 4);
-  static double buttonMedium(BuildContext context) => Responsive.height(context, 6);
-  static double buttonLarge(BuildContext context) => Responsive.height(context, 8);
+  static double buttonSmall(BuildContext context) => 36;
+  static double buttonMedium(BuildContext context) => 44;
+  static double buttonLarge(BuildContext context) => 52;
 }
 
 /// Padding helper
@@ -176,13 +218,13 @@ class AppPadding {
 /// Border radius helper
 class AppRadius {
   static BorderRadius circular(BuildContext context, double radius) {
-    return BorderRadius.circular(Responsive.spacing(context, radius));
+    return BorderRadius.circular(radius);
   }
 
-  static BorderRadius xs(BuildContext context) => circular(context, 4);
-  static BorderRadius sm(BuildContext context) => circular(context, 8);
-  static BorderRadius md(BuildContext context) => circular(context, 12);
-  static BorderRadius lg(BuildContext context) => circular(context, 16);
-  static BorderRadius xl(BuildContext context) => circular(context, 20);
-  static BorderRadius full(BuildContext context) => circular(context, 100);
+  static BorderRadius xs(BuildContext context) => BorderRadius.circular(4);
+  static BorderRadius sm(BuildContext context) => BorderRadius.circular(8);
+  static BorderRadius md(BuildContext context) => BorderRadius.circular(12);
+  static BorderRadius lg(BuildContext context) => BorderRadius.circular(16);
+  static BorderRadius xl(BuildContext context) => BorderRadius.circular(20);
+  static BorderRadius full(BuildContext context) => BorderRadius.circular(100);
 }

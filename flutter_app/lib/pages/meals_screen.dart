@@ -863,7 +863,10 @@ class _MealsScreenState extends State<MealsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F5E9),
       body: SafeArea(
-        child: Column(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 700),
+            child: Column(
           children: [
             // App Bar
             Padding(
@@ -974,6 +977,8 @@ class _MealsScreenState extends State<MealsScreen> {
             ),
           ],
         ),
+      ),
+      ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddMealDialog,

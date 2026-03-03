@@ -6,6 +6,11 @@ const itemCategorySchema = new mongoose.Schema({
     required: [true, 'Please provide the category title'],
     trim: true
   },
+  parent_category_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ItemCategory',
+    default: null
+  },
   description: {
     type: String,
     default: ''

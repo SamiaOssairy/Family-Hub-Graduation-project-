@@ -112,7 +112,10 @@ class _StatusScreenState extends State<StatusScreen> {
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator(color: Colors.green))
-        : RefreshIndicator(
+        : Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: RefreshIndicator(
             onRefresh: _loadTaskStatus,
             child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -192,6 +195,8 @@ class _StatusScreenState extends State<StatusScreen> {
           ],
         ),
       ),
+    ),
+    ),
     ),
     );
   }

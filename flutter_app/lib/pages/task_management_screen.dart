@@ -152,7 +152,10 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
           ),
         ],
       ),
-      body: Column(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 700),
+          child: Column(
         children: [
           // Tab Bar
           Container(
@@ -196,6 +199,8 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
             ),
           ),
         ],
+      ),
+      ),
       ),
     );
   }
