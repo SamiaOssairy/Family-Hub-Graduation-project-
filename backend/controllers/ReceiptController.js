@@ -6,7 +6,7 @@ const InventoryItem = require("../models/inventoryItemModel");
 //========================================================================================
 // Create a receipt
 exports.createReceipt = catchAsync(async (req, res, next) => {
-  const { total_amount, purchase_date, store_name, receipt_photo_url, notes } = req.body;
+  const { total_amount, purchase_date, store_name, receipt_photo_url, notes, items, subtotal, taxes } = req.body;
 
   if (!total_amount || !purchase_date) {
     return next(new AppError("Please provide total_amount and purchase_date", 400));
@@ -19,7 +19,10 @@ exports.createReceipt = catchAsync(async (req, res, next) => {
     purchase_date,
     store_name: store_name || '',
     receipt_photo_url: receipt_photo_url || null,
-    notes: notes || ''
+    notes: notes || '',
+    items: items || [],
+    subtotal: subtotal || 0,
+    taxes: taxes || 0
   });
 
   res.status(201).json({
@@ -93,11 +96,16 @@ exports.getReceipt = catchAsync(async (req, res, next) => {
 // Update a receipt
 exports.updateReceipt = catchAsync(async (req, res, next) => {
   const { receiptId } = req.params;
-  const { total_amount, purchase_date, store_name, receipt_photo_url, notes } = req.body;
+  const { total_amount, purchase_date, store_name, receipt_photo_url, notes, items, subtotal, taxes } = req.body;
+
+  const updateData = { total_amount, purchase_date, store_name, receipt_photo_url, notes };
+  if (items !== undefined) updateData.items = items;
+  if (subtotal !== undefined) updateData.subtotal = subtotal;
+  if (taxes !== undefined) updateData.taxes = taxes;
 
   const receipt = await Receipt.findOneAndUpdate(
     { _id: receiptId, family_id: req.familyAccount._id },
-    { total_amount, purchase_date, store_name, receipt_photo_url, notes },
+    updateData,
     { new: true, runValidators: true }
   );
 

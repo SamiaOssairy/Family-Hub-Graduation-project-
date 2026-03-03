@@ -1,5 +1,4 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'pages/signup_login.dart';
 import 'pages/home.dart';
 import 'pages/setting.dart';
@@ -15,6 +14,12 @@ import 'pages/family_points_screen.dart';
 import 'pages/inventory_screen.dart';
 import 'pages/inventory_categories_screen.dart';
 import 'pages/meals_screen.dart';
+import 'pages/food_hub_screen.dart';
+import 'pages/recipes_screen.dart';
+import 'pages/leftovers_screen.dart';
+import 'pages/meal_suggestions_screen.dart';
+import 'pages/receipts_screen.dart';
+import 'pages/inventory_alerts_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +55,12 @@ class MyApp extends StatelessWidget {
         '/inventory': (context) => const InventoryScreen(),
         '/inventory-categories': (context) => const InventoryCategoriesScreen(),
         '/meals': (context) => const MealsScreen(),
+        '/food-hub': (context) => const FoodHubScreen(),
+        '/recipes': (context) => const RecipesScreen(),
+        '/leftovers': (context) => const LeftoversScreen(),
+        '/meal-suggestions': (context) => const MealSuggestionsScreen(),
+        '/receipts': (context) => const ReceiptsScreen(),
+        '/inventory-alerts': (context) => const InventoryAlertsScreen(),
       },
     );
   }

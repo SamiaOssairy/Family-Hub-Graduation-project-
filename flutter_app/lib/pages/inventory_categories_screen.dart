@@ -86,15 +86,16 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
     return Icons.category;
   }
 
-  void _showAddCategoryDialog() {
-    final titleCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
+  void _showAddCategoryDialog({dynamic existingCategory}) {
+    final isEdit = existingCategory != null;
+    final titleCtrl = TextEditingController(text: isEdit ? (existingCategory['title'] ?? '') : '');
+    final descCtrl = TextEditingController(text: isEdit ? (existingCategory['description'] ?? '') : '');
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Add New Category',
+        title: Text(isEdit ? 'Edit Category' : 'Add New Category',
             style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -129,10 +130,15 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
             onPressed: () async {
               if (titleCtrl.text.isNotEmpty) {
                 try {
-                  await _apiService.createItemCategory({
+                  final body = {
                     'title': titleCtrl.text,
                     'description': descCtrl.text,
-                  });
+                  };
+                  if (isEdit) {
+                    await _apiService.updateItemCategory(existingCategory['_id'], body);
+                  } else {
+                    await _apiService.createItemCategory(body);
+                  }
                   if (mounted) Navigator.pop(ctx);
                   _loadData();
                 } catch (e) {
@@ -146,7 +152,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
             },
             style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF388E3C)),
-            child: const Text('Add', style: TextStyle(color: Colors.white)),
+            child: Text(isEdit ? 'Save' : 'Add', style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -226,7 +232,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
                           ),
                         ),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () => Navigator.pushNamed(context, '/inventory-alerts'),
                           icon: const Icon(Icons.notifications_outlined,
                               color: Color(0xFF388E3C)),
                         ),
@@ -237,23 +243,24 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
                   // Add New Category button
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton.icon(
                         onPressed: _showAddCategoryDialog,
-                        icon: const Icon(Icons.add, color: Colors.white),
+                        icon: const Icon(Icons.add, color: Color(0xFF388E3C), size: 18),
                         label: Text(
                           'Add New Category',
                           style: GoogleFonts.poppins(
-                            color: Colors.white,
+                            color: const Color(0xFF388E3C),
                             fontWeight: FontWeight.w600,
+                            fontSize: 13,
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF388E3C),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFF388E3C)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                       ),
@@ -310,31 +317,24 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFC8E6C9),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Category header
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+            padding: const EdgeInsets.fromLTRB(16, 14, 8, 10),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.green[50],
+                    color: Colors.white.withOpacity(0.6),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: Colors.green[700], size: 24),
+                  child: Icon(icon, color: const Color(0xFF388E3C), size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -353,25 +353,45 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
                         '$itemCount items',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.grey[500],
+                          color: Colors.grey[700],
                         ),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => _deleteCategory(catId),
-                  icon: Icon(Icons.delete_outline,
-                      color: Colors.red[300], size: 22),
+                GestureDetector(
+                  onTap: () => _showAddCategoryDialog(existingCategory: category),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.settings_outlined,
+                        color: Colors.grey[700], size: 20),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => _deleteCategory(catId),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.close,
+                        color: Colors.grey[700], size: 20),
+                  ),
                 ),
               ],
             ),
           ),
 
-          // Items grid within category
+          // Items grid within category — Figma style
           if (categoryItems.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -379,44 +399,75 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
                   crossAxisCount: 2,
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
-                  childAspectRatio: 2.0,
+                  childAspectRatio: 2.2,
                 ),
-                itemCount: categoryItems.length > 4
-                    ? 4
-                    : categoryItems.length, // Show max 4
+                itemCount: categoryItems.length > 6
+                    ? 6
+                    : categoryItems.length,
                 itemBuilder: (context, index) {
                   final item = categoryItems[index];
                   final lowStock = _isLowStock(item);
+                  final qty = item['quantity'] ?? 0;
+                  final threshold = item['threshold_quantity'] ?? 1;
                   return Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: lowStock
-                          ? const Color(0xFFFFEBEE)
-                          : const Color(0xFFF5F5F5),
+                      color: lowStock ? Colors.white : const Color(0xFFE8F5E9),
                       borderRadius: BorderRadius.circular(10),
+                      border: Border(
+                        left: BorderSide(
+                          color: lowStock ? Colors.orange[400]! : const Color(0xFF388E3C),
+                          width: 3,
+                        ),
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          item['item_name'] ?? '',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item['item_name'] ?? '',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              '$qty',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: const Color(0xFF2E3E33),
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${item['quantity'] ?? 0} ${_getUnitName(item)}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            color: lowStock
-                                ? Colors.red[700]
-                                : const Color(0xFF388E3C),
-                            fontWeight: FontWeight.w500,
-                          ),
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'minimum',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            Text(
+                              '$threshold',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -425,13 +476,13 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
               ),
             ),
 
-          // "View more" if > 4 items
-          if (categoryItems.length > 4)
+          // "View more" if > 6 items
+          if (categoryItems.length > 6)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Center(
                 child: Text(
-                  '+ ${categoryItems.length - 4} more items',
+                  '+ ${categoryItems.length - 6} more items',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: const Color(0xFF388E3C),

@@ -21,6 +21,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
   String _familyTitle = '';
   bool _loading = true;
   String? _selectedCategoryId;
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _sortBy = 'name'; // name, quantity, low_stock
+  int _unreadAlerts = 0;
 
   @override
   void initState() {
@@ -41,11 +44,18 @@ class _InventoryScreenState extends State<InventoryScreen> {
         _apiService.getAllUnits(),
       ]);
 
+      // Load unread alert count
+      int alertCount = 0;
+      try {
+        alertCount = await _apiService.getUnreadAlertCount();
+      } catch (_) {}
+
       setState(() {
         _items = results[0];
         _categories = results[1];
         _inventories = results[2];
         _units = results[3];
+        _unreadAlerts = alertCount;
         _loading = false;
       });
     } catch (e) {
@@ -59,12 +69,42 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   List<dynamic> get _filteredItems {
-    if (_selectedCategoryId == null) return _items;
-    return _items.where((item) {
-      final cat = item['item_category'];
-      if (cat is Map) return cat['_id'] == _selectedCategoryId;
-      return cat == _selectedCategoryId;
-    }).toList();
+    List<dynamic> result = List.from(_items);
+
+    // Filter by category
+    if (_selectedCategoryId != null) {
+      result = result.where((item) {
+        final cat = item['item_category'];
+        if (cat is Map) return cat['_id'] == _selectedCategoryId;
+        return cat == _selectedCategoryId;
+      }).toList();
+    }
+
+    // Filter by search
+    final q = _searchCtrl.text.toLowerCase().trim();
+    if (q.isNotEmpty) {
+      result = result.where((item) {
+        final name = (item['item_name'] ?? '').toString().toLowerCase();
+        return name.contains(q);
+      }).toList();
+    }
+
+    // Sort
+    switch (_sortBy) {
+      case 'quantity':
+        result.sort((a, b) => ((a['quantity'] ?? 0) as num).compareTo((b['quantity'] ?? 0) as num));
+        break;
+      case 'low_stock':
+        result.sort((a, b) {
+          final aLow = _isLowStock(a) ? 0 : 1;
+          final bLow = _isLowStock(b) ? 0 : 1;
+          return aLow.compareTo(bLow);
+        });
+        break;
+      default:
+        result.sort((a, b) => (a['item_name'] ?? '').toString().compareTo((b['item_name'] ?? '').toString()));
+    }
+    return result;
   }
 
   String _getUnitName(dynamic item) {
@@ -493,6 +533,32 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               ],
                             ),
                             const SizedBox(height: 8),
+                            // Selected unit display
+                            if (selectedUnitId != null) ...[
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _units.firstWhere((u) => u['_id'] == selectedUnitId, orElse: () => {'unit_name': ''})['unit_name'] ?? '',
+                                        style: GoogleFonts.poppins(fontSize: 14),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setDialogState(() => selectedUnitId = null),
+                                      child: Icon(Icons.close, size: 18, color: Colors.grey[500]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
                             _units.isEmpty
                                 ? Container(
                                     width: double.infinity,
@@ -504,7 +570,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                     ),
                                     child: Column(
                                       children: [
-                                        Icon(Icons.info_outline, color: Colors.grey[400], size: 28),
+                                        Icon(Icons.help_outline, color: Colors.grey[400], size: 28),
                                         const SizedBox(height: 6),
                                         Text('No units available',
                                             style: GoogleFonts.poppins(
@@ -517,88 +583,47 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                       ],
                                     ),
                                   )
-                                : Container(
-                                    constraints: const BoxConstraints(maxHeight: 180),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey[300]!),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: ListView.separated(
-                                      shrinkWrap: true,
-                                      padding: const EdgeInsets.symmetric(vertical: 4),
-                                      itemCount: _units.length,
-                                      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[200]),
-                                      itemBuilder: (context, index) {
-                                        final unit = _units[index];
-                                        final unitId = unit['_id'];
-                                        final isSelected = selectedUnitId == unitId;
-                                        return ListTile(
-                                          dense: true,
-                                          visualDensity: const VisualDensity(vertical: -2),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                                          leading: Radio<String>(
-                                            value: unitId,
-                                            groupValue: selectedUnitId,
-                                            activeColor: const Color(0xFF388E3C),
-                                            onChanged: (val) {
-                                              setDialogState(() => selectedUnitId = val);
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Chip selector
+                                      Wrap(
+                                        spacing: 8,
+                                        runSpacing: 8,
+                                        children: _units.map<Widget>((unit) {
+                                          final unitId = unit['_id'];
+                                          final isSelected = selectedUnitId == unitId;
+                                          return GestureDetector(
+                                            onTap: () {
+                                              setDialogState(() {
+                                                selectedUnitId = isSelected ? null : unitId;
+                                              });
                                             },
-                                          ),
-                                          title: Text(
-                                            unit['unit_name'] ?? '',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 13,
-                                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                              color: isSelected ? const Color(0xFF388E3C) : Colors.black87,
+                                            onLongPress: () => _showEditUnitDialog(unit, setDialogState),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                              decoration: BoxDecoration(
+                                                color: isSelected ? const Color(0xFF388E3C) : Colors.grey[200],
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                unit['unit_name'] ?? '',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isSelected ? Colors.white : Colors.black87,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          subtitle: Text(
-                                            unit['unit_type'] ?? '',
-                                            style: GoogleFonts.poppins(
-                                                fontSize: 10, color: Colors.grey[500]),
-                                          ),
-                                          selected: isSelected,
-                                          selectedTileColor: Colors.green[50],
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          trailing: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              InkWell(
-                                                onTap: () => _showEditUnitDialog(
-                                                    unit, setDialogState),
-                                                borderRadius: BorderRadius.circular(20),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(6),
-                                                  child: Icon(Icons.edit_outlined,
-                                                      size: 18, color: Colors.blue[400]),
-                                                ),
-                                              ),
-                                              InkWell(
-                                                onTap: () => _showDeleteUnitConfirm(
-                                                    unit, setDialogState, () {
-                                                  if (selectedUnitId == unitId) {
-                                                    selectedUnitId = null;
-                                                  }
-                                                }),
-                                                borderRadius: BorderRadius.circular(20),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(6),
-                                                  child: Icon(Icons.delete_outline,
-                                                      size: 18, color: Colors.red[400]),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          onTap: () {
-                                            setDialogState(() {
-                                              selectedUnitId = isSelected ? null : unitId;
-                                            });
-                                          },
-                                        );
-                                      },
-                                    ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Unit Selector  •  Long press to edit',
+                                        style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey[400]),
+                                      ),
+                                    ],
                                   ),
                             const SizedBox(height: 16),
 
@@ -1192,10 +1217,30 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                     color: Color(0xFF388E3C)),
                                 tooltip: 'New Inventory',
                               ),
-                              IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.notifications_outlined,
-                                    color: Color(0xFF388E3C)),
+                              Stack(
+                                children: [
+                                  IconButton(
+                                    onPressed: () => Navigator.pushNamed(context, '/inventory-alerts'),
+                                    icon: const Icon(Icons.notifications_outlined,
+                                        color: Color(0xFF388E3C)),
+                                  ),
+                                  if (_unreadAlerts > 0)
+                                    Positioned(
+                                      right: 6,
+                                      top: 6,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Text(
+                                          _unreadAlerts > 9 ? '9+' : '$_unreadAlerts',
+                                          style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ],
                           ),
@@ -1203,24 +1248,80 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       ),
                       const SizedBox(height: 20),
 
+                      // Search bar
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          controller: _searchCtrl,
+                          onChanged: (_) => setState(() {}),
+                          decoration: InputDecoration(
+                            hintText: 'Search items...',
+                            hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
+                            prefixIcon: const Icon(Icons.search, color: Color(0xFF388E3C)),
+                            suffixIcon: PopupMenuButton<String>(
+                              icon: Icon(Icons.sort, color: Colors.grey[600]),
+                              tooltip: 'Sort by',
+                              onSelected: (val) => setState(() => _sortBy = val),
+                              itemBuilder: (_) => [
+                                PopupMenuItem(value: 'name',
+                                  child: Row(children: [
+                                    Icon(Icons.sort_by_alpha, size: 18, color: _sortBy == 'name' ? const Color(0xFF388E3C) : Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Text('Name', style: TextStyle(fontWeight: _sortBy == 'name' ? FontWeight.bold : FontWeight.normal)),
+                                  ]),
+                                ),
+                                PopupMenuItem(value: 'quantity',
+                                  child: Row(children: [
+                                    Icon(Icons.numbers, size: 18, color: _sortBy == 'quantity' ? const Color(0xFF388E3C) : Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Text('Quantity', style: TextStyle(fontWeight: _sortBy == 'quantity' ? FontWeight.bold : FontWeight.normal)),
+                                  ]),
+                                ),
+                                PopupMenuItem(value: 'low_stock',
+                                  child: Row(children: [
+                                    Icon(Icons.warning_amber, size: 18, color: _sortBy == 'low_stock' ? const Color(0xFF388E3C) : Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Text('Low Stock First', style: TextStyle(fontWeight: _sortBy == 'low_stock' ? FontWeight.bold : FontWeight.normal)),
+                                  ]),
+                                ),
+                              ],
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
                       // Add New Item button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
                           onPressed: () => _showAddEditItemDialog(),
-                          icon: const Icon(Icons.add, color: Colors.white),
+                          icon: const Icon(Icons.add, color: Color(0xFF388E3C), size: 18),
                           label: Text(
                             'Add New Item',
                             style: GoogleFonts.poppins(
-                              color: Colors.white,
+                              color: const Color(0xFF388E3C),
                               fontWeight: FontWeight.w600,
+                              fontSize: 13,
                             ),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF388E3C),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF388E3C)),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(20),
                             ),
                           ),
                         ),
@@ -1274,9 +1375,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: crossAxisCount,
-                                mainAxisSpacing: 12,
-                                crossAxisSpacing: 12,
-                                childAspectRatio: 1.4,
+                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 10,
+                                childAspectRatio: 2.2,
                               ),
                               itemCount: items.length,
                               itemBuilder: (context, index) {
@@ -1381,93 +1482,72 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   Widget _buildItemCard(dynamic item) {
     final lowStock = _isLowStock(item);
+    final qty = item['quantity'] ?? 0;
+    final threshold = item['threshold_quantity'] ?? 1;
 
     return GestureDetector(
       onTap: () => _showAddEditItemDialog(existingItem: Map<String, dynamic>.from(item)),
       onLongPress: () => _deleteItem(item['_id']),
       child: Container(
         decoration: BoxDecoration(
-          color: lowStock ? const Color(0xFFFFEBEE) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: lowStock
-              ? Border.all(color: Colors.red[300]!, width: 1.5)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+          color: lowStock ? Colors.white : const Color(0xFFC8E6C9),
+          borderRadius: BorderRadius.circular(12),
+          border: Border(
+            left: BorderSide(
+              color: lowStock ? Colors.orange[400]! : const Color(0xFF388E3C),
+              width: 3.5,
             ),
-          ],
+          ),
         ),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Item icon and menu
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: lowStock ? Colors.red[50] : Colors.green[50],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.inventory_2,
-                    color: lowStock ? Colors.red[700] : Colors.green[700],
-                    size: 20,
+                Expanded(
+                  child: Text(
+                    item['item_name'] ?? '',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: const Color(0xFF2E3E33),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (lowStock)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.red[100],
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      'Low',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: Colors.red[700],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                Text(
+                  '$qty',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: const Color(0xFF2E3E33),
                   ),
+                ),
               ],
             ),
-            const Spacer(),
-            // Item name
-            Text(
-              item['item_name'] ?? '',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: const Color(0xFF2E3E33),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            // Quantity
-            Text(
-              '${item['quantity'] ?? 0} ${_getUnitName(item)}',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: lowStock ? Colors.red[700] : const Color(0xFF388E3C),
-              ),
-            ),
-            // Minimum label
-            Text(
-              'minimum  ${item['threshold_quantity'] ?? 1}',
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                color: Colors.grey[500],
-              ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'minimum',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                Text(
+                  '$threshold',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -1542,7 +1622,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget _buildBottomNav(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      currentIndex: 2, // Inventory is at index 2
+      currentIndex: 2, // Food Hub is at index 2
       selectedItemColor: Colors.green,
       unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
@@ -1555,7 +1635,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             Navigator.pushReplacementNamed(context, '/dashboard');
             break;
           case 2:
-            // Already on inventory
+            Navigator.pushReplacementNamed(context, '/food-hub');
             break;
           case 3:
             Navigator.pushNamed(context, '/rewards');
@@ -1570,7 +1650,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
         BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined), label: 'Inventory'),
+            icon: Icon(Icons.restaurant_outlined), label: 'Food Hub'),
         BottomNavigationBarItem(
             icon: Icon(Icons.emoji_events_outlined), label: 'Rewards'),
         BottomNavigationBarItem(

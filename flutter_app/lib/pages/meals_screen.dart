@@ -1181,6 +1181,7 @@ class _MealsScreenState extends State<MealsScreen> {
             Navigator.pushReplacementNamed(context, '/dashboard');
             break;
           case 2:
+            Navigator.pushReplacementNamed(context, '/food-hub');
             break;
           case 3:
             Navigator.pushNamed(context, '/rewards');
@@ -1193,7 +1194,7 @@ class _MealsScreenState extends State<MealsScreen> {
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
-        BottomNavigationBarItem(icon: Icon(Icons.restaurant_menu), label: 'Meals'),
+        BottomNavigationBarItem(icon: Icon(Icons.restaurant_outlined), label: 'Food Hub'),
         BottomNavigationBarItem(icon: Icon(Icons.emoji_events_outlined), label: 'Rewards'),
         BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: 'Settings'),
       ],

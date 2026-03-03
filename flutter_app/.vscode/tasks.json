@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Flutter: Run Chrome HTML",
+			"type": "shell",
+			"command": "flutter run -d chrome --web-renderer html",
+			"isBackground": true,
+			"group": "build"
+		}
+	]
+}

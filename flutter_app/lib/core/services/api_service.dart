@@ -1080,4 +1080,480 @@ class ApiService {
       throw Exception(errorData['message'] ?? 'Failed to prepare meal');
     }
   }
+
+  // ==================== RECIPE APIs ====================
+
+  Future<List<dynamic>> getAllRecipes({String? category}) async {
+    final headers = await _getHeaders();
+    String url = '$baseUrl/recipes';
+    if (category != null) url += '?category=$category';
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['recipes'] ?? [];
+    }
+    throw Exception('Failed to load recipes');
+  }
+
+  Future<Map<String, dynamic>> getRecipe(String recipeId) async {
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/recipes/$recipeId'), headers: headers);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load recipe');
+  }
+
+  Future<Map<String, dynamic>> getRecipeScaled(String recipeId, int servings) async {
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/recipes/$recipeId/scaled?servings=$servings'), headers: headers);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load scaled recipe');
+  }
+
+  Future<Map<String, dynamic>> createRecipe(Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/recipes'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to create recipe');
+  }
+
+  Future<Map<String, dynamic>> updateRecipe(String recipeId, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/recipes/$recipeId'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to update recipe');
+  }
+
+  Future<void> deleteRecipe(String recipeId) async {
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse('$baseUrl/recipes/$recipeId'), headers: headers);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['message'] ?? 'Failed to delete recipe');
+    }
+  }
+
+  Future<Map<String, dynamic>> addRecipeIngredient(String recipeId, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/recipes/$recipeId/ingredients'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to add ingredient');
+  }
+
+  Future<void> removeRecipeIngredient(String recipeId, String ingredientId) async {
+    final headers = await _getHeaders();
+    final response = await http.delete(
+      Uri.parse('$baseUrl/recipes/$recipeId/ingredients/$ingredientId'),
+      headers: headers,
+    );
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['message'] ?? 'Failed to remove ingredient');
+    }
+  }
+
+  Future<Map<String, dynamic>> addRecipeStep(String recipeId, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/recipes/$recipeId/steps'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to add step');
+  }
+
+  Future<void> removeRecipeStep(String recipeId, String stepId) async {
+    final headers = await _getHeaders();
+    final response = await http.delete(
+      Uri.parse('$baseUrl/recipes/$recipeId/steps/$stepId'),
+      headers: headers,
+    );
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['message'] ?? 'Failed to remove step');
+    }
+  }
+
+  // ==================== LEFTOVER APIs ====================
+
+  Future<List<dynamic>> getAllLeftovers({bool? expired}) async {
+    final headers = await _getHeaders();
+    String url = '$baseUrl/leftovers';
+    if (expired != null) url += '?expired=$expired';
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['leftovers'] ?? [];
+    }
+    throw Exception('Failed to load leftovers');
+  }
+
+  Future<Map<String, dynamic>> addLeftover(Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/leftovers'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to add leftover');
+  }
+
+  Future<Map<String, dynamic>> updateLeftover(String leftoverId, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/leftovers/$leftoverId'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to update leftover');
+  }
+
+  Future<void> deleteLeftover(String leftoverId) async {
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse('$baseUrl/leftovers/$leftoverId'), headers: headers);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['message'] ?? 'Failed to delete leftover');
+    }
+  }
+
+  Future<Map<String, dynamic>> getExpiringLeftovers() async {
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/leftovers/expiring'), headers: headers);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load expiring leftovers');
+  }
+
+  Future<List<dynamic>> getAllLeftoverCategories() async {
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/leftovers/categories'), headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['categories'] ?? [];
+    }
+    throw Exception('Failed to load leftover categories');
+  }
+
+  Future<Map<String, dynamic>> createLeftoverCategory(Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/leftovers/categories'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to create leftover category');
+  }
+
+  Future<void> deleteLeftoverCategory(String categoryId) async {
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse('$baseUrl/leftovers/categories/$categoryId'), headers: headers);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['message'] ?? 'Failed to delete leftover category');
+    }
+  }
+
+  // ==================== MEAL SUGGESTION APIs ====================
+
+  Future<Map<String, dynamic>> generateMealSuggestions() async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/meal-suggestions/generate'),
+      headers: headers,
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to generate suggestions');
+  }
+
+  Future<List<dynamic>> getMealSuggestions() async {
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/meal-suggestions'), headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['suggestions'] ?? [];
+    }
+    throw Exception('Failed to load meal suggestions');
+  }
+
+  Future<void> clearMealSuggestions() async {
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse('$baseUrl/meal-suggestions'), headers: headers);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Failed to clear suggestions');
+    }
+  }
+
+  // ==================== INVENTORY ALERT APIs (Persisted) ====================
+
+  Future<List<dynamic>> getInventoryAlertsPersisted({bool? isRead, String? alertType}) async {
+    final headers = await _getHeaders();
+    String url = '$baseUrl/inventory-alerts';
+    List<String> params = [];
+    if (isRead != null) params.add('is_read=$isRead');
+    if (alertType != null) params.add('alert_type=$alertType');
+    if (params.isNotEmpty) url += '?${params.join('&')}';
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['alerts'] ?? [];
+    }
+    throw Exception('Failed to load alerts');
+  }
+
+  Future<int> getUnreadAlertCount() async {
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/inventory-alerts/unread-count'), headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['unreadCount'] ?? 0;
+    }
+    throw Exception('Failed to load unread count');
+  }
+
+  Future<void> markAlertAsRead(String alertId) async {
+    final headers = await _getHeaders();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/inventory-alerts/$alertId/read'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark alert as read');
+    }
+  }
+
+  Future<void> markAllAlertsAsRead() async {
+    final headers = await _getHeaders();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/inventory-alerts/mark-all-read'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark all as read');
+    }
+  }
+
+  Future<void> deleteAlert(String alertId) async {
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse('$baseUrl/inventory-alerts/$alertId'), headers: headers);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Failed to delete alert');
+    }
+  }
+
+  Future<Map<String, dynamic>> generateInventoryAlerts() async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/inventory-alerts/generate'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to generate alerts');
+  }
+
+  // ==================== RECEIPT APIs ====================
+
+  Future<List<dynamic>> getAllReceipts({String? startDate, String? endDate, String? memberMail}) async {
+    final headers = await _getHeaders();
+    String url = '$baseUrl/receipts';
+    List<String> params = [];
+    if (startDate != null) params.add('start_date=$startDate');
+    if (endDate != null) params.add('end_date=$endDate');
+    if (memberMail != null) params.add('member_mail=$memberMail');
+    if (params.isNotEmpty) url += '?${params.join('&')}';
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['receipts'] ?? [];
+    }
+    throw Exception('Failed to load receipts');
+  }
+
+  Future<Map<String, dynamic>> getReceipt(String receiptId) async {
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl/receipts/$receiptId'), headers: headers);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load receipt');
+  }
+
+  Future<Map<String, dynamic>> createReceipt(Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/receipts'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to create receipt');
+  }
+
+  Future<Map<String, dynamic>> updateReceipt(String receiptId, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/receipts/$receiptId'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to update receipt');
+  }
+
+  Future<void> deleteReceipt(String receiptId) async {
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse('$baseUrl/receipts/$receiptId'), headers: headers);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Failed to delete receipt');
+    }
+  }
+
+  Future<Map<String, dynamic>> getSpendingSummary({String? startDate, String? endDate}) async {
+    final headers = await _getHeaders();
+    String url = '$baseUrl/receipts/summary';
+    List<String> params = [];
+    if (startDate != null) params.add('start_date=$startDate');
+    if (endDate != null) params.add('end_date=$endDate');
+    if (params.isNotEmpty) url += '?${params.join('&')}';
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load spending summary');
+  }
+
+  // ==================== INVENTORY CATEGORY APIs ====================
+
+  Future<List<dynamic>> getAllInventoryCategories({bool tree = false}) async {
+    final headers = await _getHeaders();
+    String url = '$baseUrl/inventory-categories';
+    if (tree) url += '?tree=true';
+    final response = await http.get(Uri.parse(url), headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['categories'] ?? [];
+    }
+    throw Exception('Failed to load inventory categories');
+  }
+
+  Future<Map<String, dynamic>> createInventoryCategory(Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/inventory-categories'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to create category');
+  }
+
+  Future<Map<String, dynamic>> updateInventoryCategory(String categoryId, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/inventory-categories/$categoryId'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to update category');
+  }
+
+  Future<void> deleteInventoryCategory(String categoryId) async {
+    final headers = await _getHeaders();
+    final response = await http.delete(Uri.parse('$baseUrl/inventory-categories/$categoryId'), headers: headers);
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final errorData = jsonDecode(response.body);
+      throw Exception(errorData['message'] ?? 'Failed to delete category');
+    }
+  }
+
+  // ==================== ITEM CATEGORY UPDATE (was missing) ====================
+
+  Future<Map<String, dynamic>> updateItemCategory(String categoryId, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/inventory/categories/$categoryId'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to update item category');
+  }
+
+  // ==================== INVENTORY UPDATE (was missing) ====================
+
+  Future<Map<String, dynamic>> updateInventory(String inventoryId, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
+    final response = await http.patch(
+      Uri.parse('$baseUrl/inventory/$inventoryId'),
+      headers: headers,
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to update inventory');
+  }
 }
