@@ -1164,6 +1164,39 @@ class ApiService {
     throw Exception(errorData['message'] ?? 'Failed to adjust funding goal');
   }
 
+  Future<Map<String, dynamic>> setConversionRate({
+    required double moneyToPointsRate,
+    required double pointsToMoneyRate,
+  }) async {
+    final headers = await _getHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/budget/conversion-rate'),
+      headers: headers,
+      body: jsonEncode({
+        'money_to_points_rate': moneyToPointsRate,
+        'points_to_money_rate': pointsToMoneyRate,
+      }),
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return jsonDecode(response.body);
+    }
+    final err = jsonDecode(response.body);
+    throw Exception(err['message'] ?? 'Failed to set conversion rate');
+  }
+
+  Future<List<dynamic>> getFutureEvents() async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/budgets/future-events/all'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      return responseData['data']['events'] ?? [];
+    }
+    throw Exception('Failed to load future events');
+  }
+
   // ======================= COMBINED ANALYTICS APIs =======================
 
   Future<Map<String, dynamic>> getCombinedAnalytics() async {

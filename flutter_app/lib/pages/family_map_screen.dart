@@ -8,7 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/services/api_service.dart';
-import '../core/styling/app_color.dart';
+import '../core/theme/app_theme.dart';
 import '../core/widgets/app_bottom_nav.dart';
 
 class FamilyMapScreen extends StatefulWidget {
@@ -147,7 +147,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.notifications_active_outlined, color: Appcolor.primaryColor),
+                    const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
@@ -448,7 +448,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Appcolor.primaryColor))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : _error != null
               ? _buildError()
               : _buildMap(),
@@ -590,12 +590,12 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: Appcolor.textDark,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         _myPosition == null ? 'Waiting for your location' : 'You + ${_familyLocations.length} family members',
-                        style: TextStyle(color: Appcolor.textMedium, fontSize: 12.5),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
                       ),
                     ],
                   ),
@@ -619,7 +619,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                       clipBehavior: Clip.none,
                       children: [
                         const Center(
-                          child: Icon(Icons.notifications_none_rounded, color: Appcolor.textDark, size: 22),
+                          child: Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 22),
                         ),
                         if (_unreadLocationAlerts > 0)
                           Positioned(
@@ -661,7 +661,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                   child: Text(
                     '${_familyLocations.length + (_myPosition != null ? 1 : 0)} live',
                     style: TextStyle(
-                      color: Appcolor.textDark,
+                      color: AppColors.textPrimary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -727,7 +727,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
             children: [
               FloatingActionButton.small(
                 heroTag: 'sharing',
-                backgroundColor: _isSharingEnabled ? Appcolor.primaryColor : Colors.grey,
+                backgroundColor: _isSharingEnabled ? AppColors.primary : Colors.grey,
                 onPressed: _toggleSharing,
                 child: Icon(
                   _isSharingEnabled ? Icons.location_on : Icons.location_off,
@@ -739,7 +739,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                 heroTag: 'recenter',
                 backgroundColor: Colors.white,
                 onPressed: () => _mapController.move(center, _mapController.camera.zoom),
-                child: const Icon(Icons.my_location, color: Appcolor.primaryColor),
+                child: const Icon(Icons.my_location, color: AppColors.primary),
               ),
               const SizedBox(height: 8),
               FloatingActionButton(
@@ -792,14 +792,14 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
               Text(
                 'You',
                 style: TextStyle(
-                  color: Appcolor.textDark,
+                  color: AppColors.textPrimary,
                   fontWeight: FontWeight.w800,
                   fontSize: 13,
                 ),
               ),
               Text(
                 _isSharingEnabled ? 'Live now' : 'Visible only to you',
-                style: TextStyle(color: Appcolor.textMedium, fontSize: 11),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
               ),
             ],
           ),
@@ -838,7 +838,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                   child: Text(
                     'You',
                     style: TextStyle(
-                      color: Appcolor.textDark,
+                      color: AppColors.textPrimary,
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
                     ),
@@ -902,7 +902,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                     Text(
                       name.split(' ').first,
                       style: TextStyle(
-                        color: Appcolor.textDark,
+                        color: AppColors.textPrimary,
                         fontWeight: FontWeight.w700,
                         fontSize: 11,
                       ),
@@ -989,7 +989,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: Appcolor.textDark,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -1001,7 +1001,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 9,
-                color: Appcolor.textLight,
+                color: AppColors.textHint,
               ),
             ),
           ],
@@ -1055,7 +1055,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                       const SizedBox(width: 6),
                       Text(
                         isOnline ? 'Online' : 'Offline',
-                        style: TextStyle(color: Appcolor.textMedium, fontSize: 12),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       ),
                       const SizedBox(width: 10),
                       Icon(
@@ -1065,30 +1065,30 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                                 ? Icons.shield_outlined
                                 : Icons.person_outline,
                         size: 14,
-                        color: Appcolor.textMedium,
+                        color: AppColors.textSecondary,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         type,
-                        style: TextStyle(color: Appcolor.textMedium, fontSize: 13),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                       ),
                     ],
                   ),
                   const SizedBox(height: 2),
                   Text(
                     mail,
-                    style: TextStyle(color: Appcolor.textLight, fontSize: 12),
+                    style: TextStyle(color: AppColors.textHint, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.access_time, size: 13, color: Appcolor.textLight),
+                      Icon(Icons.access_time, size: 13, color: AppColors.textHint),
                       const SizedBox(width: 4),
                       Text(
                         _memberPresence(loc),
-                        style: TextStyle(color: Appcolor.textLight, fontSize: 12),
+                        style: TextStyle(color: AppColors.textHint, fontSize: 12),
                       ),
                     ],
                   ),

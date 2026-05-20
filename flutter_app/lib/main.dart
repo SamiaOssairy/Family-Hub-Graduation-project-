@@ -6,6 +6,8 @@ import 'pages/setting.dart';
 import 'pages/splash_screen.dart';
 import 'pages/onboarding_screen.dart';
 import 'pages/dashboard_screen.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 import 'pages/tasks_screen.dart';
 import 'pages/status_screen.dart';
 import 'pages/rewards_screen.dart';
@@ -53,28 +55,34 @@ class MyApp extends StatelessWidget {
           provider.init();
           return provider;
         }),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) {
+          final tp = ThemeProvider();
+          tp.loadTheme();
+          return tp;
+        }),
       ],
-      child: ValueListenableBuilder<Locale?>(
-        valueListenable: LocaleService.localeNotifier,
-        builder: (context, locale, _) {
-          return MaterialApp(
-            title: 'Family Hub',
-            debugShowCheckedModeBanner: false,
-            locale: locale,
-            supportedLocales: const [
-              Locale('en'),
-              Locale('ar'),
-            ],
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            theme: ThemeData(
-              primarySwatch: Colors.green,
-              useMaterial3: true,
-            ),
-            home: const AuthBootstrapScreen(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return ValueListenableBuilder<Locale?>(
+            valueListenable: LocaleService.localeNotifier,
+            builder: (context, locale, _) {
+              return MaterialApp(
+                title: 'Family Hub',
+                debugShowCheckedModeBanner: false,
+                locale: locale,
+                supportedLocales: const [
+                  Locale('en'),
+                  Locale('ar'),
+                ],
+                localizationsDelegates: const [
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                theme: appLightTheme,
+                darkTheme: appDarkTheme,
+                themeMode: themeProvider.themeMode,
+                home: const AuthBootstrapScreen(),
             routes: {
               '/splash': (context) => const SplashScreen(),
               '/onboarding': (context) => const OnboardingScreen(),
@@ -109,8 +117,10 @@ class MyApp extends StatelessWidget {
             },
           );
         },
-      ),
-    );
+      );
+    },
+  ),
+);
   }
 }
 

@@ -1,68 +1,83 @@
 import 'package:flutter/material.dart';
-import '../localization/app_i18n.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../theme/app_theme.dart';
 
-/// Shared bottom navigation bar used across all main screens.
-///
-/// Pass the current [selectedIndex] (0-5) to highlight the active tab.
-/// The navigation targets are:
-///   0 → /home
-///   1 → /rewards
-///   2 → /food-hub
-///   3 → /budget
-///   4 → /family-map
-///   5 → /settings
+/// Shared teal bottom nav — 5 tabs matching home.dart style.
+/// Indices: 0 Home · 1 Dashboard · 2 AI Chat · 3 Location · 4 Settings
 class AppBottomNav extends StatelessWidget {
   final int selectedIndex;
   const AppBottomNav({super.key, this.selectedIndex = 0});
 
+  double _sp(BuildContext context, double size) {
+    final w = MediaQuery.of(context).size.width.clamp(320.0, 480.0);
+    return size * (w / 390.0);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isAr = AppI18n.isArabic(context);
-
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: selectedIndex,
-      selectedItemColor: const Color(0xFF388E3C),
-      unselectedItemColor: Colors.grey,
-      showUnselectedLabels: true,
-      onTap: (index) => _onTap(context, index),
-        items: [
-        BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), label: isAr ? 'الرئيسية' : 'Home'),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.emoji_events_outlined), label: isAr ? 'المكافآت' : 'Rewards'),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.restaurant_outlined), label: isAr ? 'الطعام' : 'Food Hub'),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.account_balance_wallet_outlined), label: isAr ? 'الميزانية' : 'Budget'),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.map_outlined), label: isAr ? 'الخريطة' : 'Map'),
-        BottomNavigationBarItem(
-          icon: const Icon(Icons.settings_outlined), label: isAr ? 'الإعدادات' : 'Settings'),
-      ],
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        border: Border(top: BorderSide(color: AppColors.border)),
+        boxShadow: [
+          BoxShadow(color: Color(0x0D000000), blurRadius: 8, offset: Offset(0, -2)),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _item(context, 0, '🏠', 'Home'),
+              _item(context, 1, '⊞', 'Dashboard'),
+              _item(context, 2, '🤖', 'AI Chat'),
+              _item(context, 3, '📍', 'Location'),
+              _item(context, 4, '⚙️', 'Settings'),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  void _onTap(BuildContext context, int index) {
-    if (index == selectedIndex) return;
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/home');
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/rewards');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/food-hub');
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/budget');
-        break;
-      case 4:
-        Navigator.pushReplacementNamed(context, '/family-map');
-        break;
-      case 5:
-        Navigator.pushReplacementNamed(context, '/settings');
-        break;
-    }
+  Widget _item(BuildContext context, int index, String emoji, String label) {
+    final isActive = selectedIndex == index;
+    return GestureDetector(
+      onTap: () {
+        if (isActive) return;
+        switch (index) {
+          case 0: Navigator.pushReplacementNamed(context, '/home'); break;
+          case 1: Navigator.pushReplacementNamed(context, '/dashboard'); break;
+          case 2: Navigator.pushNamed(context, '/planning-chat'); break;
+          case 3: Navigator.pushReplacementNamed(context, '/family-map'); break;
+          case 4: Navigator.pushReplacementNamed(context, '/settings'); break;
+        }
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 34,
+            height: 28,
+            decoration: BoxDecoration(
+              color: isActive ? AppColors.primarySurface : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Center(child: Text(emoji, style: const TextStyle(fontSize: 16))),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: _sp(context, 10),
+              color: isActive ? AppColors.primary : const Color(0xFF9E9E9E),
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/services/api_service.dart';
 import '../core/models/member_model.dart';
 import '../core/localization/app_i18n.dart';
+import '../core/theme/app_theme.dart';
 import 'setting.dart';
 import 'signup_login.dart';
 import 'manage_accounts_page.dart';
@@ -27,7 +28,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final ApiService _apiService = ApiService();
   String _t(String en, String ar) => AppI18n.t(context, en, ar);
-  
+
+  // Scales a base size (designed at 390 px wide) to the actual screen width.
+  // Capped at 480 px so desktop text doesn't grow huge.
+  double _sp(double size) {
+    final w = MediaQuery.of(context).size.width.clamp(320.0, 480.0);
+    return size * (w / 390.0);
+  }
+
   int _activeTab = 0;
   bool _locationSharing = true;
 
@@ -49,6 +57,12 @@ class _HomePageState extends State<HomePage> {
   bool _loading = true;
   bool _walletLoading = true;
   Map<String, dynamic> _walletSummary = {};
+  List<dynamic> _recentTasks = [];
+  bool _tasksLoading = true;
+  List<dynamic> _futureEvents = [];
+  bool _eventsLoading = true;
+  List<dynamic> _pointsRanking = [];
+  bool _rankingLoading = true;
 
   @override
   void initState() {
@@ -57,6 +71,9 @@ class _HomePageState extends State<HomePage> {
     _loadSavedProfiles();
     _fetchFamilyMembers();
     _loadWalletSummary();
+    _fetchRecentTasks();
+    _fetchFutureEvents();
+    _fetchPointsRanking();
   }
 
   Future<void> _loadUserData() async {
@@ -64,7 +81,7 @@ class _HomePageState extends State<HomePage> {
     final userName = prefs.getString('username') ?? widget.userName ?? '';
     final familyTitle = prefs.getString('familyTitle') ?? widget.familyTitle ?? '';
     final activeProfileKey = prefs.getString('activeProfileKey') ?? '';
-    
+
     setState(() {
       _userName = userName;
       _familyTitle = familyTitle;
@@ -98,6 +115,56 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _fetchRecentTasks() async {
+    try {
+      final tasks = await _apiService.getAllAssignedTasks();
+      if (!mounted) return;
+      setState(() {
+        _recentTasks = tasks;
+        _tasksLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _tasksLoading = false);
+    }
+  }
+
+  Future<void> _fetchFutureEvents() async {
+    try {
+      final events = await _apiService.getFutureEvents();
+      if (!mounted) return;
+      setState(() {
+        _futureEvents = events;
+        _eventsLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _eventsLoading = false);
+    }
+  }
+
+  Future<void> _fetchPointsRanking() async {
+    try {
+      final ranking = await _apiService.getPointsRanking();
+      if (!mounted) return;
+      setState(() {
+        _pointsRanking = ranking;
+        _rankingLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _rankingLoading = false);
+    }
+  }
+
+  // Returns a member's display name from their email using the loaded members list.
+  String _getMemberName(String mail) {
+    for (final m in _familyMembers) {
+      if (m.mail == mail) return m.username;
+    }
+    return mail.split('@').first;
+  }
+
   Future<void> _switchProfileFromHome(String profileKey) async {
     try {
       await _apiService.switchProfile(profileKey);
@@ -105,6 +172,9 @@ class _HomePageState extends State<HomePage> {
       await _loadSavedProfiles();
       await _fetchFamilyMembers();
       await _loadWalletSummary();
+      await _fetchRecentTasks();
+      await _fetchFutureEvents();
+      await _fetchPointsRanking();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_t('Switched account', 'تم تبديل الحساب'))),
@@ -193,7 +263,7 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 Text(
                                   _t('Current account', 'الحساب الحالي'),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     color: Color(0xFF2E7D32),
                                     fontWeight: FontWeight.w600,
@@ -213,7 +283,7 @@ class _HomePageState extends State<HomePage> {
                   }),
                 if (_savedProfiles.isEmpty)
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(_t('No saved accounts yet', 'لا توجد حسابات محفوظة بعد')),
                   ),
                 if (_savedProfiles.isNotEmpty)
@@ -300,10 +370,10 @@ class _HomePageState extends State<HomePage> {
     return Text(
       _t(en, ar),
       style: GoogleFonts.poppins(
-        fontSize: 12,
+        fontSize: _sp(10),
         fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
-        color: const Color(0xFF666666),
+        color: AppColors.secondary,
       ),
     );
   }
@@ -329,7 +399,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _handleLogout() async {
     await _apiService.logout();
-    
+
     if (widget.onLogout != null) {
       widget.onLogout!();
     } else if (mounted) {
@@ -601,10 +671,10 @@ class _HomePageState extends State<HomePage> {
                                   );
                                   return;
                                 }
-                                
+
                                 // Get the member type (either selected or newly created)
                                 String? finalMemberType = selectedMemberType;
-                                
+
                                 if (showNewTypeField) {
                                   if (newMemberTypeController.text.trim().isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -702,51 +772,63 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ── BUILD ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFE8F5E9),
-              Color(0xFFF3F4F6),
-              Color(0xFFE8F5E9),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700),
-              child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 30),
-                      if (_familyMembers.isNotEmpty) _buildFamilyMembers(),
-                      const SizedBox(height: 30),
-                      _buildQuickActions(),
-                      const SizedBox(height: 18),
-                      _buildWalletOverviewCard(),
-                      const SizedBox(height: 30),
-                      _buildUpcomingActivities(),
-                      const SizedBox(height: 30),
-                      _buildSafetySettings(),
-                      const SizedBox(height: 100), // Space for bottom nav
-                    ],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 700),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(),
+                        const SizedBox(height: 16),
+                        if (_familyMembers.isNotEmpty) ...[
+                          _buildFamilyMembers(),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                              onPressed: _showAddMemberDialog,
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              icon: Icon(Icons.person_add_alt_1, size: _sp(14), color: AppColors.primary),
+                              label: Text(
+                                _t('Add Member', 'إضافة عضو'),
+                                style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.primary, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          _buildAddMemberCard(),
+                        ],
+                        const SizedBox(height: 8),
+                        _buildStatCards(),
+                        const SizedBox(height: 12),
+                        _buildTasksTeaser(),
+                        const SizedBox(height: 10),
+                        _buildAICard(),
+                        const SizedBox(height: 12),
+                        _buildEventsCard(),
+                        const SizedBox(height: 12),
+                        _buildLeaderboardCard(),
+                        const SizedBox(height: 80),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
             ),
           ),
         ),
@@ -755,88 +837,79 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ── HEADER ─────────────────────────────────────────────────────────────────
+
   Widget _buildHeader() {
     return Row(
       children: [
+        GestureDetector(
+          onLongPress: _showAccountSwitcherSheet,
+          onTap: _showAccountSwitcherSheet,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.primary, AppColors.light],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Text('👨‍👩‍👧‍👦', style: TextStyle(fontSize: 20)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
         Expanded(
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onLongPress: _showAccountSwitcherSheet,
-                onTap: _showAccountSwitcherSheet,
-                child: Container(
-                  width: 62,
-                  height: 62,
+              Text(
+                _familyTitle.isNotEmpty ? _familyTitle : _t('Family Hub', 'فاميلي هب'),
+                style: GoogleFonts.poppins(
+                  fontSize: _sp(16),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+              Text(
+                _t('Welcome back, $_userName', 'مرحباً $_userName'),
+                style: GoogleFonts.poppins(fontSize: _sp(12), color: AppColors.secondary),
+              ),
+              if (_hasActiveProfile) ...[
+                const SizedBox(height: 3),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF43A047), Color(0xFF1B5E20)],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF2E7D32).withOpacity(0.35),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    color: AppColors.white,
+                    border: Border.all(color: const Color(0xFF80CBC4)),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.family_restroom, color: Colors.white, size: 32),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _familyTitle.isNotEmpty
-                          ? (_t('$_familyTitle Family', 'عائلة $_familyTitle'))
-                          : _t('Family Hub', 'فاميلي هب'),
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1A1A1A),
-                      ),
+                  child: Text(
+                    '● ${_t("Active profile", "الحساب النشط")}',
+                    style: GoogleFonts.poppins(
+                      fontSize: _sp(9),
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _t('Welcome $_userName', 'مرحباً $_userName'),
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: const Color(0xFF666666),
-                      ),
-                    ),
-                    if (_hasActiveProfile) const SizedBox(height: 6),
-                    if (_hasActiveProfile)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFF4CAF50).withOpacity(0.35),
-                          ),
-                        ),
-                        child: Text(
-                          _t('Active profile', 'الحساب النشط'),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2E7D32),
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF2E7D32).withOpacity(0.08),
+            color: AppColors.primary.withOpacity(0.08),
             borderRadius: BorderRadius.circular(14),
           ),
           child: IconButton(
@@ -858,20 +931,22 @@ class _HomePageState extends State<HomePage> {
                       ),
                       TextButton(
                         onPressed: () => Navigator.of(dialogContext).pop('all'),
-                        child: Text(_t('Logout all', 'تسجيل خروج جميع الحسابات'), style: const TextStyle(color: Colors.red)),
+                        child: Text(
+                          _t('Logout all', 'تسجيل خروج جميع الحسابات'),
+                          style: const TextStyle(color: Colors.red),
+                        ),
                       ),
                     ],
                   );
                 },
               );
-
               if (selected == 'current') {
                 await _handleLogout();
               } else if (selected == 'all') {
                 await _handleLogoutAll();
               }
             },
-            icon: const Icon(Icons.logout_outlined, size: 22, color: Color(0xFF2E7D32)),
+            icon: const Icon(Icons.logout_outlined, size: 22, color: AppColors.primary),
             tooltip: _t('Logout', 'خروج'),
           ),
         ),
@@ -879,205 +954,530 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildWalletOverviewCard() {
-    final moneyBalance = ((_walletSummary['money_balance'] ?? 0) as num).toDouble();
-    final pointsBalance = ((_walletSummary['points_balance'] ?? 0) as num).toDouble();
-    final totalValue = ((_walletSummary['total_value_in_money'] ?? moneyBalance) as num).toDouble();
-    final conversionRate = _walletSummary['conversionRate'];
-    final moneyToPointsRate = conversionRate is Map && conversionRate['money_to_points_rate'] != null
-        ? (conversionRate['money_to_points_rate'] as num).toDouble()
-        : 10.0;
-    final pointsToMoneyRate = conversionRate is Map && conversionRate['points_to_money_rate'] != null
-        ? (conversionRate['points_to_money_rate'] as num).toDouble()
-        : 0.05;
+  // ── ADD MEMBER CARD (shown when no members yet) ────────────────────────────
 
-    return InkWell(
-      onTap: () => Navigator.of(context).pushNamed('/wallet-details'),
-      borderRadius: BorderRadius.circular(20),
+  Widget _buildAddMemberCard() {
+    return GestureDetector(
+      onTap: _showAddMemberDialog,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.18)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 16, offset: const Offset(0, 6)),
-          ],
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
         ),
-        child: _walletLoading
-            ? const Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 18),
-                  child: CircularProgressIndicator(color: Color(0xFF1B5E20)),
-                ),
-              )
-            : Column(
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(10)),
+              child: const Icon(Icons.person_add_alt_1, color: AppColors.primary, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1B5E20).withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.account_balance_wallet_outlined, color: Color(0xFF1B5E20), size: 19),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _t('Wallet Snapshot', 'ملخص المحفظة'),
-                        style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 16, fontWeight: FontWeight.w700),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pushNamed('/combined-wallet'),
-                        style: TextButton.styleFrom(foregroundColor: const Color(0xFF1B5E20)),
-                        child: Text(_t('Open Wallet', 'فتح المحفظة')),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _miniStatTile(
-                          label: _t('Money balance', 'رصيد المال'),
-                          value: '${moneyBalance.toStringAsFixed(2)} EGP',
-                          accent: const Color(0xFF1B5E20),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _miniStatTile(
-                          label: _t('Points balance', 'رصيد النقاط'),
-                          value: '${pointsBalance.toStringAsFixed(0)} pts',
-                          accent: const Color(0xFFF57C00),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _miniStatTile(
-                          label: _t('Total value', 'القيمة الكلية'),
-                          value: '${totalValue.toStringAsFixed(2)} EGP',
-                          accent: const Color(0xFF1565C0),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _miniStatTile(
-                          label: _t('Rates', 'أسعار التحويل'),
-                          value: '1 EGP = ${moneyToPointsRate.toStringAsFixed(0)} pts\n1 pt = ${pointsToMoneyRate.toStringAsFixed(2)} EGP',
-                          accent: const Color(0xFF4CAF50),
-                          multiline: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(context).pushNamed('/wallet-details'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF1B5E20),
-                            side: const BorderSide(color: Color(0xFF1B5E20)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                          ),
-                          child: Text(_t('Balance details', 'تفاصيل الرصيد')),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.of(context).pushNamed('/combined-wallet'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1B5E20),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                          ),
-                          child: Text(_t('Wallet view', 'عرض المحفظة')),
-                        ),
-                      ),
-                    ],
-                  ),
+                  Text(_t('Add your first member', 'أضف أول عضو في العائلة'),
+                      style: GoogleFonts.poppins(fontSize: _sp(13), fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                  Text(_t('Tap to add a family member', 'اضغط لإضافة عضو'),
+                      style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.secondary)),
                 ],
               ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.border),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _miniStatTile({
-    required String label,
+  // ── STAT CARDS ─────────────────────────────────────────────────────────────
+
+  Widget _buildStatCards() {
+    final moneyBalance = ((_walletSummary['money_balance'] ?? 0) as num).toDouble();
+    final pointsBalance = ((_walletSummary['points_balance'] ?? 0) as num).toDouble();
+
+    return Row(
+      children: [
+        Expanded(
+          child: _statCard(
+            icon: '💰',
+            iconBg: AppColors.cardBg,
+            value: '${moneyBalance.toStringAsFixed(0)} EGP',
+            label: _t('Money Balance', 'رصيد المال'),
+            subLabel: _t('Wallet balance', 'رصيد المحفظة'),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _statCard(
+            icon: '⭐',
+            iconBg: const Color(0xFFFFF8E1),
+            value: '${pointsBalance.toStringAsFixed(0)} pts',
+            label: _t('Your Points', 'نقاطك'),
+            subLabel: _t('Earned points', 'نقاط مكتسبة'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statCard({
+    required String icon,
+    required Color iconBg,
     required String value,
-    required Color accent,
-    bool multiline = false,
+    required String label,
+    required String subLabel,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: accent.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accent.withOpacity(0.16)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 11, color: Colors.grey[700], fontWeight: FontWeight.w600),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: multiline ? 11 : 14,
-              height: multiline ? 1.25 : 1.1,
-              color: accent,
-              fontWeight: FontWeight.w800,
+      padding: const EdgeInsets.all(10),
+      decoration: AppDecorations.card,
+      child: _walletLoading
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+                ),
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(8)),
+                  child: Center(child: Text(icon, style: const TextStyle(fontSize: 16))),
+                ),
+                const SizedBox(height: 8),
+                Text(value,
+                    style: GoogleFonts.poppins(fontSize: _sp(15), fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                Text(label, style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.secondary)),
+                const SizedBox(height: 4),
+                Text(subLabel,
+                    style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.primary, fontWeight: FontWeight.w600)),
+              ],
             ),
-            maxLines: multiline ? 2 : 1,
-            overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  // ── TASKS TEASER ──────────────────────────────────────────────────────────
+
+  Color _taskDotColor(String status) {
+    switch (status) {
+      case 'approved':    return AppColors.primary;
+      case 'completed':   return AppColors.light;
+      case 'in_progress': return const Color(0xFF1565C0);
+      case 'late':        return const Color(0xFFFF5252);
+      case 'rejected':    return const Color(0xFF9E9E9E);
+      default:            return const Color(0xFFFB8C00); // assigned
+    }
+  }
+
+  Map<String, dynamic> _taskBadge(String status) {
+    switch (status) {
+      case 'approved':
+        return {'label': _t('Approved', 'تمت الموافقة'), 'bg': AppColors.cardBg, 'fg': AppColors.dark};
+      case 'completed':
+        return {'label': _t('Done ✓', 'تم ✓'), 'bg': AppColors.cardBg, 'fg': AppColors.primary};
+      case 'in_progress':
+        return {'label': _t('Active', 'جارٍ'), 'bg': const Color(0xFFE3F2FD), 'fg': const Color(0xFF1565C0)};
+      case 'late':
+        return {'label': _t('Late', 'متأخر'), 'bg': const Color(0xFFFFEBEE), 'fg': const Color(0xFFC62828)};
+      case 'rejected':
+        return {'label': _t('Rejected', 'مرفوض'), 'bg': const Color(0xFFF5F5F5), 'fg': const Color(0xFF9E9E9E)};
+      default:
+        return {'label': _t('Pending', 'قيد الانتظار'), 'bg': const Color(0xFFFFF3E0), 'fg': const Color(0xFFE65100)};
+    }
+  }
+
+  Widget _buildTasksTeaser() {
+    final displayTasks = _recentTasks.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: _sectionHeader("TODAY'S TASKS", 'مهام اليوم')),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/task-management'),
+              child: Text(
+                _t('See all', 'عرض الكل'),
+                style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: AppDecorations.card,
+          child: _tasksLoading
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+                  ),
+                )
+              : displayTasks.isEmpty
+                  ? GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/task-management'),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.assignment_outlined, color: AppColors.secondary, size: 18),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _t('No tasks assigned yet — tap to manage', 'لا توجد مهام بعد — اضغط للإدارة'),
+                                style: GoogleFonts.poppins(fontSize: _sp(12), color: AppColors.secondary),
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right, color: AppColors.border, size: 16),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: displayTasks.asMap().entries.map((entry) {
+                        final task = entry.value as Map<String, dynamic>;
+                        final isLast = entry.key == displayTasks.length - 1;
+                        final title = (task['task_id'] is Map)
+                            ? (task['task_id']['title'] ?? _t('Task', 'مهمة'))
+                            : _t('Task', 'مهمة');
+                        final mail  = task['member_mail']?.toString() ?? '';
+                        final status = task['status']?.toString() ?? 'assigned';
+                        final badge  = _taskBadge(status);
+                        return _taskRow(
+                          dot: _taskDotColor(status),
+                          title: title.toString(),
+                          assignee: _getMemberName(mail),
+                          badge: badge['label'] as String,
+                          badgeBg: badge['bg'] as Color,
+                          badgeColor: badge['fg'] as Color,
+                          isLast: isLast,
+                        );
+                      }).toList(),
+                    ),
+        ),
+      ],
+    );
+  }
+
+  Widget _taskRow({
+    required Color dot,
+    required String title,
+    required String assignee,
+    required String badge,
+    required Color badgeBg,
+    required Color badgeColor,
+    bool isLast = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        border: isLast ? null : const Border(bottom: BorderSide(color: Color(0xFFE0F2F1))),
+      ),
+      child: Row(
+        children: [
+          Container(width: 7, height: 7, decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: GoogleFonts.poppins(fontSize: _sp(12), color: AppColors.textDark),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(assignee, style: GoogleFonts.poppins(fontSize: _sp(10), color: AppColors.secondary),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(6)),
+            child: Text(badge,
+                style: GoogleFonts.poppins(fontSize: _sp(10), fontWeight: FontWeight.w600, color: badgeColor)),
           ),
         ],
       ),
     );
   }
 
+  // ── AI CARD ───────────────────────────────────────────────────────────────
+
+  Widget _buildAICard() {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/planning-chat'),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: AppColors.primaryGradient,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Center(child: Text('🤖', style: TextStyle(fontSize: 15))),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _t('Ask Family AI', 'اسأل المساعد الذكي'),
+                    style: GoogleFonts.poppins(
+                        color: Colors.white, fontSize: _sp(13), fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    _t('Budget, meals, tasks — ask anything', 'الميزانية، الطعام، المهام — اسأل أي شيء'),
+                    style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.7), fontSize: _sp(10)),
+                  ),
+                ],
+              ),
+            ),
+            Text('›',
+                style: TextStyle(
+                    color: Colors.white.withOpacity(0.5), fontSize: 22, fontWeight: FontWeight.w300)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── EVENTS CARD ───────────────────────────────────────────────────────────
+
+  Widget _buildEventsCard() {
+    final eventIcons = ['✈️', '🎁', '🎉', '🛍️', '🏖️', '🎂'];
+    final eventColors = [AppColors.light, const Color(0xFFFB8C00), AppColors.primary,
+                         const Color(0xFFAD1457), const Color(0xFF6A1B9A), AppColors.dark];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: _sectionHeader('UPCOMING EVENTS', 'الأحداث القادمة')),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/event-funding'),
+              child: Text(
+                _t('See all', 'عرض الكل'),
+                style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: AppDecorations.card,
+          child: _eventsLoading
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+                  ),
+                )
+              : _futureEvents.isEmpty
+                  ? GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/event-funding'),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.event_outlined, color: AppColors.secondary, size: 18),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _t('No upcoming events — tap to create one', 'لا توجد أحداث — اضغط لإنشاء واحد'),
+                                style: GoogleFonts.poppins(fontSize: _sp(12), color: AppColors.secondary),
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right, color: AppColors.border, size: 16),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: _futureEvents.take(3).toList().asMap().entries.map((entry) {
+                        final e   = entry.value as Map<String, dynamic>;
+                        final idx = entry.key;
+                        final isLast = idx == (_futureEvents.length < 3 ? _futureEvents.length - 1 : 2);
+                        final color  = eventColors[idx % eventColors.length];
+                        final icon   = eventIcons[idx % eventIcons.length];
+
+                        final title     = (e['title'] ?? e['name'] ?? _t('Event', 'حدث')).toString();
+                        final cost      = (e['estimated_cost'] ?? 0 as num).toDouble();
+                        final saved     = ((e['total_contributed_money'] ?? e['saved_amount'] ?? 0) as num).toDouble();
+                        final progress  = cost > 0 ? (saved / cost).clamp(0.0, 1.0) : 0.0;
+                        final pct       = '${(progress * 100).toStringAsFixed(0)}%';
+                        final amountStr = '${saved.toStringAsFixed(0)}/${cost.toStringAsFixed(0)} EGP';
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            border: isLast ? null : const Border(bottom: BorderSide(color: Color(0xFFE0F2F1))),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(9)),
+                                child: Center(child: Text(icon, style: const TextStyle(fontSize: 13))),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(title,
+                                        style: GoogleFonts.poppins(fontSize: _sp(12), fontWeight: FontWeight.w600, color: AppColors.textDark),
+                                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    Text(amountStr, style: GoogleFonts.poppins(fontSize: _sp(10), color: AppColors.secondary)),
+                                    const SizedBox(height: 4),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(3),
+                                      child: LinearProgressIndicator(
+                                        value: progress,
+                                        backgroundColor: AppColors.cardBg,
+                                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                                        minHeight: 3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(pct,
+                                  style: GoogleFonts.poppins(fontSize: _sp(12), fontWeight: FontWeight.w700, color: color)),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+        ),
+      ],
+    );
+  }
+
+  // ── LEADERBOARD CARD ──────────────────────────────────────────────────────
+
+  Widget _buildLeaderboardCard() {
+    const medals = ['🥇', '🥈', '🥉'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: _sectionHeader('POINTS LEADERBOARD', 'لوحة المتصدرين')),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/family-points'),
+              child: Text(
+                _t('Full ranking', 'الترتيب الكامل'),
+                style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: AppDecorations.card,
+          child: _rankingLoading
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                )
+              : _pointsRanking.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Center(
+                        child: Text(
+                          _t('No points data yet', 'لا توجد بيانات نقاط بعد'),
+                          style: GoogleFonts.poppins(color: AppColors.secondary, fontSize: _sp(12)),
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: _pointsRanking.take(3).toList().asMap().entries.map((entry) {
+                        final idx    = entry.key;
+                        final member = entry.value as Map<String, dynamic>;
+                        final isLast = idx == (_pointsRanking.length < 3 ? _pointsRanking.length - 1 : 2);
+                        final medal  = idx < medals.length ? medals[idx] : '${idx + 1}.';
+                        final name   = (member['username'] ?? member['mail'] ?? '?').toString();
+                        final pts    = (member['total_points'] ?? 0 as num).toInt();
+
+                        // Find matching Member for avatar emoji
+                        String emoji = '👤';
+                        final mail = (member['mail'] ?? '').toString();
+                        for (final m in _familyMembers) {
+                          if (m.mail == mail) { emoji = m.getAvatarEmoji(); break; }
+                        }
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                          decoration: BoxDecoration(
+                            border: isLast ? null : const Border(bottom: BorderSide(color: Color(0xFFE0F2F1))),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(medal, style: const TextStyle(fontSize: 15)),
+                              const SizedBox(width: 6),
+                              Text(emoji, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(name,
+                                    style: GoogleFonts.poppins(fontSize: _sp(12), color: AppColors.textDark),
+                                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                              ),
+                              Text(
+                                '$pts pts',
+                                style: GoogleFonts.poppins(
+                                    fontSize: _sp(12), fontWeight: FontWeight.w700, color: AppColors.primary),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+        ),
+      ],
+    );
+  }
+
+  // ── FAMILY MEMBERS (KEEP EXACTLY) ─────────────────────────────────────────
+
   Widget _buildFamilyMembers() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader('FAMILY MEMBERS', 'أفراد العائلة'),
-        const SizedBox(height: 14),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: AppDecorations.cardWithShadow,
           child: _loading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
+              ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
               : Wrap(
-                  spacing: 15,
-                  runSpacing: 15,
+                  spacing: 12,
+                  runSpacing: 10,
                   children: _familyMembers.asMap().entries
                       .map((e) => _buildMemberCard(e.value, e.key))
                       .toList(),
@@ -1093,45 +1493,45 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () => _showMemberOptionsDialog(member, index),
       child: SizedBox(
-        width: 72,
+        width: 60,
         child: Column(
           children: [
             Stack(
               children: [
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: avatarBg,
                     shape: BoxShape.circle,
-                    border: Border.all(color: avatarColor.withOpacity(0.25), width: 2),
+                    border: Border.all(color: avatarColor.withOpacity(0.3), width: 2),
                   ),
                   child: Center(
                     child: Text(
                       member.getAvatarEmoji(),
-                      style: const TextStyle(fontSize: 30),
+                      style: const TextStyle(fontSize: 22),
                     ),
                   ),
                 ),
                 Positioned(
-                  bottom: 2,
-                  right: 2,
+                  bottom: 1,
+                  right: 1,
                   child: Container(
-                    width: 12,
-                    height: 12,
+                    width: 9,
+                    height: 9,
                     decoration: BoxDecoration(
                       color: const Color(0xFF4CAF50),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             Text(
               member.username,
-              style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF333333), fontWeight: FontWeight.w600),
+              style: GoogleFonts.poppins(fontSize: _sp(11), color: const Color(0xFF333333), fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1139,7 +1539,7 @@ class _HomePageState extends State<HomePage> {
             Text(
               member.memberType?.type ?? _t('Member', 'عضو'),
               style: TextStyle(
-                fontSize: 10,
+                fontSize: _sp(10),
                 color: avatarColor,
                 fontWeight: FontWeight.w600,
               ),
@@ -1184,7 +1584,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Member Name
                 Text(
                   member.username,
@@ -1194,7 +1594,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                
+
                 // Member Type Badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -1211,7 +1611,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Member Email
                 Text(
                   member.mail,
@@ -1221,7 +1621,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Action Buttons
                 Row(
                   children: [
@@ -1243,7 +1643,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    
+
                     // Remove Button
                     Expanded(
                       child: ElevatedButton(
@@ -1286,7 +1686,7 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (BuildContext dialogContext) {
         bool isDeleting = false;
-        
+
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -1342,10 +1742,10 @@ class _HomePageState extends State<HomePage> {
                           setDialogState(() {
                             isDeleting = true;
                           });
-                          
+
                           try {
                             await _apiService.deleteMember(member.id);
-                            
+
                             if (mounted) {
                               Navigator.pop(dialogContext);
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -1394,388 +1794,32 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildQuickActions() {
-    final actions = [
-      {
-        'label_en': 'Add Member', 'label_ar': 'إضافة عضو',
-        'icon': Icons.person_add_alt_1_outlined,
-        'color': const Color(0xFF2E7D32), 'bg': const Color(0xFFE8F5E9),
-        'onTap': _showAddMemberDialog,
-      },
-      {
-        'label_en': 'Tasks', 'label_ar': 'المهام',
-        'icon': Icons.assignment_outlined,
-        'color': const Color(0xFF1565C0), 'bg': const Color(0xFFE3F2FD),
-        'onTap': () => Navigator.pushNamed(context, '/task-management'),
-      },
-      {
-        'label_en': 'Planning AI', 'label_ar': 'المساعد الذكي',
-        'icon': Icons.smart_toy_outlined,
-        'color': const Color(0xFF6A1B9A), 'bg': const Color(0xFFF3E5F5),
-        'onTap': () => Navigator.pushNamed(context, '/planning-chat'),
-      },
-      {
-        'label_en': 'Budget', 'label_ar': 'الميزانية',
-        'icon': Icons.account_balance_wallet_outlined,
-        'color': const Color(0xFFE65100), 'bg': const Color(0xFFFFF3E0),
-        'onTap': () => Navigator.pushNamed(context, '/budget'),
-      },
-      {
-        'label_en': 'Inventory', 'label_ar': 'المخزون',
-        'icon': Icons.inventory_2_outlined,
-        'color': const Color(0xFF00695C), 'bg': const Color(0xFFE0F2F1),
-        'onTap': () => Navigator.pushNamed(context, '/inventory'),
-      },
-      {
-        'label_en': 'Food Hub', 'label_ar': 'مركز الطعام',
-        'icon': Icons.restaurant_outlined,
-        'color': const Color(0xFFF57F17), 'bg': const Color(0xFFFFFDE7),
-        'onTap': () => Navigator.pushNamed(context, '/food-hub'),
-      },
-      {
-        'label_en': 'Rewards', 'label_ar': 'المكافآت',
-        'icon': Icons.emoji_events_outlined,
-        'color': const Color(0xFFAD1457), 'bg': const Color(0xFFFCE4EC),
-        'onTap': () => Navigator.pushNamed(context, '/rewards'),
-      },
-      {
-        'label_en': 'Family Map', 'label_ar': 'خريطة العائلة',
-        'icon': Icons.map_outlined,
-        'color': const Color(0xFF1B5E20), 'bg': const Color(0xFFE8F5E9),
-        'onTap': () => Navigator.pushNamed(context, '/family-map'),
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionHeader('QUICK ACTIONS', 'إجراءات سريعة'),
-        const SizedBox(height: 14),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.4,
-          ),
-          itemCount: actions.length,
-          itemBuilder: (context, i) {
-            final a = actions[i];
-            return _buildActionCard(
-              labelEn: a['label_en'] as String,
-              labelAr: a['label_ar'] as String,
-              icon: a['icon'] as IconData,
-              color: a['color'] as Color,
-              bg: a['bg'] as Color,
-              onTap: a['onTap'] as VoidCallback,
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionCard({
-    required String labelEn,
-    required String labelAr,
-    required IconData icon,
-    required Color color,
-    required Color bg,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 3)),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
-              child: Icon(icon, color: color, size: 26),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              _t(labelEn, labelAr),
-              style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF1A1A1A)),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUpcomingActivities() {
-    final activities = [
-      {'title': 'Requirements Gathering', 'date': 'Mon, 8pm', 'icon': '📄'},
-      {'title': 'Family Movie Night', 'date': 'Fri, 8pm', 'icon': '🎬'},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionHeader('UPCOMING ACTIVITIES', 'الأنشطة القادمة'),
-        const SizedBox(height: 15),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Mini Calendar
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildCalendarColumn('Sat', [1, 2, 3, 4]),
-                  _buildCalendarColumn('Mon', [5, 6, 7, 8]),
-                  _buildCalendarColumn('Tue', [9, 10, 11, 12]),
-                  _buildCalendarColumn('Wed', [13, 14, 15, 16]),
-                  _buildCalendarColumn('Thu', [17, 18, 19, 20], selectedDay: 20),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 15),
-              // Activities List
-              ...activities.map((activity) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F9F6),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: Text(
-                              activity['icon']!,
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                activity['title']!,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1A1A1A),
-                                ),
-                              ),
-                              Text(
-                                activity['date']!,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF999999),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Checkbox(
-                          value: false,
-                          onChanged: (value) {},
-                          activeColor: const Color(0xFF4CAF50),
-                        ),
-                      ],
-                    ),
-                  )),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCalendarColumn(String day, List<int> dates, {int? selectedDay}) {
-    return Column(
-      children: [
-        Text(
-          day,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF666666),
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...dates.map((date) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: date == selectedDay ? const Color(0xFF4CAF50) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    date.toString(),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: date == selectedDay ? Colors.white : const Color(0xFF666666),
-                      fontWeight: date == selectedDay ? FontWeight.w600 : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              ),
-            )),
-      ],
-    );
-  }
-
-  Widget _buildSafetySettings() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionHeader('SAFETY & CONNECTION', 'الأمان والتواصل'),
-        const SizedBox(height: 15),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              _buildSettingItem(
-                icon: Icons.location_on,
-                title: 'Location Sharing On',
-                subtitle: 'App Access Control',
-                value: _locationSharing,
-                onChanged: (value) {
-                  setState(() {
-                    _locationSharing = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 15),
-              _buildSettingItem(
-                icon: Icons.shield,
-                title: 'View Protection Setting',
-                subtitle: null,
-                value: _protectionSetting,
-                onChanged: (value) {
-                  setState(() {
-                    _protectionSetting = value;
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingItem({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: const Color(0xFF4CAF50), size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
-                ),
-              ),
-              if (subtitle != null)
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF999999),
-                  ),
-                ),
-            ],
-          ),
-        ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: const Color(0xFF4CAF50),
-        ),
-      ],
-    );
-  }
+  // ── BOTTOM NAV ────────────────────────────────────────────────────────────
 
   Widget _buildBottomNav() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        border: Border(top: BorderSide(color: AppColors.border)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 14,
-            offset: const Offset(0, -3),
+            color: Color(0x0D000000),
+            blurRadius: 8,
+            offset: Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.home_rounded, Icons.home_outlined, 'Home', 'الرئيسية', 0),
-              _buildNavItem(Icons.emoji_events, Icons.emoji_events_outlined, 'Rewards', 'المكافآت', 1),
-              _buildNavItem(Icons.restaurant, Icons.restaurant_outlined, 'Food Hub', 'الطعام', 2),
-              _buildNavItem(Icons.map, Icons.map_outlined, 'Map', 'الخريطة', 3),
-              _buildNavItem(Icons.settings, Icons.settings_outlined, 'Settings', 'الإعدادات', 4),
+              _buildNavItem(0, '🏠', _t('Home', 'الرئيسية')),
+              _buildNavItem(1, '⊞', _t('Dashboard', 'لوحة التحكم')),
+              _buildNavItem(2, '🤖', _t('AI Chat', 'المساعد')),
+              _buildNavItem(3, '📍', _t('Location', 'الموقع')),
+              _buildNavItem(4, '⚙️', _t('Settings', 'الإعدادات')),
             ],
           ),
         ),
@@ -1783,19 +1827,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildNavItem(IconData filledIcon, IconData outlinedIcon, String labelEn, String labelAr, int index) {
+  Widget _buildNavItem(int index, String emoji, String label) {
     final isActive = _activeTab == index;
     return GestureDetector(
       onTap: () {
         switch (index) {
           case 0:
-            setState(() => _activeTab = index);
+            setState(() => _activeTab = 0);
             break;
           case 1:
-            Navigator.pushNamed(context, '/rewards');
+            Navigator.pushNamed(context, '/dashboard');
             break;
           case 2:
-            Navigator.pushNamed(context, '/food-hub');
+            Navigator.pushNamed(context, '/planning-chat');
             break;
           case 3:
             Navigator.pushNamed(context, '/family-map');
@@ -1810,35 +1854,28 @@ class _HomePageState extends State<HomePage> {
             break;
         }
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOut,
-        padding: EdgeInsets.symmetric(horizontal: isActive ? 14 : 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF2E7D32).withOpacity(0.11) : Colors.transparent,
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isActive ? filledIcon : outlinedIcon,
-              color: isActive ? const Color(0xFF2E7D32) : const Color(0xFF999999),
-              size: 22,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 34,
+            height: 28,
+            decoration: BoxDecoration(
+              color: isActive ? AppColors.cardBg : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
             ),
-            if (isActive) ...[
-              const SizedBox(width: 6),
-              Text(
-                _t(labelEn, labelAr),
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: const Color(0xFF2E7D32),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ],
-        ),
+            child: Center(child: Text(emoji, style: const TextStyle(fontSize: 16))),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: _sp(10),
+              color: isActive ? AppColors.primary : const Color(0xFF9E9E9E),
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }

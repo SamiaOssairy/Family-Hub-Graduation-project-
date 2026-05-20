@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../../core/services/api_service.dart';
+import '../../core/theme/app_theme.dart';
 
 class CombinedAnalyticsScreen extends StatefulWidget {
   const CombinedAnalyticsScreen({super.key});
@@ -23,6 +24,7 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
   bool _isLoading = true;
   bool _isParent = false;
   bool _isExporting = false;
+  String _selectedPeriod = 'Month'; // Week / Month / Year (UI-only state)
 
   Map<String, dynamic> _analytics = {};
   Map<String, dynamic> _taskRewardsSummary = {};
@@ -30,13 +32,18 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
   final Map<String, Map<String, dynamic>> _memberCombinedById = {};
 
   static const List<Color> _chartColors = [
-    Color(0xFF2E7D32),
-    Color(0xFF00897B),
+    AppColors.primary,
+    AppColors.primaryLight,
     Color(0xFF5E35B1),
     Color(0xFFF57C00),
     Color(0xFFD81B60),
     Color(0xFF1E88E5),
   ];
+
+  double _sp(double size) {
+    final w = MediaQuery.of(context).size.width.clamp(320.0, 480.0);
+    return size * (w / 390.0);
+  }
 
   @override
   void initState() {
@@ -218,17 +225,22 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1B5E20),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+        ),
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        title: Text('Combined Analytics', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+        elevation: 0,
+        title: Text('Analytics',
+            style: GoogleFonts.poppins(
+                fontSize: _sp(17), fontWeight: FontWeight.w700)),
         actions: [
           IconButton(
-            tooltip: 'Refresh',
-            onPressed: _loadData,
-            icon: const Icon(Icons.refresh),
-          ),
+              tooltip: 'Refresh',
+              onPressed: _loadData,
+              icon: const Icon(Icons.refresh)),
           IconButton(
             tooltip: 'Export PDF',
             onPressed: _isExporting ? null : _exportCombinedReportPdf,
@@ -236,31 +248,74 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white))
                 : const Icon(Icons.picture_as_pdf),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary))
           : RefreshIndicator(
+              color: AppColors.primary,
               onRefresh: _loadData,
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  _buildPeriodTabs(),
+                  const SizedBox(height: 14),
                   _buildOverviewCards(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   _buildChartsSection(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   _buildMemberSummariesSection(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   _buildBudgetHealthSection(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   _buildExportSection(),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildPeriodTabs() {
+    const periods = ['Week', 'Month', 'Year'];
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: periods.map((p) {
+          final isActive = _selectedPeriod == p;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedPeriod = p),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  p,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: _sp(12),
+                    fontWeight: FontWeight.w600,
+                    color: isActive ? Colors.white : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -303,33 +358,32 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
     return SizedBox(
       width: math.max(160, (MediaQuery.of(context).size.width - 48) / 2),
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 3)),
-          ],
-        ),
+        padding: const EdgeInsets.all(12),
+        decoration: AppDecorations.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(icon, color: color),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ],
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(icon, color: color, size: 17),
             ),
             const SizedBox(height: 8),
             Text(
               value,
-              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700, color: color),
+              style: GoogleFonts.poppins(
+                  fontSize: _sp(16), fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+            ),
+            Text(
+              title,
+              style: GoogleFonts.poppins(
+                  fontSize: _sp(10), color: AppColors.textSecondary),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -715,18 +769,16 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
   Widget _panel({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 3)),
-        ],
-      ),
+      decoration: AppDecorations.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
+          Text(title,
+              style: GoogleFonts.poppins(
+                  fontSize: _sp(14),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary)),
+          const Divider(height: 16, color: AppColors.borderLight),
           child,
         ],
       ),
