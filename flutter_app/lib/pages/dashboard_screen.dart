@@ -177,6 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // ── Module config ──────────────────────────────────────────────────────────
   static const _modules = [
     {'label': 'Tasks',      'icon': Icons.checklist_rounded,            'route': '/tasks',                'bg': Color(0xFFE0F2F1), 'fg': Color(0xFF00897B)},
+    {'label': 'Budget',     'icon': Icons.account_balance_wallet_outlined,'route': '/budget',              'bg': Color(0xFFE8F5E9), 'fg': Color(0xFF2E7D32)},
     {'label': 'Rewards',    'icon': Icons.emoji_events_outlined,        'route': '/rewards',              'bg': Color(0xFFFFF8E1), 'fg': Color(0xFFF9A825)},
     {'label': 'Status',     'icon': Icons.trending_up_rounded,          'route': '/status',               'bg': Color(0xFFE3F2FD), 'fg': Color(0xFF1565C0)},
     {'label': 'Points',     'icon': Icons.stars_rounded,                'route': '/family-points',        'bg': Color(0xFFFCE4EC), 'fg': Color(0xFFAD1457)},

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:app_frontend/core/services/api_service.dart';
+import 'package:app_frontend/core/theme/app_theme.dart';
+import 'package:app_frontend/core/theme/theme_provider.dart';
 import 'package:app_frontend/core/widgets/app_bottom_nav.dart';
 import 'package:app_frontend/pages/budget/budget_provider.dart';
 import 'package:app_frontend/pages/budget/add_expense_screen.dart';
@@ -17,303 +21,892 @@ class BudgetDashboardScreen extends StatefulWidget {
 }
 
 class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
+  // ── New state ──────────────────────────────────────────────────────────────
+  final ApiService _apiService = ApiService();
+  bool _isParent = false;
+  List<Map<String, dynamic>> _pendingRequests = [];
+  bool _pendingLoading = false;
+
+  double _sp(double size) {
+    final w = MediaQuery.of(context).size.width.clamp(320.0, 480.0);
+    return size * (w / 390.0);
+  }
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FamilyBudgetProvider>().loadBudgets();
+      _checkParentStatus();
+      _loadPendingRequests();
     });
   }
 
+  // ── New helper methods ─────────────────────────────────────────────────────
+
+  Future<void> _checkParentStatus() async {
+    try {
+      final result = await _apiService.isParent();
+      if (mounted) setState(() => _isParent = result);
+    } catch (_) {}
+  }
+
+  Future<void> _loadPendingRequests() async {
+    if (mounted) setState(() => _pendingLoading = true);
+    try {
+      final requests = await context.read<FamilyBudgetProvider>().getExpenseRequests(status: 'pending');
+      if (mounted) setState(() => _pendingRequests = requests);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _pendingLoading = false);
+    }
+  }
+
+  Future<void> _approveRequest(String id) async {
+    try {
+      await context.read<FamilyBudgetProvider>().approveExpenseRequest(id);
+      _loadPendingRequests();
+      context.read<FamilyBudgetProvider>().loadBudgets();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Request approved', style: GoogleFonts.poppins()),
+              backgroundColor: AppColors.primary));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')),
+              backgroundColor: Colors.red));
+      }
+    }
+  }
+
+  Future<void> _rejectRequest(String id) async {
+    try {
+      await context.read<FamilyBudgetProvider>().rejectExpenseRequest(id);
+      _loadPendingRequests();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Request rejected', style: GoogleFonts.poppins())));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')),
+              backgroundColor: Colors.red));
+      }
+    }
+  }
+
+  // ── Color helpers ──────────────────────────────────────────────────────────
+
+  Color _categoryColor(String name, int index) {
+    final n = name.toLowerCase();
+    if (n.contains('grocer') || n.contains('food')) return const Color(0xFF00897B);
+    if (n.contains('util')) return const Color(0xFF00ACC1);
+    if (n.contains('entertain')) return const Color(0xFFFB8C00);
+    if (n.contains('educ')) return const Color(0xFF4DB6AC);
+    if (n.contains('transport') || n.contains('travel')) return const Color(0xFF7B1FA2);
+    if (n.contains('health') || n.contains('medical')) return const Color(0xFFE91E63);
+    const fallback = [
+      Color(0xFF00897B), Color(0xFF00ACC1), Color(0xFFFB8C00),
+      Color(0xFF4DB6AC), Color(0xFF7B1FA2), Color(0xFFE91E63),
+    ];
+    return fallback[index % fallback.length];
+  }
+
+  static const _memberColors = [
+    {'bg': Color(0xFFE3F2FD), 'text': Color(0xFF1565C0), 'border': Color(0xFF90CAF9)},
+    {'bg': Color(0xFFFFF3E0), 'text': Color(0xFFE65100), 'border': Color(0xFFFFCC80)},
+    {'bg': Color(0xFFFCE4EC), 'text': Color(0xFFC2185B), 'border': Color(0xFFF48FB1)},
+    {'bg': Color(0xFFE0F2F1), 'text': Color(0xFF00695C), 'border': Color(0xFF80CBC4)},
+  ];
+
+  // ── BUILD ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDark;
+    final bg = isDark ? const Color(0xFF0A1628) : AppColors.background;
+
     return Consumer<FamilyBudgetProvider>(
       builder: (context, provider, _) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: bg,
           body: SafeArea(
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 700),
-                child: Column(children: [
-                  _buildHeader(context, provider),
-                  Expanded(
-                    child: provider.isLoading
-                        ? const Center(child: CircularProgressIndicator(color: Color(0xFF388E3C)))
-                        : provider.budgets.isEmpty
-                            ? _buildEmptyState(context, provider)
-                            : _buildBudgetList(context, provider),
-                  ),
-                ]),
+                child: Column(
+                  children: [
+                    _buildHeader(context, provider, isDark),
+                    Expanded(
+                      child: provider.isLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(color: AppColors.primary))
+                          : provider.budgets.isEmpty
+                              ? _buildEmptyState(context, provider)
+                              : _buildContent(context, provider, isDark),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () async => await _showCreateBudgetSheet(context, provider),
-            backgroundColor: const Color(0xFF388E3C),
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text('New Budget', style: TextStyle(color: Colors.white)),
-          ),
-          bottomNavigationBar: const AppBottomNav(selectedIndex: 3),
+          floatingActionButton: _buildFAB(context, provider),
+          bottomNavigationBar: const AppBottomNav(selectedIndex: 1),
         );
       },
     );
   }
 
-  Widget _buildHeader(BuildContext context, FamilyBudgetProvider provider) {
+  // ── Header ─────────────────────────────────────────────────────────────────
+
+  Widget _buildHeader(BuildContext context, FamilyBudgetProvider provider, bool isDark) {
+    final textColor = isDark ? const Color(0xFFE0F2F1) : AppColors.textPrimary;
+    final headerBg = isDark ? const Color(0xFF122030) : AppColors.background;
     final reminders = provider.activeReminders;
+
     return Container(
-      color: const Color(0xFF388E3C),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-          ),
-          const Expanded(
-            child: Text('Budget', style: TextStyle(
-              fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-          ),
-          IconButton(
-            onPressed: () => Navigator.pushNamed(context, '/combined-analytics'),
-            icon: const Icon(Icons.analytics_outlined, color: Colors.white),
-          ),
-          IconButton(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(
-              builder: (_) => FutureEventsScreen())),
-            icon: Stack(children: [
-              const Icon(Icons.event, color: Colors.white),
-              if (reminders.isNotEmpty)
-                Positioned(
-                  right: 0, top: 0,
-                  child: Container(
-                    width: 10, height: 10,
-                    decoration: const BoxDecoration(
-                      color: Colors.orange, shape: BoxShape.circle),
-                  ),
-                ),
-            ]),
-          ),
-        ]),
-        if (reminders.isNotEmpty)
-          GestureDetector(
-            onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => FutureEventsScreen())),
-            child: Container(
-              margin: const EdgeInsets.only(top: 8, left: 8, right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade700,
-                borderRadius: BorderRadius.circular(10),
+      color: headerBg,
+      padding: const EdgeInsets.fromLTRB(4, 8, 8, 0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.arrow_back, color: AppColors.primary),
               ),
-              child: Row(children: [
-                const Icon(Icons.notifications_active, color: Colors.white, size: 18),
-                const SizedBox(width: 8),
-                Expanded(child: Text(
-                  '${reminders.length} upcoming event reminder${reminders.length > 1 ? 's' : ''}',
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                )),
-                const Icon(Icons.chevron_right, color: Colors.white),
-              ]),
-            ),
+              Expanded(
+                child: Text('Budget',
+                    style: GoogleFonts.poppins(
+                        fontSize: _sp(20), fontWeight: FontWeight.w700, color: textColor)),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pushNamed(context, '/combined-analytics'),
+                icon: const Icon(Icons.analytics_outlined, color: AppColors.primary),
+                tooltip: 'Analytics',
+              ),
+              Stack(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => FutureEventsScreen())),
+                    icon: const Icon(Icons.event_outlined, color: AppColors.primary),
+                    tooltip: 'Events',
+                  ),
+                  if (reminders.isNotEmpty)
+                    Positioned(
+                      right: 8, top: 8,
+                      child: Container(
+                        width: 9, height: 9,
+                        decoration: const BoxDecoration(
+                            color: Colors.orange, shape: BoxShape.circle),
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ),
-      ]),
+          if (reminders.isNotEmpty)
+            GestureDetector(
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => FutureEventsScreen())),
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                    color: Colors.orange.shade700,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Row(children: [
+                  const Icon(Icons.notifications_active, color: Colors.white, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${reminders.length} upcoming event reminder${reminders.length > 1 ? 's' : ''}',
+                      style: GoogleFonts.poppins(color: Colors.white, fontSize: _sp(11)),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, color: Colors.white, size: 16),
+                ]),
+              ),
+            ),
+        ],
+      ),
     );
   }
+
+  // ── Scrollable content ─────────────────────────────────────────────────────
+
+  Widget _buildContent(BuildContext context, FamilyBudgetProvider provider, bool isDark) {
+    return RefreshIndicator(
+      color: AppColors.primary,
+      onRefresh: () async {
+        provider.loadBudgets();
+        _loadPendingRequests();
+      },
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 100),
+        children: [
+          ...provider.budgets.map((b) => _buildBudgetBlock(context, provider, b, isDark)),
+          if (_isParent && (_pendingLoading || _pendingRequests.isNotEmpty))
+            _buildPendingSection(isDark),
+        ],
+      ),
+    );
+  }
+
+  // ── Full budget block (hero + categories + allowances + actions) ────────────
+
+  Widget _buildBudgetBlock(BuildContext context, FamilyBudgetProvider provider,
+      Map<String, dynamic> budget, bool isDark) {
+    final categories = List<Map<String, dynamic>>.from(budget['categories'] ?? []);
+    final allowances = List<Map<String, dynamic>>.from(budget['allowances'] ?? []);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeroCard(budget),
+        const SizedBox(height: 12),
+        if (categories.isNotEmpty) ...[
+          _buildSectionLabel('CATEGORY ALLOCATIONS', isDark),
+          const SizedBox(height: 6),
+          _buildCategoryCard(categories, isDark),
+          const SizedBox(height: 12),
+        ],
+        if (allowances.isNotEmpty) ...[
+          _buildSectionLabel('MEMBER ALLOWANCES', isDark),
+          const SizedBox(height: 6),
+          _buildAllowancesCard(allowances, isDark),
+          const SizedBox(height: 12),
+        ],
+        _buildActionRow(context, provider, budget, isDark),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  // ── Hero gradient card ─────────────────────────────────────────────────────
+
+  Widget _buildHeroCard(Map<String, dynamic> budget) {
+    final total = (budget['total_amount'] ?? 0).toDouble();
+    final spent = (budget['total_spent'] ?? budget['spent_amount'] ?? 0).toDouble();
+    final remaining = (budget['remaining_amount'] ?? (total - spent)).toDouble();
+    final emergencyTotal = (budget['emergency_fund_amount'] ?? 0).toDouble();
+    final isOverBudget = budget['is_over_budget'] == true;
+    final periodType = (budget['period_type'] ?? 'monthly').toString();
+    final title = budget['title']?.toString() ?? 'Budget';
+    final progress = total > 0 ? (spent / total).clamp(0.0, 1.0) : 0.0;
+
+    final periodLabel = switch (periodType) {
+      'weekly' => 'Weekly',
+      'monthly' => 'Monthly',
+      'yearly' => 'Yearly',
+      _ => 'Custom',
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF00695C), Color(0xFF00ACC1)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00897B).withOpacity(0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Decorative circle
+          Positioned(
+            top: -20, right: -20,
+            child: Container(
+              width: 80, height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.07),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text('$periodLabel Budget',
+                      style: GoogleFonts.poppins(
+                          fontSize: _sp(10), color: Colors.white.withOpacity(0.7))),
+                  const Spacer(),
+                  if (isOverBudget)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Text('Over Budget',
+                          style: GoogleFonts.poppins(
+                              fontSize: _sp(9), color: Colors.white, fontWeight: FontWeight.w700)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(title,
+                  style: GoogleFonts.poppins(
+                      fontSize: _sp(13), color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w500)),
+              const SizedBox(height: 4),
+              Text(
+                NumberFormat.currency(symbol: '', decimalDigits: 0).format(total) + ' EGP',
+                style: GoogleFonts.poppins(
+                    fontSize: _sp(26), fontWeight: FontWeight.w700,
+                    color: Colors.white, letterSpacing: -0.5),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Text('Spent: ',
+                      style: GoogleFonts.poppins(
+                          fontSize: _sp(10), color: Colors.white.withOpacity(0.7))),
+                  Text(
+                    '${NumberFormat.currency(symbol: '', decimalDigits: 0).format(spent)} EGP',
+                    style: GoogleFonts.poppins(
+                        fontSize: _sp(10), color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                  const Spacer(),
+                  Text('Left: ',
+                      style: GoogleFonts.poppins(
+                          fontSize: _sp(10), color: Colors.white.withOpacity(0.7))),
+                  Text(
+                    '${NumberFormat.currency(symbol: '', decimalDigits: 0).format(remaining)} EGP',
+                    style: GoogleFonts.poppins(
+                        fontSize: _sp(10), color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Progress bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      isOverBudget ? Colors.redAccent : Colors.white),
+                  minHeight: 5,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                '${(progress * 100).toStringAsFixed(0)}% used'
+                '${emergencyTotal > 0 ? ' · Emergency: ${NumberFormat.currency(symbol: '', decimalDigits: 0).format(emergencyTotal)} EGP' : ''}',
+                style: GoogleFonts.poppins(
+                    fontSize: _sp(9), color: Colors.white.withOpacity(0.7)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Category allocations ───────────────────────────────────────────────────
+
+  Widget _buildCategoryCard(List<Map<String, dynamic>> categories, bool isDark) {
+    final cardColor = isDark ? const Color(0xFF122030) : Colors.white;
+    final borderColor = isDark ? const Color(0xFF1E3A4A) : AppColors.border;
+    final dividerColor = isDark ? const Color(0xFF1E3A4A) : AppColors.borderLight;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: borderColor, width: 0.8),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        children: categories.asMap().entries.map((entry) {
+          final i = entry.key;
+          final cat = entry.value;
+          final isLast = i == categories.length - 1;
+          final name = (cat['name'] ?? cat['title'] ?? 'Category').toString();
+          final allocated = (cat['allocated_amount'] ?? 0).toDouble();
+          final spent = (cat['spent_amount'] ?? 0).toDouble();
+          final progress = allocated > 0 ? (spent / allocated).clamp(0.0, 1.0) : 0.0;
+          final isWarn = progress >= 0.8;
+          final color = _categoryColor(name, i);
+
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              border: isLast ? null : Border(
+                  bottom: BorderSide(color: dividerColor, width: 0.5)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 9, height: 9,
+                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name,
+                          style: GoogleFonts.poppins(
+                              fontSize: _sp(11), fontWeight: FontWeight.w600,
+                              color: isDark ? const Color(0xFFE0F2F1) : AppColors.textPrimary)),
+                      const SizedBox(height: 4),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: isDark
+                              ? const Color(0xFF1E3A4A)
+                              : AppColors.borderLight,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              isWarn ? const Color(0xFFFB8C00) : color),
+                          minHeight: 4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '${NumberFormat.currency(symbol: '', decimalDigits: 0).format(spent)}/${NumberFormat.currency(symbol: '', decimalDigits: 0).format(allocated)}',
+                  style: GoogleFonts.poppins(
+                      fontSize: _sp(9), fontWeight: FontWeight.w600,
+                      color: isWarn ? const Color(0xFFE65100) : AppColors.textSecondary),
+                ),
+                if (isWarn) ...[
+                  const SizedBox(width: 4),
+                  const Text('⚠️', style: TextStyle(fontSize: 11)),
+                ],
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ── Member allowances ──────────────────────────────────────────────────────
+
+  Widget _buildAllowancesCard(List<Map<String, dynamic>> allowances, bool isDark) {
+    final cardColor = isDark ? const Color(0xFF122030) : Colors.white;
+    final borderColor = isDark ? const Color(0xFF1E3A4A) : AppColors.border;
+    final dividerColor = isDark ? const Color(0xFF1E3A4A) : AppColors.borderLight;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: borderColor, width: 0.8),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        children: allowances.asMap().entries.map((entry) {
+          final i = entry.key;
+          final allowance = entry.value;
+          final isLast = i == allowances.length - 1;
+          final name = (allowance['member_name'] ?? allowance['member_mail'] ?? 'Member').toString();
+          final money = (allowance['money_amount'] ?? 0).toDouble();
+          final spent = (allowance['spent_amount'] ?? 0).toDouble();
+          final progress = money > 0 ? (spent / money).clamp(0.0, 1.0) : 0.0;
+          final isWarn = progress >= 0.85;
+          final colors = _memberColors[i % _memberColors.length];
+          final initials = name.trim().split(RegExp(r'\s+')).take(2)
+              .map((w) => w.isNotEmpty ? w[0].toUpperCase() : '')
+              .join();
+
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              border: isLast ? null : Border(
+                  bottom: BorderSide(color: dividerColor, width: 0.5)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 32, height: 32,
+                  decoration: BoxDecoration(
+                    color: colors['bg'],
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colors['border']! as Color, width: 1.5),
+                  ),
+                  child: Center(
+                    child: Text(initials,
+                        style: TextStyle(
+                            fontSize: _sp(10), fontWeight: FontWeight.w700,
+                            color: colors['text'] as Color)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name,
+                          style: GoogleFonts.poppins(
+                              fontSize: _sp(11), fontWeight: FontWeight.w600,
+                              color: isDark ? const Color(0xFFE0F2F1) : AppColors.textPrimary)),
+                      const SizedBox(height: 4),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: isDark
+                              ? const Color(0xFF1E3A4A)
+                              : AppColors.borderLight,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              isWarn
+                                  ? AppColors.error
+                                  : (colors['text'] as Color)),
+                          minHeight: 4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '${NumberFormat.currency(symbol: '', decimalDigits: 0).format(spent)}/${NumberFormat.currency(symbol: '', decimalDigits: 0).format(money)}',
+                  style: GoogleFonts.poppins(
+                      fontSize: _sp(9), fontWeight: FontWeight.w600,
+                      color: isWarn ? AppColors.error : AppColors.textSecondary),
+                ),
+                if (isWarn) ...[
+                  const SizedBox(width: 4),
+                  const Text('⚠️', style: TextStyle(fontSize: 11)),
+                ],
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ── Pending expense requests ───────────────────────────────────────────────
+
+  Widget _buildPendingSection(bool isDark) {
+    final cardColor = isDark ? const Color(0xFF122030) : Colors.white;
+    final borderColor = isDark ? const Color(0xFF1E3A4A) : AppColors.border;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            _buildSectionLabel('EXPENSE REQUESTS', isDark),
+            if (_pendingRequests.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                    color: AppColors.error, borderRadius: BorderRadius.circular(8)),
+                child: Text('${_pendingRequests.length}',
+                    style: GoogleFonts.poppins(
+                        fontSize: _sp(9), fontWeight: FontWeight.w700,
+                        color: Colors.white)),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        if (_pendingLoading)
+          const Center(child: Padding(
+            padding: EdgeInsets.all(16),
+            child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+          ))
+        else if (_pendingRequests.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: borderColor, width: 0.8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle_outline, color: AppColors.primary, size: 18),
+                const SizedBox(width: 10),
+                Text('No pending expense requests',
+                    style: GoogleFonts.poppins(
+                        fontSize: _sp(12), color: AppColors.textSecondary)),
+              ],
+            ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: borderColor, width: 0.8),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8, offset: const Offset(0, 2)),
+              ],
+            ),
+            child: Column(
+              children: _pendingRequests.asMap().entries.map((entry) {
+                final i = entry.key;
+                final req = entry.value;
+                final isLast = i == _pendingRequests.length - 1;
+                final id = (req['_id'] ?? '').toString();
+                final memberName = (req['member_name'] ?? req['member_mail'] ?? 'Member').toString();
+                final amount = (req['amount'] ?? 0).toDouble();
+                final title = (req['title'] ?? req['description'] ?? 'Expense').toString();
+                final category = (req['category_name'] ?? req['category'] ?? '').toString();
+                final colors = _memberColors[i % _memberColors.length];
+                final initials = memberName.split(' ').take(2)
+                    .map((w) => w.isNotEmpty ? w[0].toUpperCase() : '').join();
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                  decoration: BoxDecoration(
+                    border: isLast ? null : Border(
+                        bottom: BorderSide(
+                            color: isDark ? const Color(0xFF1E3A4A) : AppColors.borderLight,
+                            width: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(
+                          color: colors['bg'],
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colors['border']! as Color, width: 1.5),
+                        ),
+                        child: Center(
+                          child: Text(initials,
+                              style: TextStyle(
+                                  fontSize: _sp(10), fontWeight: FontWeight.w700,
+                                  color: colors['text'] as Color)),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$title · ${NumberFormat.currency(symbol: '', decimalDigits: 0).format(amount)} EGP',
+                              style: GoogleFonts.poppins(
+                                  fontSize: _sp(11), fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? const Color(0xFFE0F2F1)
+                                      : AppColors.textPrimary),
+                              maxLines: 1, overflow: TextOverflow.ellipsis,
+                            ),
+                            Text('$memberName${category.isNotEmpty ? ' · $category' : ''}',
+                                style: GoogleFonts.poppins(
+                                    fontSize: _sp(10), color: AppColors.textSecondary)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Approve
+                      GestureDetector(
+                        onTap: () => _approveRequest(id),
+                        child: Container(
+                          width: 30, height: 30,
+                          decoration: BoxDecoration(
+                              color: AppColors.primarySurface,
+                              borderRadius: BorderRadius.circular(9)),
+                          child: const Center(
+                            child: Text('✓',
+                                style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // Reject
+                      GestureDetector(
+                        onTap: () => _rejectRequest(id),
+                        child: Container(
+                          width: 30, height: 30,
+                          decoration: BoxDecoration(
+                              color: AppColors.errorSurface,
+                              borderRadius: BorderRadius.circular(9)),
+                          child: const Center(
+                            child: Text('✕',
+                                style: TextStyle(
+                                    color: AppColors.error,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 14)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  // ── Action row ─────────────────────────────────────────────────────────────
+
+  Widget _buildActionRow(BuildContext context, FamilyBudgetProvider provider,
+      Map<String, dynamic> budget, bool isDark) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              provider.selectBudget(budget['_id']);
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => AddExpenseScreen(budget: budget)));
+            },
+            icon: const Icon(Icons.add, size: 16, color: AppColors.primary),
+            label: Text('Add Expense',
+                style: GoogleFonts.poppins(
+                    fontSize: _sp(12), color: AppColors.primary)),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppColors.primary),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(vertical: 11),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              await provider.selectBudget(budget['_id']);
+              if (context.mounted) {
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => BudgetAnalyticsScreen(budgetId: budget['_id'])));
+              }
+            },
+            icon: const Icon(Icons.pie_chart_outline, size: 16, color: Colors.white),
+            label: Text('Analytics',
+                style: GoogleFonts.poppins(
+                    fontSize: _sp(12), color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(vertical: 11),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Empty state ────────────────────────────────────────────────────────────
 
   Widget _buildEmptyState(BuildContext context, FamilyBudgetProvider provider) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.account_balance_wallet_outlined,
-              size: 80, color: Color(0xFFBDBDBD)),
-          const SizedBox(height: 16),
-          const Text('No budgets yet',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF424242))),
-          const SizedBox(height: 8),
-          const Text('Create a budget to start tracking your family spending.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF757575))),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () async => await _showCreateBudgetSheet(context, provider),
-            icon: const Icon(Icons.add),
-            label: const Text('Create Budget'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF388E3C),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80, height: 80,
+              decoration: BoxDecoration(
+                  color: AppColors.primarySurface,
+                  borderRadius: BorderRadius.circular(24)),
+              child: const Icon(Icons.account_balance_wallet_outlined,
+                  size: 40, color: AppColors.primary),
             ),
-          ),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildBudgetList(BuildContext context, FamilyBudgetProvider provider) {
-    return RefreshIndicator(
-      onRefresh: provider.loadBudgets,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: provider.budgets.length,
-        itemBuilder: (context, i) => _buildBudgetCard(context, provider, provider.budgets[i]),
-      ),
-    );
-  }
-
-  Widget _buildBudgetCard(BuildContext context, FamilyBudgetProvider provider, Map<String, dynamic> budget) {
-    final total = (budget['total_amount'] ?? 0).toDouble();
-    final spent = (budget['total_spent'] ?? 0).toDouble();
-    final remaining = (budget['remaining_amount'] ?? 0).toDouble();
-    final emergencyTotal = (budget['emergency_fund_amount'] ?? 0).toDouble();
-    final emergencySpent = (budget['emergency_fund_spent'] ?? 0).toDouble();
-    final isOverBudget = budget['is_over_budget'] == true;
-    final periodType = (budget['period_type'] ?? budget['budget_type'] ?? 'monthly').toString();
-    final periodLabel = switch (periodType) {
-      'weekly' => 'Weekly',
-      'monthly' => 'Monthly',
-      'yearly' => 'Yearly',
-      'custom' => 'Custom',
-      _ => periodType,
-    };
-    final isHousehold = (budget['budget_type'] ?? 'household').toString() != 'personal';
-    final categories = List<Map<String, dynamic>>.from(budget['categories'] ?? []);
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 2,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () async {
-          await provider.selectBudget(budget['_id']);
-          if (context.mounted) {
-            Navigator.push(context, MaterialPageRoute(
-              builder: (_) => BudgetAnalyticsScreen(budgetId: budget['_id']),
-            ));
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // Title row
-            Row(children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isHousehold
-                      ? const Color(0xFF388E3C).withOpacity(0.1)
-                      : const Color(0xFF1976D2).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  periodLabel,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isHousehold ? const Color(0xFF388E3C) : const Color(0xFF1976D2),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+            const SizedBox(height: 16),
+            Text('No budgets yet',
+                style: GoogleFonts.poppins(
+                    fontSize: _sp(18), fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary)),
+            const SizedBox(height: 8),
+            Text('Create a budget to start tracking your family spending.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                    fontSize: _sp(12), color: AppColors.textSecondary)),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () async => await _showCreateBudgetSheet(context, provider),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: Text('Create Budget',
+                  style: GoogleFonts.poppins(
+                      fontSize: _sp(13), color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
-              const SizedBox(width: 8),
-              Expanded(child: Text(
-                budget['title'] ?? 'Budget',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                overflow: TextOverflow.ellipsis,
-              )),
-              if (isOverBudget)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.shade300),
-                  ),
-                  child: const Text('Over Budget',
-                      style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.w600)),
-                ),
-            ]),
-            const SizedBox(height: 12),
-            // Progress indicator (BR4)
-            bpi.BudgetProgressIndicatorWidget(
-              spent: spent,
-              total: total - emergencyTotal,
-              isOverBudget: isOverBudget,
             ),
-            const SizedBox(height: 12),
-            // Amounts row
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              _amountChip('Spent', spent, Colors.red.shade700),
-              _amountChip('Remaining', remaining, const Color(0xFF388E3C)),
-              _amountChip('Total', total, const Color(0xFF1976D2)),
-            ]),
-            const SizedBox(height: 12),
-            // Emergency fund card
-            efc.EmergencyFundCard(
-              total: emergencyTotal,
-              spent: emergencySpent,
-              compact: true,
-            ),
-            // Categories
-            if (categories.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              const Divider(),
-              const SizedBox(height: 8),
-              ...categories.take(3).map((cat) => cst.CategorySpendingTile(
-                categoryName: cat['name'] ?? '',
-                allocated: (cat['allocated_amount'] ?? 0).toDouble(),
-                spent: (cat['spent_amount'] ?? 0).toDouble(),
-                color: _parseColor(cat['color'] ?? '#4CAF50'),
-                compact: true,
-              )),
-              if (categories.length > 3)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    '+${categories.length - 3} more categories',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                ),
-            ],
-            const SizedBox(height: 12),
-            // Action buttons
-            Row(children: [
-              Expanded(child: OutlinedButton.icon(
-                onPressed: () {
-                  provider.selectBudget(budget['_id']);
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => AddExpenseScreen(budget: budget),
-                  ));
-                },
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add Expense'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF388E3C),
-                  side: const BorderSide(color: Color(0xFF388E3C)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              )),
-              const SizedBox(width: 8),
-              Expanded(child: ElevatedButton.icon(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => BudgetAnalyticsScreen(budgetId: budget['_id']),
-                )),
-                icon: const Icon(Icons.pie_chart, size: 18),
-                label: const Text('Analytics'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF388E3C),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              )),
-            ]),
-          ]),
+          ],
         ),
       ),
     );
   }
+
+  // ── FAB ────────────────────────────────────────────────────────────────────
+
+  Widget _buildFAB(BuildContext context, FamilyBudgetProvider provider) {
+    return GestureDetector(
+      onTap: () async => await _showCreateBudgetSheet(context, provider),
+      child: Container(
+        width: 54, height: 54,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.add, color: Colors.white, size: 26),
+      ),
+    );
+  }
+
+  // ── Section label ──────────────────────────────────────────────────────────
+
+  Widget _buildSectionLabel(String text, bool isDark) {
+    return Text(
+      text,
+      style: GoogleFonts.poppins(
+        fontSize: _sp(9),
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.8,
+        color: AppColors.textSecondary,
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  ALL LOGIC METHODS BELOW ARE 100% UNCHANGED
+  // ══════════════════════════════════════════════════════════════════════════
 
   Widget _amountChip(String label, double amount, Color color) {
     return Column(children: [
@@ -399,7 +992,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                     borderRadius: BorderRadius.circular(2)),
               )),
               const SizedBox(height: 16),
-                const Text('Create Budget',
+              const Text('Create Budget',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
               TextField(
@@ -421,7 +1014,6 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Period type
               const Text('Period', style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Row(children: [
@@ -433,7 +1025,6 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                   )),
               ]),
               const SizedBox(height: 16),
-              // Emergency fund slider (BR6)
               Text('Emergency Fund: ${emergencyPct.toStringAsFixed(0)}%',
                   style: const TextStyle(fontWeight: FontWeight.w600)),
               Slider(
@@ -444,7 +1035,6 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                 onChanged: (v) => setSheet(() => emergencyPct = v),
               ),
               const SizedBox(height: 16),
-              // Categories
               const Text('Inventory Categories',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),

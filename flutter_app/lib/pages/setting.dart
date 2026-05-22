@@ -846,14 +846,8 @@ class _SettingPageState extends State<SettingPage> {
                   _buildLogoutButton(),
                   const SizedBox(height: 20),
                   Center(
-                    child: Column(
-                      children: [
-                        Text('Family Hub v1.0.0',
-                            style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
-                        Text("Made with ❤️ by Samia's Team",
-                            style: GoogleFonts.poppins(fontSize: _sp(10), color: AppColors.textHint)),
-                      ],
-                    ),
+                    child: Text('Family Hub v1.0.0',
+                        style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
                   ),
                   const SizedBox(height: 80),
                 ],
