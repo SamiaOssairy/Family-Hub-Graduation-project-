@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
-import '../core/styling/app_color.dart';
+import '../core/theme/theme_provider.dart';
 import '../core/utils/food_utils.dart';
 
 class InventoryAlertsScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class InventoryAlertsScreen extends StatefulWidget {
 class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
   final ApiService _apiService = ApiService();
 
+  bool _isDark = false;
   List<dynamic> _alerts = [];
   bool _loading = true;
   bool _generating = false;
@@ -111,7 +113,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
       case 'expired':
         return Colors.red[800]!;
       default:
-        return Appcolor.foodPrimary;
+        return const Color(0xFF00897B);
     }
   }
 
@@ -137,18 +139,21 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _isDark = context.watch<ThemeProvider>().isDark;
+    final bg = _isDark ? const Color(0xFF0A1628) : const Color(0xFFE8F5F5);
+    final textPrimary = _isDark ? const Color(0xFFE0F2F1) : const Color(0xFF00352E);
     final filtered = _filteredAlerts;
     final unread = filtered.where((a) => a['is_read'] != true).toList();
     final read = filtered.where((a) => a['is_read'] == true).toList();
 
     return Scaffold(
-      backgroundColor: Appcolor.foodBg,
+      backgroundColor: bg,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Appcolor.foodPrimary))
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF00897B)))
                 : Column(
                     children: [
                       // Header
@@ -161,11 +166,11 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: _isDark ? const Color(0xFF122030) : Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(Icons.arrow_back_ios_new,
-                                    size: 18, color: Appcolor.foodPrimary),
+                                    size: 18, color: Color(0xFF00897B)),
                               ),
                             ),
                             const SizedBox(width: 14),
@@ -177,7 +182,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                                       style: GoogleFonts.poppins(
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold,
-                                          color: Appcolor.textDark)),
+                                          color: textPrimary)),
                                   if (_unreadCount > 0)
                                     Text('$_unreadCount unread',
                                         style: GoogleFonts.poppins(
@@ -191,7 +196,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                                 child: Text('Read All',
                                     style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                        color: Appcolor.foodPrimary,
+                                        color: const Color(0xFF00897B),
                                         fontWeight: FontWeight.w600)),
                               ),
                           ],
@@ -218,7 +223,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                                   color: Colors.white, fontWeight: FontWeight.w600),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Appcolor.foodPrimary,
+                              backgroundColor: const Color(0xFF00897B),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
@@ -292,16 +297,22 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? Appcolor.foodPrimary : Colors.white,
+          color: isSelected
+              ? const Color(0xFF00897B)
+              : (_isDark ? const Color(0xFF122030) : Colors.white),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Appcolor.foodPrimary : Colors.grey[300]!,
+            color: isSelected
+                ? const Color(0xFF00897B)
+                : (_isDark ? const Color(0xFF1E3A4A) : Colors.grey[300]!),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: isSelected ? Colors.white : Colors.grey[600]),
+            Icon(icon,
+                size: 14,
+                color: isSelected ? Colors.white : Colors.grey[600]),
             const SizedBox(width: 6),
             Text('$label ($count)',
                 style: GoogleFonts.poppins(
@@ -315,6 +326,9 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
   }
 
   Widget _buildEmptyState() {
+    final textPrimary = _isDark ? const Color(0xFFE0F2F1) : const Color(0xFF00352E);
+    final bg = _isDark ? const Color(0xFF0F1F35) : const Color(0xFFE0F2F1);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -322,19 +336,26 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Appcolor.foodBg,
+              color: bg,
               borderRadius: BorderRadius.circular(50),
             ),
-            child: const Icon(Icons.notifications_none, size: 48, color: Appcolor.foodPrimary),
+            child: const Icon(Icons.notifications_none,
+                size: 48, color: Color(0xFF00897B)),
           ),
           const SizedBox(height: 20),
-          Text(_filterType != 'all' ? 'No ${_alertLabel(_filterType)} alerts' : 'No Alerts',
+          Text(
+              _filterType != 'all'
+                  ? 'No ${_alertLabel(_filterType)} alerts'
+                  : 'No Alerts',
               style: GoogleFonts.poppins(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: Appcolor.textDark)),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: textPrimary)),
           const SizedBox(height: 8),
-          Text(_filterType != 'all'
-              ? 'Try a different filter or scan inventory'
-              : 'Tap "Scan Inventory" to check for low stock and expiring items',
+          Text(
+              _filterType != 'all'
+                  ? 'Try a different filter or scan inventory'
+                  : 'Tap "Scan Inventory" to check for low stock and expiring items',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600])),
         ],
@@ -349,7 +370,9 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
         children: [
           Text('$title ($count)',
               style: GoogleFonts.poppins(
-                  fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey[600])),
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600])),
           const Expanded(child: Divider(indent: 10)),
         ],
       ),
@@ -365,6 +388,9 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
     final icon = _alertIcon(type);
     final label = _alertLabel(type);
     final createdAt = alert['createdAt'] ?? '';
+    final cardBg = _isDark ? const Color(0xFF122030) : Colors.white;
+    final cardBorder = _isDark ? const Color(0xFF1E3A4A) : color.withValues(alpha: 0.3);
+    final textPrimary = _isDark ? const Color(0xFFE0F2F1) : const Color(0xFF00352E);
 
     String timeAgo = '';
     try {
@@ -397,14 +423,13 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
-            color: isRead ? Colors.white : Colors.white,
+            color: cardBg,
             borderRadius: BorderRadius.circular(14),
-            border: isRead
-                ? null
-                : Border.all(color: color.withOpacity(0.3), width: 1.5),
+            border: isRead ? null : Border.all(color: cardBorder, width: 1.5),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black.withOpacity(isRead ? 0.02 : 0.05),
+                  color: Colors.black
+                      .withValues(alpha: isRead ? 0.02 : 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2)),
             ],
@@ -417,7 +442,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 22),
@@ -433,7 +458,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: color.withOpacity(0.1),
+                              color: color.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(label,
@@ -453,8 +478,9 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                       Text(message,
                           style: GoogleFonts.poppins(
                             fontSize: 13,
-                            color: Appcolor.textDark,
-                            fontWeight: isRead ? FontWeight.normal : FontWeight.w500,
+                            color: textPrimary,
+                            fontWeight:
+                                isRead ? FontWeight.normal : FontWeight.w500,
                           )),
                     ],
                   ),
