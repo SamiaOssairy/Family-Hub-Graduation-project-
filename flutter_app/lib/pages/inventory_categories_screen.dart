@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
 import '../core/theme/theme_provider.dart';
 import '../core/utils/food_utils.dart';
+import '../core/widgets/guarded_button.dart';
 
 // ── Teal palette for category nodes ──────────────────────────────────────────
 const List<Color> _kCatColors = [
@@ -227,7 +228,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
                   onPressed: () => Navigator.pop(ctx),
                   child: Text('Cancel', style: GoogleFonts.poppins()),
                 ),
-                ElevatedButton(
+                GuardedElevatedButton(
                   onPressed: () async {
                     final name = titleCtrl.text.trim();
                     if (name.isEmpty) return;
@@ -379,7 +380,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text('Cancel', style: GoogleFonts.poppins()),
           ),
-          ElevatedButton(
+          GuardedElevatedButton(
             onPressed: () async {
               final name = titleCtrl.text.trim();
               if (name.isEmpty) return;

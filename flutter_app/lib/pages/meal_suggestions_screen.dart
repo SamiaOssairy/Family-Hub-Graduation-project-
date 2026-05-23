@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
 import '../core/theme/theme_provider.dart';
+import '../core/widgets/guarded_button.dart';
 
 // ─── Meal type option data ───────────────────────────────────────────────────
 class _MealTypeOption {
@@ -246,20 +247,8 @@ class _MealSuggestionsScreenState extends State<MealSuggestionsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: SizedBox(
         width: double.infinity,
-        child: ElevatedButton.icon(
-          onPressed: _generating ? null : _showMealTypePicker,
-          icon: _generating
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      color: Colors.white, strokeWidth: 2))
-              : const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
-          label: Text(
-            _generating ? 'Generating...' : 'Generate Smart Suggestions',
-            style: GoogleFonts.poppins(
-                color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
-          ),
+        child: GuardedElevatedButton(
+          onPressed: _showMealTypePicker,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF00897B),
             disabledBackgroundColor: const Color(0xFF00897B).withValues(alpha: 0.6),
@@ -267,6 +256,18 @@ class _MealSuggestionsScreenState extends State<MealSuggestionsScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14)),
             elevation: 2,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Generate Smart Suggestions',
+                style: GoogleFonts.poppins(
+                    color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+            ],
           ),
         ),
       ),

@@ -2,6 +2,7 @@ const AppError = require("../utils/appError");
 const { catchAsync } = require("../utils/catchAsync");
 const Receipt = require("../models/receiptModel");
 const InventoryItem = require("../models/inventoryItemModel");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 //========================================================================================
 // Create a receipt
@@ -140,6 +141,93 @@ exports.deleteReceipt = catchAsync(async (req, res, next) => {
   );
 
   res.status(204).json({ status: "success", data: null });
+});
+
+//========================================================================================
+// Scan a receipt image with Gemini Vision and extract items
+exports.scanReceipt = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError('Please upload a receipt image', 400));
+  }
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+
+  const imageBase64 = req.file.buffer.toString('base64');
+
+  // Detect real MIME type from magic bytes.
+  // Windows Flutter sends "application/octet-stream" which Gemini rejects.
+  let mimeType = req.file.mimetype || 'image/jpeg';
+  if (!mimeType.startsWith('image/')) {
+    const buf = req.file.buffer;
+    if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) {
+      mimeType = 'image/png';
+    } else if (buf[0] === 0xFF && buf[1] === 0xD8) {
+      mimeType = 'image/jpeg';
+    } else if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) {
+      mimeType = 'image/gif';
+    } else {
+      mimeType = 'image/jpeg'; // safe fallback for all other binary data
+    }
+  }
+
+  const prompt = `You are a receipt scanner AI. Carefully analyze this receipt image and extract all information from it.
+Return ONLY a valid JSON object with this exact structure — no markdown, no explanation, nothing else:
+{
+  "store_name": "store or supermarket name as printed on receipt",
+  "purchase_date": "YYYY-MM-DD or null if not visible",
+  "subtotal": 0,
+  "taxes": 0,
+  "total_amount": 0,
+  "items": [
+    {
+      "name": "product name",
+      "quantity": "1",
+      "unit": "",
+      "price": 0
+    }
+  ]
+}
+Rules:
+- Extract every line item visible on the receipt
+- All monetary values must be plain numbers (no currency symbols, no commas)
+- quantity must be a string: "1", "2", "500", "0.5"
+- unit can be empty string "" or a short unit like "kg", "L", "g", "pcs" if shown on receipt
+- If the store name is not visible, use "Unknown Store"
+- Return ONLY the JSON object — nothing before or after it`;
+
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        data: imageBase64,
+        mimeType
+      }
+    },
+    prompt
+  ]);
+
+  const text = result.response.text().trim();
+
+  let scanned;
+  try {
+    // Strip markdown code fences if Gemini wraps the JSON
+    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    scanned = JSON.parse(cleaned);
+  } catch (e) {
+    return next(new AppError('Could not read the receipt. Please try with a clearer image.', 422));
+  }
+
+  // Normalise fields
+  scanned.store_name = scanned.store_name || 'Unknown Store';
+  scanned.items = Array.isArray(scanned.items) ? scanned.items : [];
+  scanned.total_amount = Number(scanned.total_amount) || 0;
+  scanned.subtotal = Number(scanned.subtotal) || 0;
+  scanned.taxes = Number(scanned.taxes) || 0;
+
+  res.status(200).json({
+    status: 'success',
+    data: { scanned }
+  });
 });
 
 //========================================================================================

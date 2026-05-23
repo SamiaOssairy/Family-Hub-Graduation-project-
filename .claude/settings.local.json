@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(node -e \"require\\('multer'\\); console.log\\('multer ok'\\)\")",
+      "Bash(node -e \"require\\('@google/generative-ai'\\); console.log\\('gemini ok'\\)\")",
+      "Bash(node -e \"require\\('multer'\\); console.log\\('multer OK'\\)\")",
+      "Bash(node -e \"require\\('@google/generative-ai'\\); console.log\\('gemini OK'\\)\")",
+      "Bash(node -e \"require\\('./controllers/receiptController'\\); console.log\\('controller OK'\\)\")",
+      "Bash(node -e \"require\\('./routes/receiptRoutes'\\); console.log\\('routes OK'\\)\")",
+      "Bash(flutter analyze *)",
+      "Bash(node -e \"require\\('./controllers/receiptController'\\); console.log\\('OK'\\)\")"
+    ]
+  }
+}

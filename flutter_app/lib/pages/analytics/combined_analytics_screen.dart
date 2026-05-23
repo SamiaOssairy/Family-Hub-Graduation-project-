@@ -10,6 +10,7 @@ import 'package:printing/printing.dart';
 
 import '../../core/services/api_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/guarded_button.dart';
 
 class CombinedAnalyticsScreen extends StatefulWidget {
   const CombinedAnalyticsScreen({super.key});
@@ -751,13 +752,19 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _isExporting ? null : _exportCombinedReportPdf,
-              icon: const Icon(Icons.picture_as_pdf),
-              label: Text(_isExporting ? 'Exporting...' : 'Export PDF Report'),
+            child: GuardedElevatedButton(
+              onPressed: _exportCombinedReportPdf,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1B5E20),
                 foregroundColor: Colors.white,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.picture_as_pdf),
+                  SizedBox(width: 8),
+                  Text('Export PDF Report'),
+                ],
               ),
             ),
           ),

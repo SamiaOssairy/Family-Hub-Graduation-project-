@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
 import '../core/theme/theme_provider.dart';
 import 'create_task_screen.dart';
+import '../core/widgets/guarded_button.dart';
 
 // ─── Teal theme constants ────────────────────────────────────────────────────
 const _tmPrimary = Color(0xFF00897B);
@@ -1620,7 +1621,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                   onPressed: () => Navigator.pop(context),
                   child: Text('Cancel', style: GoogleFonts.poppins()),
                 ),
-                ElevatedButton(
+                GuardedElevatedButton(
                   onPressed: () async {
                     if (selectedTaskId == null || selectedMemberMail == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1925,7 +1926,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
               onPressed: () => Navigator.pop(context),
               child: Text('Cancel', style: GoogleFonts.poppins()),
             ),
-            ElevatedButton(
+            GuardedElevatedButton(
               onPressed: () async {
                 if (titleController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(

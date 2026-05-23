@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/services/api_service.dart';
 import '../core/theme/app_theme.dart';
 import '../core/widgets/app_bottom_nav.dart';
+import '../core/widgets/guarded_button.dart';
 
 class FamilyMapScreen extends StatefulWidget {
   const FamilyMapScreen({super.key});
@@ -742,7 +743,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                 child: const Icon(Icons.my_location, color: AppColors.primary),
               ),
               const SizedBox(height: 8),
-              FloatingActionButton(
+              GuardedFab(
                 heroTag: 'sos',
                 backgroundColor: Colors.red,
                 onPressed: _sendSOS,

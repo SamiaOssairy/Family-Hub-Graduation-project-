@@ -8,6 +8,7 @@ import '../core/theme/app_theme.dart';
 import 'setting.dart';
 import 'signup_login.dart';
 import 'manage_accounts_page.dart';
+import '../core/widgets/guarded_button.dart';
 
 class HomePage extends StatefulWidget {
   final String? userName;
@@ -424,7 +425,6 @@ class _HomePageState extends State<HomePage> {
     final newMemberTypeController = TextEditingController();
     String? selectedMemberType;
     List<Map<String, dynamic>> memberTypes = [];
-    bool isLoading = false;
     bool isLoadingTypes = true;
     bool showNewTypeField = false;
     String? loadError;
@@ -648,10 +648,8 @@ class _HomePageState extends State<HomePage> {
                     SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton(
-                        onPressed: isLoading
-                            ? null
-                            : () async {
+                      child: GuardedElevatedButton(
+                        onPressed: () async {
                                 // Validation
                                 if (emailController.text.trim().isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -690,10 +688,6 @@ class _HomePageState extends State<HomePage> {
                                   return;
                                 }
 
-                                setDialogState(() {
-                                  isLoading = true;
-                                });
-
                                 try {
                                   final memberData = {
                                     'mail': emailController.text.trim(),
@@ -729,12 +723,6 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     );
                                   }
-                                } finally {
-                                  if (mounted) {
-                                    setDialogState(() {
-                                      isLoading = false;
-                                    });
-                                  }
                                 }
                               },
                         style: ElevatedButton.styleFrom(
@@ -743,16 +731,7 @@ class _HomePageState extends State<HomePage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
+                        child: const Text(
                                 'Add Member',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -1735,14 +1714,8 @@ class _HomePageState extends State<HomePage> {
                   onPressed: isDeleting ? null : () => Navigator.pop(dialogContext),
                   child: Text(_t('Cancel', 'إلغاء')),
                 ),
-                ElevatedButton(
-                  onPressed: isDeleting
-                      ? null
-                      : () async {
-                          setDialogState(() {
-                            isDeleting = true;
-                          });
-
+                GuardedElevatedButton(
+                  onPressed: () async {
                           try {
                             await _apiService.deleteMember(member.id);
 
@@ -1772,19 +1745,10 @@ class _HomePageState extends State<HomePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                   ),
-                  child: isDeleting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Remove',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                  child: const Text(
+                      'Remove',
+                      style: TextStyle(color: Colors.white),
+                    ),
                 ),
               ],
             );

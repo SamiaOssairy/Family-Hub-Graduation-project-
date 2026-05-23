@@ -13,6 +13,7 @@ import 'package:app_frontend/pages/budget/future_events_screen.dart';
 import 'package:app_frontend/pages/budget/widgets/budget_progress_indicator.dart' as bpi;
 import 'package:app_frontend/pages/budget/widgets/emergency_fund_card.dart' as efc;
 import 'package:app_frontend/pages/budget/widgets/category_spending_tile.dart' as cst;
+import 'package:app_frontend/core/widgets/guarded_button.dart';
 
 class BudgetDashboardScreen extends StatefulWidget {
   const BudgetDashboardScreen({super.key});
@@ -794,7 +795,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: ElevatedButton.icon(
+          child: GuardedElevatedButton(
             onPressed: () async {
               await provider.selectBudget(budget['_id']);
               if (context.mounted) {
@@ -802,14 +803,20 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                     builder: (_) => BudgetAnalyticsScreen(budgetId: budget['_id'])));
               }
             },
-            icon: const Icon(Icons.pie_chart_outline, size: 16, color: Colors.white),
-            label: Text('Analytics',
-                style: GoogleFonts.poppins(
-                    fontSize: _sp(12), color: Colors.white)),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(vertical: 11),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.pie_chart_outline, size: 16, color: Colors.white),
+                const SizedBox(width: 8),
+                Text('Analytics',
+                    style: GoogleFonts.poppins(
+                        fontSize: _sp(12), color: Colors.white)),
+              ],
             ),
           ),
         ),
@@ -845,16 +852,22 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                 style: GoogleFonts.poppins(
                     fontSize: _sp(12), color: AppColors.textSecondary)),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
+            GuardedElevatedButton(
               onPressed: () async => await _showCreateBudgetSheet(context, provider),
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: Text('Create Budget',
-                  style: GoogleFonts.poppins(
-                      fontSize: _sp(13), color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text('Create Budget',
+                      style: GoogleFonts.poppins(
+                          fontSize: _sp(13), color: Colors.white)),
+                ],
               ),
             ),
           ],
@@ -934,7 +947,6 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
     final totalCtrl = TextEditingController();
     String periodType = 'monthly';
     double emergencyPct = 10;
-    bool isLoading = false;
 
     final categories = provider.inventoryCategories.map((category) {
       return {
@@ -1159,8 +1171,8 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : () async {
+                child: GuardedElevatedButton(
+                  onPressed: () async {
                     final total = double.tryParse(totalCtrl.text.trim());
                     if (total == null || total <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1173,7 +1185,6 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                       _ => DateTime.now().add(const Duration(days: 30)),
                     };
 
-                    setSheet(() => isLoading = true);
                     try {
                       await provider.createBudget({
                         'title': titleCtrl.text.trim(),
@@ -1218,18 +1229,14 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                           SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')),
                               backgroundColor: Colors.red));
                       }
-                    } finally {
-                      setSheet(() => isLoading = false);
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00897B),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                      : const Text('Create Budget',
-                          style: TextStyle(fontSize: 16, color: Colors.white)),
+                  child: const Text('Create Budget',
+                      style: TextStyle(fontSize: 16, color: Colors.white)),
                 ),
               ),
             ]),

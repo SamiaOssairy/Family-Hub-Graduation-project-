@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../core/services/api_service.dart';
 import '../core/styling/app_color.dart';
 import '../core/utils/food_utils.dart';
+import '../core/widgets/guarded_button.dart';
 
 class LeftoversScreen extends StatefulWidget {
   const LeftoversScreen({super.key});
@@ -550,7 +551,7 @@ class _LeftoversScreenState extends State<LeftoversScreen> with SingleTickerProv
                   onPressed: () => Navigator.pop(ctx),
                   child: const Text('Cancel'),
                 ),
-                ElevatedButton(
+                GuardedElevatedButton(
                   onPressed: () async {
                     if (nameCtrl.text.trim().isEmpty) return;
                     final body = <String, dynamic>{

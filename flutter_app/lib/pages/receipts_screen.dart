@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../core/services/api_service.dart';
 import '../core/styling/app_color.dart';
 import '../core/utils/food_utils.dart';
+import '../core/widgets/guarded_button.dart';
 
 class ReceiptsScreen extends StatefulWidget {
   const ReceiptsScreen({super.key});
@@ -18,7 +20,9 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
   final ApiService _apiService = ApiService();
 
   List<dynamic> _receipts = [];
+  List<dynamic> _inventories = [];
   bool _loading = true;
+  bool _isScanning = false;
   final TextEditingController _searchCtrl = TextEditingController();
 
   @override
@@ -30,9 +34,13 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
-      final receipts = await _apiService.getAllReceipts();
+      final results = await Future.wait([
+        _apiService.getAllReceipts(),
+        _apiService.getAllInventories(),
+      ]);
       setState(() {
-        _receipts = receipts;
+        _receipts = results[0];
+        _inventories = results[1];
         _loading = false;
       });
     } catch (e) {
@@ -192,10 +200,52 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEditDialog(),
-        backgroundColor: Appcolor.foodPrimary,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (_isScanning)
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00695C),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('Scanning receipt…',
+                      style: GoogleFonts.poppins(
+                          color: Colors.white, fontSize: 12)),
+                ],
+              ),
+            ),
+          FloatingActionButton(
+            heroTag: 'scan_fab',
+            onPressed: _isScanning ? null : _scanReceipt,
+            backgroundColor: const Color(0xFF00695C),
+            mini: true,
+            tooltip: 'Scan receipt with AI',
+            child: const Icon(Icons.document_scanner,
+                color: Colors.white, size: 20),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: 'add_fab',
+            onPressed: () => _showAddEditDialog(),
+            backgroundColor: Appcolor.foodPrimary,
+            tooltip: 'Add receipt manually',
+            child: const Icon(Icons.add, color: Colors.white, size: 28),
+          ),
+        ],
       ),
     );
   }
@@ -803,7 +853,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                             // Save button
                             SizedBox(
                               width: double.infinity,
-                              child: ElevatedButton(
+                              child: GuardedElevatedButton(
                                 onPressed: () async {
                                   if (storeCtrl.text.trim().isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -961,6 +1011,768 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
         hintText: hint,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      ),
+    );
+  }
+
+  // ==================== Scan Receipt ====================
+
+  Future<void> _scanReceipt() async {
+    // Let user choose camera or gallery
+    final ImageSource? source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Scan Receipt',
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 4),
+            Text('AI will read the items automatically',
+                style: GoogleFonts.poppins(
+                    fontSize: 12, color: Colors.grey[500])),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                    color: const Color(0xFFE0F2F1),
+                    borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.camera_alt,
+                    color: Appcolor.foodPrimary),
+              ),
+              title: Text('Take a Photo',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+              subtitle: Text('Use the camera',
+                  style: GoogleFonts.poppins(
+                      fontSize: 11, color: Colors.grey[500])),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                    color: const Color(0xFFE0F2F1),
+                    borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.photo_library,
+                    color: Appcolor.foodPrimary),
+              ),
+              title: Text('Choose from Gallery',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+              subtitle: Text('Pick an existing photo',
+                  style: GoogleFonts.poppins(
+                      fontSize: 11, color: Colors.grey[500])),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+      if (pickedFile == null || !mounted) return;
+
+      setState(() => _isScanning = true);
+
+      final imageBytes = await pickedFile.readAsBytes();
+      final scanned = await _apiService.scanReceipt(imageBytes);
+
+      if (!mounted) return;
+      setState(() => _isScanning = false);
+
+      _showScanPreviewDialog(scanned, imageBytes);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isScanning = false);
+        showErrorSnack(context, 'Scan failed: $e');
+      }
+    }
+  }
+
+  // ==================== Scan Preview Dialog ====================
+
+  void _showScanPreviewDialog(
+      Map<String, dynamic> scanned, Uint8List imageBytes) {
+    final storeCtrl =
+        TextEditingController(text: scanned['store_name'] ?? '');
+    final subtotalCtrl = TextEditingController(
+        text: '${scanned['subtotal'] ?? 0}');
+    final taxesCtrl =
+        TextEditingController(text: '${scanned['taxes'] ?? 0}');
+
+    DateTime purchaseDate = DateTime.now();
+    if (scanned['purchase_date'] != null) {
+      try {
+        purchaseDate = DateTime.parse(scanned['purchase_date'].toString());
+      } catch (_) {}
+    }
+
+    // Build items list with an addToInventory toggle
+    final List<Map<String, dynamic>> items = [];
+    for (final raw in (scanned['items'] as List<dynamic>? ?? [])) {
+      final item = raw as Map<String, dynamic>;
+      items.add({
+        'name': item['name'] ?? '',
+        'quantity': item['quantity']?.toString() ?? '1',
+        'unit': item['unit'] ?? '',
+        'price': (item['price'] is num)
+            ? (item['price'] as num).toDouble()
+            : 0.0,
+        'addToInventory': true,
+      });
+    }
+
+    String? selectedInventoryId = _inventories.isNotEmpty
+        ? _inventories.first['_id']?.toString()
+        : null;
+    bool addToInventory = _inventories.isNotEmpty;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final sub = double.tryParse(subtotalCtrl.text) ?? 0;
+          final tax = double.tryParse(taxesCtrl.text) ?? 0;
+          double total = sub + tax;
+          if (total == 0) {
+            total = (scanned['total_amount'] is num)
+                ? (scanned['total_amount'] as num).toDouble()
+                : 0;
+          }
+
+          return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              width: 480,
+              constraints: BoxConstraints(
+                  maxHeight:
+                      MediaQuery.of(context).size.height * 0.9),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ── Gradient header ─────────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 16),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF00695C), Color(0xFF00ACC1)],
+                      ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.document_scanner,
+                            color: Colors.white, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text('Scanned Receipt',
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              Text('Review & confirm before saving',
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      color: Colors.white70)),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close,
+                              color: Colors.white),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Body ────────────────────────────────────
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Scanned image thumbnail
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.memory(
+                              imageBytes,
+                              width: double.infinity,
+                              height: 130,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // AI info badge
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE0F2F1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.auto_awesome,
+                                    size: 16,
+                                    color: Appcolor.foodPrimary),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'AI detected ${items.length} item${items.length != 1 ? 's' : ''}. Edit or remove before saving.',
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: Appcolor.foodPrimary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Store name
+                          _formLabel('Store Name'),
+                          _formField(storeCtrl, 'Store name'),
+                          const SizedBox(height: 14),
+
+                          // Date picker
+                          _formLabel('Purchase Date'),
+                          const SizedBox(height: 6),
+                          GestureDetector(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: purchaseDate,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 1)),
+                              );
+                              if (picked != null) {
+                                setDialogState(
+                                    () => purchaseDate = picked);
+                              }
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.grey[300]!),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    DateFormat('MMM d, yyyy')
+                                        .format(purchaseDate),
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 13),
+                                  ),
+                                  Icon(Icons.calendar_today,
+                                      size: 18,
+                                      color: Colors.grey[500]),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Items header
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Items (${items.length})',
+                                style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: const Color(0xFF00352E)),
+                              ),
+                              if (items.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () {
+                                    final allOn = items.every(
+                                        (i) =>
+                                            i['addToInventory'] ==
+                                            true);
+                                    setDialogState(() {
+                                      for (final i in items) {
+                                        i['addToInventory'] = !allOn;
+                                      }
+                                    });
+                                  },
+                                  child: Text(
+                                    items.every((i) =>
+                                            i['addToInventory'] == true)
+                                        ? 'Deselect all'
+                                        : 'Select all',
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: Appcolor.foodPrimary),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Items list
+                          if (items.isEmpty)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius:
+                                      BorderRadius.circular(10)),
+                              child: Text('No items detected',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.grey[500])),
+                            )
+                          else
+                            ...items.asMap().entries.map((e) =>
+                                _buildScanItemRow(e.value, e.key,
+                                    setDialogState, items)),
+
+                          const SizedBox(height: 14),
+
+                          // Subtotal / Taxes
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _formLabel('Subtotal (EGP)'),
+                                      _formField(subtotalCtrl, '0.00',
+                                          isNumber: true,
+                                          onChanged: (_) =>
+                                              setDialogState(() {})),
+                                    ]),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _formLabel('Taxes (EGP)'),
+                                      _formField(taxesCtrl, '0.00',
+                                          isNumber: true,
+                                          onChanged: (_) =>
+                                              setDialogState(() {})),
+                                    ]),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                                color: Appcolor.foodCardBg,
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Total',
+                                    style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14)),
+                                Text(
+                                  'EGP ${total.toStringAsFixed(2)}',
+                                  style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: Appcolor.foodPrimary),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // ── Add to Inventory section ─────────
+                          if (_inventories.isNotEmpty) ...[
+                            const SizedBox(height: 18),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Add to Inventory',
+                                          style: GoogleFonts.poppins(
+                                              fontWeight:
+                                                  FontWeight.bold,
+                                              fontSize: 14,
+                                              color: const Color(
+                                                  0xFF00352E))),
+                                      Text(
+                                        'Checked items will be added to your selected inventory',
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 11,
+                                            color: Colors.grey[600]),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Switch(
+                                  value: addToInventory,
+                                  activeThumbColor: Appcolor.foodPrimary,
+                                  activeTrackColor: const Color(0xFF80CBC4),
+                                  onChanged: (v) => setDialogState(
+                                      () => addToInventory = v),
+                                ),
+                              ],
+                            ),
+                            if (addToInventory) ...[
+                              const SizedBox(height: 10),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 4),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.grey[300]!),
+                                  borderRadius:
+                                      BorderRadius.circular(10),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: selectedInventoryId,
+                                    hint: Text('Select inventory',
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 13)),
+                                    isExpanded: true,
+                                    items: _inventories.map((inv) {
+                                      return DropdownMenuItem<String>(
+                                        value:
+                                            inv['_id']?.toString(),
+                                        child: Text(
+                                          inv['title']?.toString() ??
+                                              inv['name']?.toString() ??
+                                              'Inventory',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 13),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (v) => setDialogState(
+                                        () => selectedInventoryId = v),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '✓ Check the items above you want to add',
+                                style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: Colors.grey[500]),
+                              ),
+                            ],
+                          ],
+
+                          const SizedBox(height: 20),
+
+                          // ── Confirm button ───────────────────
+                          SizedBox(
+                            width: double.infinity,
+                            child: GuardedElevatedButton(
+                              onPressed: () async {
+                                final s = double.tryParse(
+                                        subtotalCtrl.text) ??
+                                    0;
+                                final t =
+                                    double.tryParse(taxesCtrl.text) ??
+                                        0;
+                                final tot = (s + t) > 0
+                                    ? s + t
+                                    : (scanned['total_amount'] is num
+                                        ? (scanned['total_amount']
+                                                as num)
+                                            .toDouble()
+                                        : 0.0);
+
+                                final photoBase64 =
+                                    'data:image/jpeg;base64,${base64Encode(imageBytes)}';
+
+                                final body = <String, dynamic>{
+                                  'store_name': storeCtrl.text
+                                          .trim()
+                                          .isNotEmpty
+                                      ? storeCtrl.text.trim()
+                                      : 'Unknown Store',
+                                  'total_amount': tot,
+                                  'subtotal': s,
+                                  'taxes': t,
+                                  'purchase_date':
+                                      purchaseDate.toIso8601String(),
+                                  'receipt_photo_url': photoBase64,
+                                  'items': items
+                                      .where((i) =>
+                                          (i['name'] ?? '')
+                                              .toString()
+                                              .isNotEmpty)
+                                      .map((i) => {
+                                            'name': i['name'],
+                                            'quantity': i['quantity'],
+                                            'unit': i['unit'],
+                                            'price': i['price'],
+                                          })
+                                      .toList(),
+                                };
+
+                                try {
+                                  await _apiService.createReceipt(body);
+
+                                  // Add checked items to inventory
+                                  if (addToInventory &&
+                                      selectedInventoryId != null) {
+                                    final checked = items
+                                        .where((i) =>
+                                            i['addToInventory'] ==
+                                                true &&
+                                            (i['name'] ?? '')
+                                                .toString()
+                                                .isNotEmpty)
+                                        .toList();
+                                    for (final item in checked) {
+                                      try {
+                                        await _apiService
+                                            .addInventoryItem(
+                                          selectedInventoryId!,
+                                          {
+                                            'item_name': item['name'],
+                                            'quantity':
+                                                double.tryParse(
+                                                        item['quantity']
+                                                            ?.toString() ??
+                                                            '1') ??
+                                                    1,
+                                          },
+                                        );
+                                      } catch (_) {
+                                        // skip individual item failures
+                                      }
+                                    }
+                                  }
+
+                                  if (!mounted) return;
+                                  Navigator.pop(ctx);
+                                  _loadData();
+                                  final checkedCount = items
+                                      .where((i) =>
+                                          i['addToInventory'] == true)
+                                      .length;
+                                  final msg = (addToInventory &&
+                                          selectedInventoryId != null)
+                                      ? 'Receipt saved & $checkedCount item${checkedCount != 1 ? 's' : ''} added to inventory!'
+                                      : 'Receipt saved successfully!';
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Text(msg,
+                                        style: GoogleFonts.poppins()),
+                                    backgroundColor:
+                                        Appcolor.foodPrimary,
+                                  ));
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                          content: Text('Error: $e')));
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Appcolor.foodPrimary,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(10)),
+                              ),
+                              child: Text(
+                                'Confirm & Save',
+                                style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Row used inside the scan preview dialog — shows checkbox + editable fields.
+  Widget _buildScanItemRow(
+    Map<String, dynamic> item,
+    int idx,
+    StateSetter setDialogState,
+    List<Map<String, dynamic>> items,
+  ) {
+    final isChecked = item['addToInventory'] as bool? ?? true;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isChecked
+            ? const Color(0xFFE0F2F1)
+            : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isChecked
+              ? const Color(0xFFB2DFDB)
+              : Colors.grey[200]!,
+        ),
+      ),
+      child: Row(
+        children: [
+          // Inventory checkbox
+          GestureDetector(
+            onTap: () => setDialogState(
+                () => item['addToInventory'] = !isChecked),
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: isChecked
+                    ? Appcolor.foodPrimary
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: isChecked
+                      ? Appcolor.foodPrimary
+                      : Colors.grey[400]!,
+                ),
+              ),
+              child: isChecked
+                  ? const Icon(Icons.check,
+                      size: 14, color: Colors.white)
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Name
+          Expanded(
+            flex: 3,
+            child: TextField(
+              controller:
+                  TextEditingController(text: item['name'] ?? ''),
+              onChanged: (v) => item['name'] = v,
+              style: GoogleFonts.poppins(fontSize: 12),
+              decoration: InputDecoration(
+                hintText: 'Item name',
+                isDense: true,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8)),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 8),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Quantity
+          Expanded(
+            flex: 1,
+            child: TextField(
+              controller: TextEditingController(
+                  text: item['quantity']?.toString() ?? '1'),
+              onChanged: (v) => item['quantity'] = v,
+              keyboardType: TextInputType.number,
+              style: GoogleFonts.poppins(fontSize: 12),
+              decoration: InputDecoration(
+                hintText: 'Qty',
+                isDense: true,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8)),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 8),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Price
+          Expanded(
+            flex: 2,
+            child: TextField(
+              controller: TextEditingController(
+                  text: '${item['price'] ?? ''}'),
+              onChanged: (v) =>
+                  item['price'] = double.tryParse(v) ?? 0,
+              keyboardType: TextInputType.number,
+              style: GoogleFonts.poppins(fontSize: 12),
+              decoration: InputDecoration(
+                hintText: 'EGP',
+                isDense: true,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8)),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 8),
+              ),
+            ),
+          ),
+          // Delete
+          GestureDetector(
+            onTap: () =>
+                setDialogState(() => items.removeAt(idx)),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Icon(Icons.close,
+                  size: 18, color: Colors.red[400]),
+            ),
+          ),
+        ],
       ),
     );
   }

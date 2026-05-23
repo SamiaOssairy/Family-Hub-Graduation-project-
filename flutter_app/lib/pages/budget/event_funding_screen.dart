@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:app_frontend/core/services/api_service.dart';
+import 'package:app_frontend/core/widgets/guarded_button.dart';
 
 class EventFundingScreen extends StatefulWidget {
   const EventFundingScreen({super.key});
@@ -130,7 +131,6 @@ class _EventFundingScreenState extends State<EventFundingScreen>
     String contributionType = 'money';
     String paymentMode = 'pay_now';
     String? selectedMemberId = member?['member_id']?.toString();
-    bool isSubmitting = false;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -227,66 +227,52 @@ class _EventFundingScreenState extends State<EventFundingScreen>
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isSubmitting
-                            ? null
-                            : () async {
-                                final amount = double.tryParse(amountController.text.trim());
-                                if (amount == null || amount <= 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please enter a valid amount')),
-                                  );
-                                  return;
-                                }
+                      child: GuardedElevatedButton(
+                        onPressed: () async {
+                          final amount = double.tryParse(amountController.text.trim());
+                          if (amount == null || amount <= 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter a valid amount')),
+                            );
+                            return;
+                          }
 
-                                if (_isParent && (selectedMemberId == null || selectedMemberId!.isEmpty)) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please select a member')),
-                                  );
-                                  return;
-                                }
+                          if (_isParent && (selectedMemberId == null || selectedMemberId!.isEmpty)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please select a member')),
+                            );
+                            return;
+                          }
 
-                                setSheetState(() => isSubmitting = true);
+                          try {
+                            await _apiService.contributeToEvent(
+                              _eventId!,
+                              contributionType: contributionType,
+                              amount: amount,
+                              paymentMode: paymentMode,
+                              memberId: selectedMemberId,
+                              manualEntry: _isParent && paymentMode == 'pay_now',
+                            );
 
-                                try {
-                                  await _apiService.contributeToEvent(
-                                    _eventId!,
-                                    contributionType: contributionType,
-                                    amount: amount,
-                                    paymentMode: paymentMode,
-                                    memberId: selectedMemberId,
-                                    manualEntry: _isParent && paymentMode == 'pay_now',
-                                  );
-
-                                  if (!mounted) return;
-                                  Navigator.pop(context);
-                                  await _loadData();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Contribution saved'), backgroundColor: Colors.green),
-                                  );
-                                } catch (e) {
-                                  if (!mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Contribution failed: $e'), backgroundColor: Colors.red),
-                                  );
-                                } finally {
-                                  if (mounted) {
-                                    setSheetState(() => isSubmitting = false);
-                                  }
-                                }
-                              },
+                            if (!mounted) return;
+                            Navigator.pop(context);
+                            await _loadData();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Contribution saved'), backgroundColor: Colors.green),
+                            );
+                          } catch (e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Contribution failed: $e'), backgroundColor: Colors.red),
+                            );
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF00897B),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: isSubmitting
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : Text('Save Contribution', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                        child: Text('Save Contribution', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],
@@ -787,7 +773,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: GuardedElevatedButton(
                   onPressed: _myPoints >= cost ? _redeemSpot : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00897B),

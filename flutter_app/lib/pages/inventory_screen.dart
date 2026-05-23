@@ -7,6 +7,7 @@ import '../core/services/api_service.dart';
 import '../core/theme/theme_provider.dart';
 import '../core/utils/food_utils.dart';
 import '../core/widgets/app_bottom_nav.dart';
+import '../core/widgets/guarded_button.dart';
 
 // ── Teal category colour palette ──────────────────────────────────────────────
 const List<Color> _kCatColors = [
@@ -263,7 +264,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
               TextButton(
                   onPressed: () => Navigator.pop(ctx),
                   child: const Text('Cancel')),
-              ElevatedButton(
+              GuardedElevatedButton(
                 onPressed: () async {
                   if (nameCtrl.text.trim().isEmpty) return;
                   try {
@@ -357,7 +358,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
               TextButton(
                   onPressed: () => Navigator.pop(ctx),
                   child: const Text('Cancel')),
-              ElevatedButton(
+              GuardedElevatedButton(
                 onPressed: () async {
                   if (nameCtrl.text.trim().isEmpty) return;
                   try {
@@ -1114,7 +1115,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child: const Text('Cancel')),
-            ElevatedButton(
+            GuardedElevatedButton(
               onPressed: () async {
                 if (titleCtrl.text.isNotEmpty) {
                   try {
@@ -1295,7 +1296,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           TextButton(
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancel')),
-          ElevatedButton(
+          GuardedElevatedButton(
             onPressed: () async {
               final newName = ctrl.text.trim();
               if (newName.isEmpty) return;

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
 import '../core/theme/theme_provider.dart';
 import '../core/utils/food_utils.dart';
+import '../core/widgets/guarded_button.dart';
 
 class InventoryAlertsScreen extends StatefulWidget {
   const InventoryAlertsScreen({super.key});
@@ -19,7 +20,6 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
   bool _isDark = false;
   List<dynamic> _alerts = [];
   bool _loading = true;
-  bool _generating = false;
   String _filterType = 'all'; // all, low_stock, out_of_stock, expiring_soon, expired
 
   @override
@@ -47,7 +47,6 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
   }
 
   Future<void> _generateAlerts() async {
-    setState(() => _generating = true);
     try {
       await _apiService.generateInventoryAlerts();
       await _loadAlerts();
@@ -55,7 +54,6 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
     } catch (e) {
       if (mounted) showErrorSnack(context, 'Error: $e');
     }
-    setState(() => _generating = false);
   }
 
   Future<void> _markAllRead() async {
@@ -208,25 +206,25 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _generating ? null : _generateAlerts,
-                            icon: _generating
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                        color: Colors.white, strokeWidth: 2))
-                                : const Icon(Icons.refresh, color: Colors.white),
-                            label: Text(
-                              _generating ? 'Scanning...' : 'Scan Inventory for Alerts',
-                              style: GoogleFonts.poppins(
-                                  color: Colors.white, fontWeight: FontWeight.w600),
-                            ),
+                          child: GuardedElevatedButton(
+                            onPressed: _generateAlerts,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF00897B),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.refresh, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Scan Inventory for Alerts',
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.white, fontWeight: FontWeight.w600),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -381,16 +379,41 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
 
   Widget _buildAlertCard(dynamic alert) {
     final type = alert['alert_type'] as String?;
-    final message = alert['message'] ?? '';
+    // ── Fix: field is alert_message not message ──
+    final message = (alert['alert_message'] ?? alert['message'] ?? '').toString();
     final isRead = alert['is_read'] == true;
-    final id = alert['_id'] ?? '';
+    final id = (alert['_id'] ?? '').toString();
     final color = _alertColor(type);
     final icon = _alertIcon(type);
     final label = _alertLabel(type);
-    final createdAt = alert['createdAt'] ?? '';
+    final createdAt = (alert['createdAt'] ?? '').toString();
     final cardBg = _isDark ? const Color(0xFF122030) : Colors.white;
     final cardBorder = _isDark ? const Color(0xFF1E3A4A) : color.withValues(alpha: 0.3);
     final textPrimary = _isDark ? const Color(0xFFE0F2F1) : const Color(0xFF00352E);
+
+    // ── Extract populated item details ──
+    final item = alert['inventory_item_id'];
+    final itemName = item is Map ? (item['item_name'] ?? '').toString() : '';
+    final itemQty = item is Map ? item['quantity'] : null;
+    final itemThreshold = item is Map ? item['threshold_quantity'] : null;
+    final unitName = item is Map && item['unit_id'] is Map
+        ? (item['unit_id']['unit_name'] ?? '').toString()
+        : '';
+    final expiryRaw = item is Map ? (item['expiry_date'] ?? '').toString() : '';
+    final categoryName = item is Map && item['item_category'] is Map
+        ? (item['item_category']['title'] ?? '').toString()
+        : '';
+
+    // Format expiry date
+    String expiryDisplay = '';
+    int daysUntilExpiry = 9999;
+    if (expiryRaw.isNotEmpty) {
+      try {
+        final expiryDt = DateTime.parse(expiryRaw);
+        daysUntilExpiry = expiryDt.difference(DateTime.now()).inDays;
+        expiryDisplay = DateFormat('MMM d, yyyy').format(expiryDt);
+      } catch (_) {}
+    }
 
     String timeAgo = '';
     try {
@@ -415,7 +438,14 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
           color: Colors.red,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.delete, color: Colors.white),
+            SizedBox(height: 4),
+            Text('Delete', style: TextStyle(color: Colors.white, fontSize: 11)),
+          ],
+        ),
       ),
       onDismissed: (_) => _deleteAlert(id),
       child: GestureDetector(
@@ -428,8 +458,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
             border: isRead ? null : Border.all(color: cardBorder, width: 1.5),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black
-                      .withValues(alpha: isRead ? 0.02 : 0.05),
+                  color: Colors.black.withValues(alpha: isRead ? 0.02 : 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2)),
             ],
@@ -439,6 +468,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Icon
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
@@ -448,10 +478,12 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                   child: Icon(icon, color: color, size: 22),
                 ),
                 const SizedBox(width: 12),
+                // Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Type badge + time
                       Row(
                         children: [
                           Container(
@@ -475,31 +507,112 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      Text(message,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: textPrimary,
-                            fontWeight:
-                                isRead ? FontWeight.normal : FontWeight.w500,
-                          )),
+
+                      // Item name (big, prominent)
+                      if (itemName.isNotEmpty)
+                        Text(itemName,
+                            style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: textPrimary)),
+
+                      // Category
+                      if (categoryName.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(categoryName,
+                            style: GoogleFonts.poppins(
+                                fontSize: 11, color: Colors.grey[500])),
+                      ],
+
+                      const SizedBox(height: 8),
+
+                      // Detail rows based on type
+                      if (type == 'expired' && expiryDisplay.isNotEmpty)
+                        _detailRow(Icons.event_busy, 'Expired on $expiryDisplay',
+                            Colors.red[700]!),
+
+                      if (type == 'expiring_soon' && expiryDisplay.isNotEmpty)
+                        _detailRow(
+                          Icons.schedule,
+                          daysUntilExpiry == 0
+                              ? 'Expires today!'
+                              : daysUntilExpiry == 1
+                                  ? 'Expires tomorrow · $expiryDisplay'
+                                  : 'Expires in $daysUntilExpiry days · $expiryDisplay',
+                          Colors.orange[700]!,
+                        ),
+
+                      if ((type == 'low_stock' || type == 'out_of_stock') &&
+                          itemQty != null) ...[
+                        _detailRow(
+                          Icons.inventory_2_outlined,
+                          'Current stock: $itemQty${unitName.isNotEmpty ? ' $unitName' : ''}',
+                          color,
+                        ),
+                        if (itemThreshold != null)
+                          _detailRow(
+                            Icons.flag_outlined,
+                            'Minimum threshold: $itemThreshold${unitName.isNotEmpty ? ' $unitName' : ''}',
+                            Colors.grey[600]!,
+                          ),
+                      ],
+
+                      // Fallback: show the raw message if no item details
+                      if (itemName.isEmpty && message.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(message,
+                            style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: textPrimary,
+                                fontWeight: isRead
+                                    ? FontWeight.normal
+                                    : FontWeight.w500)),
+                      ],
+
+                      // Tap hint for unread
+                      if (!isRead) ...[
+                        const SizedBox(height: 6),
+                        Text('Tap to mark as read',
+                            style: GoogleFonts.poppins(
+                                fontSize: 10, color: Colors.grey[400])),
+                      ],
                     ],
                   ),
                 ),
+                // Unread dot
                 if (!isRead) ...[
                   const SizedBox(width: 8),
                   Container(
                     width: 8,
                     height: 8,
+                    margin: const EdgeInsets.only(top: 4),
                     decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                    ),
+                        color: color, shape: BoxShape.circle),
                   ),
                 ],
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _detailRow(IconData icon, String text, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(text,
+                style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: color,
+                    fontWeight: FontWeight.w500)),
+          ),
+        ],
       ),
     );
   }

@@ -2059,6 +2059,37 @@ class ApiService {
     }
   }
 
+  /// Send receipt image bytes to the backend for Gemini Vision OCR.
+  /// Returns the scanned data map: { store_name, purchase_date, subtotal, taxes, total_amount, items[] }
+  Future<Map<String, dynamic>> scanReceipt(List<int> imageBytes) async {
+    final token = await _getToken();
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/receipts/scan'),
+    );
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    final stream = http.ByteStream.fromBytes(imageBytes);
+    final multipartFile = http.MultipartFile(
+      'receipt_image',
+      stream,
+      imageBytes.length,
+      filename: 'receipt.jpg',
+    );
+    request.files.add(multipartFile);
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return Map<String, dynamic>.from(data['data']['scanned'] as Map);
+    }
+    final errorData = jsonDecode(response.body);
+    throw Exception(errorData['message'] ?? 'Failed to scan receipt');
+  }
+
   Future<Map<String, dynamic>> getSpendingSummary({String? startDate, String? endDate}) async {
     final headers = await _getHeaders();
     String url = '$baseUrl/receipts/summary';

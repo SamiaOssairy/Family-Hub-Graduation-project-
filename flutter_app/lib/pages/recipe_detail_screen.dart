@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/services/api_service.dart';
 import '../core/styling/app_color.dart';
 import '../core/utils/food_utils.dart';
+import '../core/widgets/guarded_button.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final dynamic recipe;
@@ -209,22 +210,16 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                         if (_editing)
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _loading ? null : _saveRecipe,
+                            child: GuardedElevatedButton(
+                              onPressed: _saveRecipe,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Appcolor.foodPrimary,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
-                              child: _loading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                    )
-                                  : Text(_isNew ? 'Create Recipe' : 'Save Changes',
-                                      style: GoogleFonts.poppins(
-                                          color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
+                              child: Text(_isNew ? 'Create Recipe' : 'Save Changes',
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
                             ),
                           ),
 
@@ -843,7 +838,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   onPressed: () => Navigator.pop(ctx),
                   child: const Text('Cancel'),
                 ),
-                ElevatedButton(
+                GuardedElevatedButton(
                   onPressed: () async {
                     if (nameCtrl.text.trim().isEmpty || qtyCtrl.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -911,7 +906,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            GuardedElevatedButton(
               onPressed: () async {
                 if (instructionCtrl.text.trim().isEmpty) return;
                 try {

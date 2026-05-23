@@ -4,6 +4,7 @@ import '../core/services/api_service.dart';
 import '../core/styling/app_color.dart';
 import '../core/utils/food_utils.dart';
 import '../core/widgets/app_bottom_nav.dart';
+import '../core/widgets/guarded_button.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GROCERIES SCREEN — Shopping Lists Hub
@@ -77,7 +78,7 @@ class _GroceriesScreenState extends State<GroceriesScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text('Cancel', style: GoogleFonts.poppins()),
           ),
-          ElevatedButton(
+          GuardedElevatedButton(
             onPressed: () async {
               if (titleCtrl.text.trim().isNotEmpty) {
                 try {

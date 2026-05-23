@@ -9,6 +9,7 @@ import '../core/services/locale_service.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/theme_provider.dart';
 import '../core/widgets/app_bottom_nav.dart';
+import '../core/widgets/guarded_button.dart';
 
 class SettingPage extends StatefulWidget {
   final VoidCallback? onLogout;
@@ -249,7 +250,7 @@ class _SettingPageState extends State<SettingPage> {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(_t('Cancel', 'إلغاء'))),
-          ElevatedButton(
+          GuardedElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: () async {
               final name = usernameCtrl.text.trim();
@@ -410,9 +411,9 @@ class _SettingPageState extends State<SettingPage> {
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(_t('Cancel', 'إلغاء'))),
-            ElevatedButton(
+            GuardedElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-              onPressed: saving ? null : () async {
+              onPressed: () async {
                 final m2p = double.tryParse(moneyCtrl.text.trim());
                 final p2m = double.tryParse(ptsCtrl.text.trim());
                 if (m2p == null || p2m == null || m2p <= 0 || p2m <= 0) {
@@ -420,7 +421,6 @@ class _SettingPageState extends State<SettingPage> {
                     content: Text(_t('Enter valid positive numbers', 'أدخل أرقاماً موجبة صحيحة'))));
                   return;
                 }
-                setDs(() => saving = true);
                 try {
                   await _apiService.setConversionRate(
                     moneyToPointsRate: m2p,
@@ -439,14 +439,9 @@ class _SettingPageState extends State<SettingPage> {
                     content: Text(e.toString().replaceAll('Exception: ', '')),
                     backgroundColor: Colors.red,
                   ));
-                } finally {
-                  setDs(() => saving = false);
                 }
               },
-              child: saving
-                  ? const SizedBox(width: 18, height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(_t('Save', 'حفظ'), style: const TextStyle(color: Colors.white)),
+              child: Text(_t('Save', 'حفظ'), style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -586,12 +581,12 @@ class _SettingPageState extends State<SettingPage> {
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: GuardedElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                      onPressed: loading ? null : () async {
+                      onPressed: () async {
                         if (currentCtrl.text.isEmpty || newCtrl.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(_t('Fill all fields', 'يرجى ملء جميع الحقول'))));
@@ -602,7 +597,6 @@ class _SettingPageState extends State<SettingPage> {
                               content: Text(_t('Passwords do not match', 'كلمتا المرور غير متطابقتين'))));
                           return;
                         }
-                        setDs(() => loading = true);
                         try {
                           await _apiService.setPassword(
                             currentPassword: currentCtrl.text,
@@ -619,15 +613,10 @@ class _SettingPageState extends State<SettingPage> {
                           if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(e.toString().replaceAll('Exception: ', '')),
                               backgroundColor: Colors.red));
-                        } finally {
-                          if (mounted) setDs(() => loading = false);
                         }
                       },
-                      child: loading
-                          ? const SizedBox(width: 20, height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Text(_t('Update Password', 'تحديث كلمة المرور'),
-                              style: const TextStyle(color: Colors.white)),
+                      child: Text(_t('Update Password', 'تحديث كلمة المرور'),
+                          style: const TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
@@ -660,11 +649,9 @@ class _SettingPageState extends State<SettingPage> {
   void _showDeactivateDialog() {
     final emailCtrl = TextEditingController();
     final passCtrl = TextEditingController();
-    bool loading = false;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDs) => AlertDialog(
+      builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(children: [
             const Icon(Icons.warning_amber_rounded, color: Colors.red),
@@ -707,11 +694,10 @@ class _SettingPageState extends State<SettingPage> {
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(_t('Cancel', 'إلغاء'))),
-            ElevatedButton(
+            GuardedElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: loading ? null : () async {
+              onPressed: () async {
                 if (emailCtrl.text.trim().isEmpty || passCtrl.text.isEmpty) return;
-                setDs(() => loading = true);
                 try {
                   await _apiService.deactivateAccount(emailCtrl.text.trim(), passCtrl.text);
                   if (mounted) {
@@ -720,20 +706,15 @@ class _SettingPageState extends State<SettingPage> {
                     _handleLogoutCurrent();
                   }
                 } catch (e) {
-                  setDs(() => loading = false);
                   if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(e.toString().replaceAll('Exception: ', '')),
                       backgroundColor: Colors.red));
                 }
               },
-              child: loading
-                  ? const SizedBox(width: 16, height: 16,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : Text(_t('Deactivate', 'تعطيل')),
+              child: Text(_t('Deactivate', 'تعطيل')),
             ),
           ],
         ),
-      ),
     );
   }
 

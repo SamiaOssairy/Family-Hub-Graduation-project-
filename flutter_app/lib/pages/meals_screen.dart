@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../core/services/api_service.dart';
 import '../core/widgets/app_bottom_nav.dart';
+import '../core/widgets/guarded_button.dart';
 
 class MealsScreen extends StatefulWidget {
   const MealsScreen({super.key});
@@ -197,7 +198,7 @@ class _MealsScreenState extends State<MealsScreen> {
               onPressed: () => Navigator.pop(ctx),
               child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey)),
             ),
-            ElevatedButton(
+            GuardedElevatedButton(
               onPressed: () async {
                 if (nameCtrl.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -296,7 +297,7 @@ class _MealsScreenState extends State<MealsScreen> {
               onPressed: () => Navigator.pop(ctx),
               child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey)),
             ),
-            ElevatedButton(
+            GuardedElevatedButton(
               onPressed: () async {
                 if (nameCtrl.text.trim().isEmpty) return;
                 Navigator.pop(ctx);
@@ -341,7 +342,7 @@ class _MealsScreenState extends State<MealsScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey)),
           ),
-          ElevatedButton(
+          GuardedElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
               try {
@@ -616,7 +617,7 @@ class _MealsScreenState extends State<MealsScreen> {
                                     ],
                                   ),
                                 ),
-                                ElevatedButton(
+                                GuardedElevatedButton(
                                   onPressed: () async {
                                     try {
                                       final result =
@@ -780,7 +781,7 @@ class _MealsScreenState extends State<MealsScreen> {
                 onPressed: () => Navigator.pop(ctx),
                 child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey)),
               ),
-              ElevatedButton(
+              GuardedElevatedButton(
                 onPressed: () async {
                   if (selectedItemId == null || selectedUnitId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(

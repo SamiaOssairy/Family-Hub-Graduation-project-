@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
 import '../core/theme/theme_provider.dart';
+import '../core/widgets/guarded_button.dart';
 
 // ─── Task Model ────────────────────────────────────────────────────────────────
 class TaskItem {
@@ -865,7 +866,6 @@ class _TasksScreenState extends State<TasksScreen>
     final textPrimary = isDark ? _textPrimaryDark : _textPrimaryLight;
     String? selectedCategoryId =
         _taskCategories.isNotEmpty ? _taskCategories.first['_id']?.toString() : null;
-    bool isSubmitting = false;
 
     showDialog(
       context: context,
@@ -985,10 +985,8 @@ class _TasksScreenState extends State<TasksScreen>
                   style: GoogleFonts.poppins(
                       color: _textSecondaryLight)),
             ),
-            ElevatedButton(
-              onPressed: (isSubmitting ||
-                      _taskCategories.isEmpty ||
-                      _currentMail.isEmpty)
+            GuardedElevatedButton(
+              onPressed: (_taskCategories.isEmpty || _currentMail.isEmpty)
                   ? null
                   : () async {
                       if (_taskNameController.text.trim().isEmpty) {
@@ -998,25 +996,15 @@ class _TasksScreenState extends State<TasksScreen>
                         );
                         return;
                       }
-                      setDialogState(() => isSubmitting = true);
                       await _addNewTask(selectedCategoryId);
-                      if (ctx.mounted) {
-                        setDialogState(() => isSubmitting = false);
-                      }
                     },
               style: ElevatedButton.styleFrom(
                   backgroundColor: _primary,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10))),
-              child: isSubmitting
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
-                  : Text('Add',
-                      style:
-                          GoogleFonts.poppins(color: Colors.white)),
+              child: Text('Add',
+                  style:
+                      GoogleFonts.poppins(color: Colors.white)),
             ),
           ],
         ),
