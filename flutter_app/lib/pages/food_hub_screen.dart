@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -114,7 +114,7 @@ class _FoodHubScreenState extends State<FoodHubScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: _loading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                         color: Color(0xFF00897B)))
                 : RefreshIndicator(
@@ -181,7 +181,7 @@ class _FoodHubScreenState extends State<FoodHubScreen> {
             IconButton(
               onPressed: () =>
                   Navigator.pushNamed(context, '/inventory-alerts'),
-              icon: const Icon(Icons.notifications_outlined,
+              icon: Icon(Icons.notifications_outlined,
                   color: Color(0xFF00897B), size: 28),
             ),
             if (_unreadAlerts > 0)
@@ -190,7 +190,7 @@ class _FoodHubScreenState extends State<FoodHubScreen> {
                 top: 6,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Color(0xFFE53935),
                     shape: BoxShape.circle,
                   ),

@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -79,14 +79,14 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(8, 12, 20, 24),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Appcolor.foodPrimary,
                   ),
                   child: Row(
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_new,
+                        icon: Icon(Icons.arrow_back_ios_new,
                             color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 4),
@@ -105,7 +105,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                 // Content
                 Expanded(
                   child: _loading
-                      ? const Center(
+                      ? Center(
                           child: CircularProgressIndicator(color: Appcolor.foodPrimary))
                       : _receipts.isEmpty
                           ? Center(
@@ -143,7 +143,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                                         decoration: InputDecoration(
                                           hintText: 'Search by store name...',
                                           hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
-                                          prefixIcon: const Icon(Icons.search, color: Appcolor.foodPrimary),
+                                          prefixIcon: Icon(Icons.search, color: Appcolor.foodPrimary),
                                           border: InputBorder.none,
                                           contentPadding: const EdgeInsets.symmetric(vertical: 14),
                                         ),
@@ -234,7 +234,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
             backgroundColor: const Color(0xFF00695C),
             mini: true,
             tooltip: 'Scan receipt with AI',
-            child: const Icon(Icons.document_scanner,
+            child: Icon(Icons.document_scanner,
                 color: Colors.white, size: 20),
           ),
           const SizedBox(height: 12),
@@ -243,7 +243,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
             onPressed: () => _showAddEditDialog(),
             backgroundColor: Appcolor.foodPrimary,
             tooltip: 'Add receipt manually',
-            child: const Icon(Icons.add, color: Colors.white, size: 28),
+            child: Icon(Icons.add, color: Colors.white, size: 28),
           ),
         ],
       ),
@@ -280,7 +280,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
           // Green header section
           Container(
             padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Appcolor.foodCardBg,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(16),
@@ -366,7 +366,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.photo_camera, size: 14, color: Colors.white),
+                        Icon(Icons.photo_camera, size: 14, color: Colors.white),
                         const SizedBox(width: 4),
                         Text('Tap to view',
                             style: GoogleFonts.poppins(fontSize: 10, color: Colors.white)),
@@ -421,7 +421,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (items.isNotEmpty) ...[
-                  const Divider(height: 16),
+                  Divider(height: 16),
                   Text('Payment Summary',
                       style: GoogleFonts.poppins(
                           fontSize: 14,
@@ -488,7 +488,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
               right: 10,
               child: IconButton(
                 onPressed: () => Navigator.pop(ctx),
-                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                icon: Icon(Icons.close, color: Colors.white, size: 28),
               ),
             ),
           ],
@@ -550,7 +550,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Appcolor.foodPrimary,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20),
@@ -567,7 +567,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                                   color: Colors.white)),
                           IconButton(
                             onPressed: () => Navigator.pop(ctx),
-                            icon: const Icon(Icons.close, color: Colors.white),
+                            icon: Icon(Icons.close, color: Colors.white),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
@@ -614,11 +614,11 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                                       onTap: () => setDialogState(() => photoBase64 = null),
                                       child: Container(
                                         padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
+                                        decoration: BoxDecoration(
                                           color: Colors.red,
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(Icons.close, size: 16, color: Colors.white),
+                                        child: Icon(Icons.close, size: 16, color: Colors.white),
                                       ),
                                     ),
                                   ),
@@ -754,7 +754,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(Icons.add, size: 14, color: Color(0xFF00897B)),
+                                        Icon(Icons.add, size: 14, color: Color(0xFF00897B)),
                                         const SizedBox(width: 4),
                                         Text('Add Item',
                                             style: GoogleFonts.poppins(
@@ -857,7 +857,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                                 onPressed: () async {
                                   if (storeCtrl.text.trim().isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Please enter store name')),
+                                      SnackBar(content: Text('Please enter store name')),
                                     );
                                     return;
                                   }
@@ -1046,7 +1046,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                 decoration: BoxDecoration(
                     color: const Color(0xFFE0F2F1),
                     borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.camera_alt,
+                child: Icon(Icons.camera_alt,
                     color: Appcolor.foodPrimary),
               ),
               title: Text('Take a Photo',
@@ -1064,7 +1064,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                 decoration: BoxDecoration(
                     color: const Color(0xFFE0F2F1),
                     borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.photo_library,
+                child: Icon(Icons.photo_library,
                     color: Appcolor.foodPrimary),
               ),
               title: Text('Choose from Gallery',
@@ -1175,7 +1175,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 16),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Color(0xFF00695C), Color(0xFF00ACC1)],
                       ),
@@ -1186,7 +1186,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.document_scanner,
+                        Icon(Icons.document_scanner,
                             color: Colors.white, size: 20),
                         const SizedBox(width: 10),
                         Expanded(
@@ -1208,7 +1208,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(Icons.close,
+                          icon: Icon(Icons.close,
                               color: Colors.white),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -1246,7 +1246,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.auto_awesome,
+                                Icon(Icons.auto_awesome,
                                     size: 16,
                                     color: Appcolor.foodPrimary),
                                 const SizedBox(width: 8),
@@ -1433,7 +1433,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                           // ── Add to Inventory section ─────────
                           if (_inventories.isNotEmpty) ...[
                             const SizedBox(height: 18),
-                            const Divider(),
+                            Divider(),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -1697,7 +1697,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                 ),
               ),
               child: isChecked
-                  ? const Icon(Icons.check,
+                  ? Icon(Icons.check,
                       size: 14, color: Colors.white)
                   : null,
             ),

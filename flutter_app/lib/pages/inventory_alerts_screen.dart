@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -151,7 +151,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF00897B)))
+                ? Center(child: CircularProgressIndicator(color: Color(0xFF00897B)))
                 : Column(
                     children: [
                       // Header
@@ -167,7 +167,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                                   color: _isDark ? const Color(0xFF122030) : Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.arrow_back_ios_new,
+                                child: Icon(Icons.arrow_back_ios_new,
                                     size: 18, color: Color(0xFF00897B)),
                               ),
                             ),
@@ -217,7 +217,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.refresh, color: Colors.white),
+                                Icon(Icons.refresh, color: Colors.white),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Scan Inventory for Alerts',
@@ -337,7 +337,7 @@ class _InventoryAlertsScreenState extends State<InventoryAlertsScreen> {
               color: bg,
               borderRadius: BorderRadius.circular(50),
             ),
-            child: const Icon(Icons.notifications_none,
+            child: Icon(Icons.notifications_none,
                 size: 48, color: Color(0xFF00897B)),
           ),
           const SizedBox(height: 20),

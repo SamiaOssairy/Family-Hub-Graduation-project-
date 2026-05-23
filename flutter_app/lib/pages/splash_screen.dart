@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/styling/responsive.dart';
@@ -110,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.family_restroom, size: 56, color: Color(0xFF00897B)),
+                  child: Icon(Icons.family_restroom, size: 56, color: Color(0xFF00897B)),
                 ),
               ),
               const SizedBox(height: 24),

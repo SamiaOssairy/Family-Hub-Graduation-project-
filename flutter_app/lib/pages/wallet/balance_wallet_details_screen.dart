@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/services/api_service.dart';
@@ -72,12 +72,12 @@ class _BalanceWalletDetailsScreenState extends State<BalanceWalletDetailsScreen>
         actions: [
           IconButton(
             onPressed: _loadDetails,
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
+          ? Center(child: CircularProgressIndicator(color: Color(0xFF1B5E20)))
           : RefreshIndicator(
               onRefresh: _loadDetails,
               child: ListView(
@@ -104,7 +104,7 @@ class _BalanceWalletDetailsScreenState extends State<BalanceWalletDetailsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

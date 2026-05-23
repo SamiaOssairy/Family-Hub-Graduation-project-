@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/styling/responsive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -272,7 +272,7 @@ class _LoginPageState extends State<LoginPage> {
                             _emailController.clear();
                           });
                         },
-                        icon: const Icon(Icons.add),
+                        icon: Icon(Icons.add),
                         label: Text(_t('Add New Account', 'إضافة حساب جديد')),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF00897B),
@@ -290,7 +290,7 @@ class _LoginPageState extends State<LoginPage> {
                             await _loadSavedProfiles();
                           }
                         },
-                        icon: const Icon(Icons.manage_accounts),
+                        icon: Icon(Icons.manage_accounts),
                         label: Text(_t('Manage Accounts', 'إدارة الحسابات')),
                       ),
                     ],
@@ -712,7 +712,7 @@ class _FamilyPasswordLoginPageState extends State<FamilyPasswordLoginPage> {
                         color: const Color(0xFF00897B).withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.lock_outline,
                         size: 40,
                         color: Color(0xFF00897B),
@@ -742,7 +742,7 @@ class _FamilyPasswordLoginPageState extends State<FamilyPasswordLoginPage> {
                       decoration: InputDecoration(
                         labelText: 'New Password',
                         hintText: 'Enter new password',
-                        prefixIcon: const Icon(Icons.lock_outline),
+                        prefixIcon: Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(obscureNew ? Icons.visibility_off : Icons.visibility),
                           onPressed: () {
@@ -763,7 +763,7 @@ class _FamilyPasswordLoginPageState extends State<FamilyPasswordLoginPage> {
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
                         hintText: 'Confirm new password',
-                        prefixIcon: const Icon(Icons.lock_outline),
+                        prefixIcon: Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(obscureConfirm ? Icons.visibility_off : Icons.visibility),
                           onPressed: () {
@@ -798,7 +798,7 @@ class _FamilyPasswordLoginPageState extends State<FamilyPasswordLoginPage> {
                             : () async {
                                 if (newPasswordController.text.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please enter a password')),
+                                    SnackBar(content: Text('Please enter a password')),
                                   );
                                   return;
                                 }
@@ -808,14 +808,14 @@ class _FamilyPasswordLoginPageState extends State<FamilyPasswordLoginPage> {
                                 // Re-enable before release.
                                 // if (newPasswordController.text.length < 6) {
                                 //   ScaffoldMessenger.of(context).showSnackBar(
-                                //     const SnackBar(content: Text('Password must be at least 6 characters')),
+                                //     SnackBar(content: Text('Password must be at least 6 characters')),
                                 //   );
                                 //   return;
                                 // }
 
                                 if (newPasswordController.text != confirmPasswordController.text) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Passwords do not match')),
+                                    SnackBar(content: Text('Passwords do not match')),
                                   );
                                   return;
                                 }
@@ -833,7 +833,7 @@ class _FamilyPasswordLoginPageState extends State<FamilyPasswordLoginPage> {
                                   if (mounted) {
                                     Navigator.pop(dialogContext);
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
+                                      SnackBar(
                                         content: Text('Password set successfully!'),
                                         backgroundColor: Colors.green,
                                       ),
@@ -941,7 +941,7 @@ class _FamilyPasswordLoginPageState extends State<FamilyPasswordLoginPage> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.email_outlined, size: 14, color: Color(0xFF00897B)),
+                    Icon(Icons.email_outlined, size: 14, color: Color(0xFF00897B)),
                     const SizedBox(width: 6),
                     Text(
                       widget.email,
@@ -961,7 +961,7 @@ class _FamilyPasswordLoginPageState extends State<FamilyPasswordLoginPage> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.family_restroom, color: Color(0xFF00897B), size: 20),
+                      Icon(Icons.family_restroom, color: Color(0xFF00897B), size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: DropdownButtonHideUnderline(
@@ -1066,7 +1066,7 @@ class _SignUpPageState extends State<SignUpPage> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
+            colorScheme: ColorScheme.light(
               primary: Color(0xFF00897B),
               onPrimary: Colors.white,
               onSurface: Colors.black,
@@ -1270,7 +1270,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   decoration: _fieldDeco(
                     _t('Birthdate', 'تاريخ الميلاد'),
                     Icons.cake_outlined,
-                    suffix: const Icon(Icons.calendar_today, color: Color(0xFF00897B), size: 18),
+                    suffix: Icon(Icons.calendar_today, color: Color(0xFF00897B), size: 18),
                   ),
                 ),
                 const SizedBox(height: 14),

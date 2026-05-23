@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/services/api_service.dart';
 import '../core/styling/app_color.dart';
@@ -106,7 +106,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Appcolor.foodPrimary))
+                ? Center(child: CircularProgressIndicator(color: Appcolor.foodPrimary))
                 : RefreshIndicator(
                     onRefresh: _loadRecipes,
                     child: SingleChildScrollView(
@@ -126,7 +126,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(Icons.arrow_back_ios_new, size: 18, color: Appcolor.foodPrimary),
+                                  child: Icon(Icons.arrow_back_ios_new, size: 18, color: Appcolor.foodPrimary),
                                 ),
                               ),
                               const SizedBox(width: 14),
@@ -167,7 +167,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                               decoration: InputDecoration(
                                 hintText: 'Search recipes...',
                                 hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
-                                prefixIcon: const Icon(Icons.search, color: Appcolor.foodPrimary),
+                                prefixIcon: Icon(Icons.search, color: Appcolor.foodPrimary),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
                               ),
@@ -180,7 +180,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                             width: double.infinity,
                             child: ElevatedButton.icon(
                               onPressed: _navigateToCreate,
-                              icon: const Icon(Icons.add, color: Colors.white),
+                              icon: Icon(Icons.add, color: Colors.white),
                               label: Text('Create New Recipe',
                                   style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
                               style: ElevatedButton.styleFrom(
@@ -276,7 +276,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                       color: const Color(0xFFFFF3E0),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.restaurant_menu, color: Color(0xFFFF9800), size: 28),
+                    child: Icon(Icons.restaurant_menu, color: Color(0xFFFF9800), size: 28),
                   ),
                   const SizedBox(width: 14),
                   Expanded(

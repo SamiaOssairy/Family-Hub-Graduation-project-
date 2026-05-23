@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,10 +43,15 @@ class _SettingPageState extends State<SettingPage> {
     return size * (w / 390.0);
   }
 
+  // ── Theme-adaptive text colours ───────────────────────────────────────────
+  Color get _textPrimary   => Theme.of(context).colorScheme.onSurface;
+  Color get _textSecondary => Theme.of(context).colorScheme.onSurface.withOpacity(0.60);
+  Color get _textHint      => Theme.of(context).colorScheme.onSurface.withOpacity(0.38);
+
   BoxDecoration _cardDecoration() => BoxDecoration(
     color: Theme.of(context).cardColor,
     borderRadius: BorderRadius.circular(AppRadius.card),
-    border: Border.all(color: AppColors.border, width: 0.8),
+    border: Border.all(color: Theme.of(context).dividerColor, width: 0.8),
     boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
   );
 
@@ -241,11 +246,11 @@ class _SettingPageState extends State<SettingPage> {
           controller: usernameCtrl,
           decoration: InputDecoration(
             labelText: _t('Username', 'اسم المستخدم'),
-            prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
+            prefixIcon: Icon(Icons.person_outline, color: AppColors.primary),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+                borderSide: BorderSide(color: AppColors.primary, width: 2)),
           ),
         ),
         actions: [
@@ -299,7 +304,7 @@ class _SettingPageState extends State<SettingPage> {
                   Text(_t('Family Members', 'أفراد العائلة'),
                       style: GoogleFonts.poppins(
                           fontSize: _sp(16), fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary)),
+                          color: _textPrimary)),
                   const Spacer(),
                   if (_isParent)
                     TextButton.icon(
@@ -307,25 +312,25 @@ class _SettingPageState extends State<SettingPage> {
                         Navigator.pop(sheetCtx);
                         Navigator.pushNamed(context, '/home');
                       },
-                      icon: const Icon(Icons.person_add, size: 16, color: AppColors.primary),
+                      icon: Icon(Icons.person_add, size: 16, color: AppColors.primary),
                       label: Text(_t('Add', 'إضافة'),
                           style: GoogleFonts.poppins(fontSize: _sp(12), color: AppColors.primary)),
                     ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: AppColors.borderLight),
+            Divider(height: 1, color: AppColors.borderLight),
             Expanded(
               child: _membersLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  ? Center(child: CircularProgressIndicator(color: AppColors.primary))
                   : _familyMembers.isEmpty
                       ? Center(child: Text(_t('No members found', 'لا يوجد أعضاء'),
-                          style: GoogleFonts.poppins(color: AppColors.textSecondary)))
+                          style: GoogleFonts.poppins(color: _textSecondary)))
                       : ListView.separated(
                           controller: scrollCtrl,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           itemCount: _familyMembers.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.borderLight),
+                          separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.borderLight),
                           itemBuilder: (_, i) {
                             final m = _familyMembers[i];
                             return ListTile(
@@ -336,13 +341,13 @@ class _SettingPageState extends State<SettingPage> {
                               title: Text(m.username,
                                   style: GoogleFonts.poppins(
                                       fontSize: _sp(13), fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary)),
+                                      color: _textPrimary)),
                               subtitle: Text(m.memberType?.type ?? _t('Member', 'عضو'),
                                   style: GoogleFonts.poppins(
-                                      fontSize: _sp(11), color: AppColors.textSecondary)),
+                                      fontSize: _sp(11), color: _textSecondary)),
                               trailing: Text(m.mail,
                                   style: GoogleFonts.poppins(
-                                      fontSize: _sp(9), color: AppColors.textHint),
+                                      fontSize: _sp(9), color: _textHint),
                                   overflow: TextOverflow.ellipsis),
                             );
                           },
@@ -385,12 +390,12 @@ class _SettingPageState extends State<SettingPage> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: _t('Points per 1 EGP', 'نقاط لكل جنيه'),
-                  prefixIcon: const Icon(Icons.monetization_on_outlined, color: AppColors.primary),
+                  prefixIcon: Icon(Icons.monetization_on_outlined, color: AppColors.primary),
                   helperText: _t('Default: 10', 'الافتراضي: 10'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+                      borderSide: BorderSide(color: AppColors.primary, width: 2)),
                 ),
               ),
               const SizedBox(height: 12),
@@ -399,12 +404,12 @@ class _SettingPageState extends State<SettingPage> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: _t('EGP per 100 pts', 'جنيه لكل 100 نقطة'),
-                  prefixIcon: const Icon(Icons.stars_outlined, color: AppColors.primary),
+                  prefixIcon: Icon(Icons.stars_outlined, color: AppColors.primary),
                   helperText: _t('Default: 5', 'الافتراضي: 5'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+                      borderSide: BorderSide(color: AppColors.primary, width: 2)),
                 ),
               ),
             ],
@@ -496,7 +501,7 @@ class _SettingPageState extends State<SettingPage> {
           child: ListView.separated(
             shrinkWrap: true,
             itemCount: _savedProfiles.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, __) => Divider(height: 1),
             itemBuilder: (_, i) {
               final p = _savedProfiles[i];
               final key = p['profileKey']?.toString() ?? '';
@@ -510,9 +515,9 @@ class _SettingPageState extends State<SettingPage> {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (isActive) const Icon(Icons.check_circle, color: AppColors.primary),
+                    if (isActive) Icon(Icons.check_circle, color: AppColors.primary),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.redAccent),
+                      icon: Icon(Icons.close, color: Colors.redAccent),
                       onPressed: () async {
                         Navigator.pop(ctx);
                         final ok = await showDialog<bool>(
@@ -566,7 +571,7 @@ class _SettingPageState extends State<SettingPage> {
                     children: [
                       Text(_t('Change Password', 'تغيير كلمة المرور'),
                           style: GoogleFonts.poppins(fontSize: _sp(18), fontWeight: FontWeight.w700)),
-                      IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
+                      IconButton(onPressed: () => Navigator.pop(ctx), icon: Icon(Icons.close)),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -641,7 +646,7 @@ class _SettingPageState extends State<SettingPage> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+            borderSide: BorderSide(color: AppColors.primary, width: 2)),
       ),
     );
   }
@@ -654,7 +659,7 @@ class _SettingPageState extends State<SettingPage> {
       builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.red),
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
             const SizedBox(width: 8),
             Text(_t('Deactivate Account', 'تعطيل الحساب'),
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w700, color: Colors.red)),
@@ -676,7 +681,7 @@ class _SettingPageState extends State<SettingPage> {
                 controller: emailCtrl,
                 decoration: InputDecoration(
                   labelText: _t('Email', 'البريد الإلكتروني'),
-                  prefixIcon: const Icon(Icons.email, color: AppColors.primary),
+                  prefixIcon: Icon(Icons.email, color: AppColors.primary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
@@ -686,7 +691,7 @@ class _SettingPageState extends State<SettingPage> {
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: _t('Password', 'كلمة المرور'),
-                  prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
+                  prefixIcon: Icon(Icons.lock, color: AppColors.primary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
@@ -808,7 +813,7 @@ class _SettingPageState extends State<SettingPage> {
                       value: _locationSharing,
                       onChanged: _toggleLocationSharingFromSettings,
                     ),
-                    _buildThemePickerRow(isDark),
+                    _buildThemePickerRow(),
                   ]),
 
                   const SizedBox(height: 16),
@@ -828,7 +833,7 @@ class _SettingPageState extends State<SettingPage> {
                   const SizedBox(height: 20),
                   Center(
                     child: Text('Family Hub v1.0.0',
-                        style: GoogleFonts.poppins(fontSize: _sp(11), color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                        style: GoogleFonts.poppins(fontSize: _sp(11), color: _textHint, fontWeight: FontWeight.w500)),
                   ),
                   const SizedBox(height: 80),
                 ],
@@ -871,7 +876,7 @@ class _SettingPageState extends State<SettingPage> {
                   child: Container(
                     width: 18, height: 18,
                     decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), shape: BoxShape.circle),
-                    child: const Icon(Icons.edit, size: 11, color: AppColors.primary),
+                    child: Icon(Icons.edit, size: 11, color: AppColors.primary),
                   ),
                 ),
               ],
@@ -912,7 +917,7 @@ class _SettingPageState extends State<SettingPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.poppins(fontSize: _sp(10), fontWeight: FontWeight.w700, letterSpacing: 0.8, color: AppColors.textSecondary)),
+        Text(label, style: GoogleFonts.poppins(fontSize: _sp(10), fontWeight: FontWeight.w700, letterSpacing: 0.8, color: Theme.of(context).colorScheme.primary)),
         const SizedBox(height: 8),
         Container(
           decoration: _cardDecoration(),
@@ -921,7 +926,7 @@ class _SettingPageState extends State<SettingPage> {
               final isLast = e.key == rows.length - 1;
               return Column(children: [
                 e.value,
-                if (!isLast) const Divider(height: 1, thickness: 0.5, color: AppColors.borderLight, indent: 54),
+                if (!isLast) Divider(height: 1, thickness: 0.5, color: AppColors.borderLight, indent: 54),
               ]);
             }).toList(),
           ),
@@ -954,14 +959,14 @@ class _SettingPageState extends State<SettingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: GoogleFonts.poppins(fontSize: _sp(13), fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+                  Text(title, style: GoogleFonts.poppins(fontSize: _sp(13), fontWeight: FontWeight.w500, color: _textPrimary)),
                   if (subtitle != null)
-                    Text(subtitle, style: GoogleFonts.poppins(fontSize: _sp(10), color: AppColors.textSecondary),
+                    Text(subtitle, style: GoogleFonts.poppins(fontSize: _sp(10), color: _textSecondary),
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
-            trailing ?? Icon(Icons.chevron_right, color: AppColors.textHint, size: 18),
+            trailing ?? Icon(Icons.chevron_right, color: _textHint, size: 18),
           ],
         ),
       ),
@@ -985,9 +990,9 @@ class _SettingPageState extends State<SettingPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: GoogleFonts.poppins(fontSize: _sp(13), fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+                Text(title, style: GoogleFonts.poppins(fontSize: _sp(13), fontWeight: FontWeight.w500, color: _textPrimary)),
                 if (subtitle != null)
-                  Text(subtitle, style: GoogleFonts.poppins(fontSize: _sp(10), color: AppColors.textSecondary)),
+                  Text(subtitle, style: GoogleFonts.poppins(fontSize: _sp(10), color: _textSecondary)),
               ],
             ),
           ),
@@ -1005,38 +1010,64 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  Widget _buildThemePickerRow(bool isDark) {
-    final options = [
-      (AppColors.primary, ThemeMode.light, !isDark),
-      (const Color(0xFF43A047), ThemeMode.light, false),
-      (const Color(0xFF7B1FA2), ThemeMode.light, false),
-      (AppColors.darkBg, ThemeMode.dark, isDark),
-    ];
+  Widget _buildThemePickerRow() {
+    final themeProvider = context.watch<ThemeProvider>();
+    final primary = Theme.of(context).colorScheme.primary;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(width: 32, height: 32,
-              decoration: BoxDecoration(color: AppColors.primarySurface, borderRadius: BorderRadius.circular(9)),
-              child: const Icon(Icons.palette_outlined, color: AppColors.primary, size: 16)),
-          const SizedBox(width: 12),
-          Expanded(child: Text(_t('App Theme', 'سمة التطبيق'),
-              style: GoogleFonts.poppins(fontSize: _sp(13), fontWeight: FontWeight.w500, color: AppColors.textPrimary))),
           Row(
-            children: options.map((opt) {
-              final color = opt.$1;
-              final mode = opt.$2;
-              final isSelected = opt.$3;
+            children: [
+              Container(
+                width: 32, height: 32,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(Icons.palette_outlined, color: primary, size: 16),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                _t('Color Theme', 'لون التطبيق'),
+                style: GoogleFonts.poppins(
+                    fontSize: _sp(13), fontWeight: FontWeight.w500, color: _textPrimary),
+              ),
+              const Spacer(),
+              Text(
+                themeProvider.palette.displayName,
+                style: GoogleFonts.poppins(
+                    fontSize: _sp(11), fontWeight: FontWeight.w600, color: primary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: AppPalette.values.map((p) {
+              final isSelected = themeProvider.palette == p;
               return GestureDetector(
-                onTap: () => context.read<ThemeProvider>().setTheme(mode),
-                child: Container(
-                  margin: const EdgeInsets.only(left: 7),
-                  width: 22, height: 22,
+                onTap: () => themeProvider.setPalette(p),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  margin: const EdgeInsets.only(right: 12),
+                  width: isSelected ? 34 : 28,
+                  height: isSelected ? 34 : 28,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle, color: color,
-                    border: Border.all(color: isSelected ? AppColors.primary : Colors.transparent, width: 2.5),
-                    boxShadow: isSelected ? [BoxShadow(color: color.withOpacity(0.45), blurRadius: 4)] : null,
+                    shape: BoxShape.circle,
+                    color: p.seed,
+                    border: Border.all(
+                      color: isSelected ? p.seed : Colors.transparent,
+                      width: 3,
+                    ),
+                    boxShadow: isSelected
+                        ? [BoxShadow(color: p.seed.withOpacity(0.55), blurRadius: 10, spreadRadius: 1)]
+                        : null,
                   ),
+                  child: isSelected
+                      ? Icon(Icons.check, color: Colors.white, size: 15)
+                      : null,
                 ),
               );
             }).toList(),
@@ -1062,7 +1093,7 @@ class _SettingPageState extends State<SettingPage> {
             children: [
               Container(width: 32, height: 32,
                   decoration: BoxDecoration(color: AppColors.errorSurface, borderRadius: BorderRadius.circular(9)),
-                  child: const Icon(Icons.exit_to_app, color: AppColors.error, size: 16)),
+                  child: Icon(Icons.exit_to_app, color: AppColors.error, size: 16)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1072,7 +1103,7 @@ class _SettingPageState extends State<SettingPage> {
                       style: GoogleFonts.poppins(fontSize: _sp(10), color: Colors.red.withOpacity(0.6))),
                 ]),
               ),
-              const Icon(Icons.chevron_right, color: Color(0xFFFFCDD2), size: 18),
+              Icon(Icons.chevron_right, color: Color(0xFFFFCDD2), size: 18),
             ],
           ),
         ),
@@ -1099,12 +1130,12 @@ class _SettingPageState extends State<SettingPage> {
             ],
           ),
         ),
-        icon: const Icon(Icons.logout_outlined, color: AppColors.primary),
+        icon: Icon(Icons.logout_outlined, color: AppColors.primary),
         label: Text(_t('Logout Options', 'خيارات تسجيل الخروج'),
             style: GoogleFonts.poppins(fontSize: _sp(14), fontWeight: FontWeight.w600, color: AppColors.primary)),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),

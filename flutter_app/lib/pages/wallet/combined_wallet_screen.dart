@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -321,7 +321,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
                         await _loadData();
                         if (!mounted) return;
                         ScaffoldMessenger.of(this.context).showSnackBar(
-                          const SnackBar(content: Text('Conversion completed successfully.')),
+                          SnackBar(content: Text('Conversion completed successfully.')),
                         );
                       } catch (e) {
                         if (!mounted) return;
@@ -336,7 +336,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
                       width: double.infinity,
                       height: 50,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -419,7 +419,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
       backgroundColor: bg,
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+          decoration: BoxDecoration(gradient: AppColors.primaryGradient),
         ),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
@@ -429,14 +429,14 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
                 fontSize: _sp(17), fontWeight: FontWeight.w700)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_outlined, color: Colors.white),
+            icon: Icon(Icons.refresh_outlined, color: Colors.white),
             onPressed: _loadData,
           ),
         ],
       ),
       bottomNavigationBar: const AppBottomNav(selectedIndex: 1),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
           : Align(
               alignment: Alignment.topCenter,
               child: ConstrainedBox(
@@ -505,7 +505,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
           value: _selectedMemberId,
           isExpanded: true,
           dropdownColor: cardBg,
-          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
+          icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary),
           hint: Text('Select member',
               style: GoogleFonts.poppins(
                   fontSize: _sp(13), color: AppColors.textHint)),
@@ -544,7 +544,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
       margin: const EdgeInsets.only(right: 8),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF00695C), Color(0xFF00897B)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -619,7 +619,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
       margin: const EdgeInsets.only(left: 8),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF00838F), Color(0xFF00ACC1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -738,7 +738,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
         ),
         child: Row(
           children: [
-            const Icon(Icons.receipt_long_outlined,
+            Icon(Icons.receipt_long_outlined,
                 color: AppColors.textSecondary, size: 18),
             const SizedBox(width: 10),
             Text('No transactions yet',
@@ -890,7 +890,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [Color(0xFF00695C), Color(0xFF00897B)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -905,7 +905,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.arrow_upward, color: Colors.white, size: 15),
+                        Icon(Icons.arrow_upward, color: Colors.white, size: 15),
                         const SizedBox(width: 6),
                         Text('Money → Points',
                             style: GoogleFonts.poppins(
@@ -923,7 +923,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [Color(0xFF00838F), Color(0xFF00ACC1)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -938,7 +938,7 @@ class _CombinedWalletScreenState extends State<CombinedWalletScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.arrow_downward, color: Colors.white, size: 15),
+                        Icon(Icons.arrow_downward, color: Colors.white, size: 15),
                         const SizedBox(width: 6),
                         Text('Points → Money',
                             style: GoogleFonts.poppins(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
@@ -35,15 +35,15 @@ class _RedeemScreenState extends State<RedeemScreen> {
     return size * (w / 390.0);
   }
 
-  static const _itemBgColors = [
+  static final _itemBgColors = [
     Color(0xFFE0F2F1), Color(0xFFFFF8E1), Color(0xFFFCE4EC),
     Color(0xFFE3F2FD), Color(0xFFE8F5F5), Color(0xFFF3E5F5),
   ];
-  static const _itemIconColors = [
+  static final _itemIconColors = [
     AppColors.primary, Color(0xFFF9A825), Color(0xFFE91E63),
     Color(0xFF1565C0), Color(0xFF00897B), Color(0xFF7B1FA2),
   ];
-  static const _memberColors = [
+  static final _memberColors = [
     {'bg': Color(0xFFE3F2FD), 'text': Color(0xFF1565C0), 'border': Color(0xFF90CAF9)},
     {'bg': Color(0xFFFFF3E0), 'text': Color(0xFFE65100),  'border': Color(0xFFFFCC80)},
     {'bg': Color(0xFFFCE4EC), 'text': Color(0xFFC2185B),  'border': Color(0xFFF48FB1)},
@@ -147,7 +147,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
             final canSubmit       = hasEnoughPoints && hasEnoughMoney && !isSubmitting;
 
             return Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
@@ -279,7 +279,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
                       height: 50,
                       decoration: BoxDecoration(
                         gradient: canSubmit
-                            ? const LinearGradient(
+                            ? LinearGradient(
                                 colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight)
@@ -361,7 +361,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
               curve: Curves.elasticOut,
               builder: (context, value, child) =>
                   Transform.scale(scale: value, child: child),
-              child: const Icon(Icons.celebration,
+              child: Icon(Icons.celebration,
                   color: Colors.orange, size: 56),
             ),
             const SizedBox(height: 10),
@@ -463,7 +463,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
                 focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide:
-                        const BorderSide(color: AppColors.primary, width: 2)),
+                        BorderSide(color: AppColors.primary, width: 2)),
               ),
             ),
             actions: [
@@ -487,7 +487,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
           note: controller.text.trim());
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
             content: Text('Redemption rejected'), backgroundColor: Colors.orange),
       );
       await _loadData();
@@ -528,7 +528,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
       backgroundColor: bg,
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+          decoration: BoxDecoration(gradient: AppColors.primaryGradient),
         ),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
@@ -540,14 +540,14 @@ class _RedeemScreenState extends State<RedeemScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_outlined, color: Colors.white),
+            icon: Icon(Icons.refresh_outlined, color: Colors.white),
             onPressed: _loadData,
           ),
         ],
       ),
       bottomNavigationBar: const AppBottomNav(selectedIndex: 0),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: AppColors.primary))
           : Align(
               alignment: Alignment.topCenter,
@@ -603,7 +603,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.card_giftcard_outlined,
+                Icon(Icons.card_giftcard_outlined,
                     color: AppColors.textSecondary, size: 18),
                 const SizedBox(width: 10),
                 Text('No wishlist items available for redemption.',
@@ -624,7 +624,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF00695C), Color(0xFF00ACC1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -811,7 +811,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 gradient: canAfford
-                    ? const LinearGradient(
+                    ? LinearGradient(
                         colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight)
@@ -860,7 +860,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_outline,
+                Icon(Icons.check_circle_outline,
                     color: AppColors.primary, size: 18),
                 const SizedBox(width: 10),
                 Text('No pending redemptions right now.',
@@ -947,7 +947,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
                           decoration: BoxDecoration(
                               color: AppColors.errorSurface,
                               borderRadius: BorderRadius.circular(9)),
-                          child: const Center(
+                          child: Center(
                             child: Text('✕',
                                 style: TextStyle(
                                     color: AppColors.error,
@@ -964,7 +964,7 @@ class _RedeemScreenState extends State<RedeemScreen> {
                           decoration: BoxDecoration(
                               color: AppColors.primarySurface,
                               borderRadius: BorderRadius.circular(9)),
-                          child: const Center(
+                          child: Center(
                             child: Text('✓',
                                 style: TextStyle(
                                     color: AppColors.primary,

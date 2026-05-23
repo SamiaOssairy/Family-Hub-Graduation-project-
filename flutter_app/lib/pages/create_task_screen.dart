@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
@@ -105,7 +105,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     if (_titleController.text.trim().isEmpty ||
         _selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
             content: Text('Please fill title and category')),
       );
       return;
@@ -113,7 +113,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
     if (_usesPoints && _pointsAmount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
             content:
                 Text('Points reward must be greater than zero')),
       );
@@ -122,7 +122,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
     if (_usesMoney && _moneyAmount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
             content: Text('Money reward must be greater than zero')),
       );
       return;
@@ -186,7 +186,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       if (!mounted) return;
       Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
             content: Text('Task template created successfully'),
             backgroundColor: Color(0xFF00897B)),
       );
@@ -248,7 +248,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: _primary),
+          icon: Icon(Icons.arrow_back, color: _primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
@@ -285,7 +285,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     cardColor,
                     border,
                     textSec,
-                    prefixIcon: const Icon(Icons.title,
+                    prefixIcon: Icon(Icons.title,
                         color: _primary, size: 20),
                   ),
                 ),
@@ -532,7 +532,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.auto_awesome,
+                        Icon(Icons.auto_awesome,
                             color: _primaryLight, size: 16),
                         const SizedBox(width: 8),
                         Text(
@@ -590,7 +590,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     decoration: BoxDecoration(
                       gradient: _isSubmitting
                           ? null
-                          : const LinearGradient(
+                          : LinearGradient(
                               colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
@@ -619,7 +619,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           : Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.check_circle_outline,
+                                Icon(Icons.check_circle_outline,
                                     color: Colors.white, size: 20),
                                 const SizedBox(width: 8),
                                 Text(
@@ -763,7 +763,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded,
+            Icon(Icons.warning_amber_rounded,
                 color: Color(0xFFE65100), size: 18),
             const SizedBox(width: 10),
             Expanded(

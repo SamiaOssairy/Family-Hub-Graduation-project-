@@ -6,7 +6,6 @@ import 'pages/setting.dart';
 import 'pages/splash_screen.dart';
 import 'pages/onboarding_screen.dart';
 import 'pages/dashboard_screen.dart';
-import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'pages/tasks_screen.dart';
 import 'pages/status_screen.dart';
@@ -80,8 +79,8 @@ class MyApp extends StatelessWidget {
                   GlobalWidgetsLocalizations.delegate,
                   GlobalCupertinoLocalizations.delegate,
                 ],
-                theme: appLightTheme,
-                darkTheme: appDarkTheme,
+                theme: themeProvider.lightTheme,
+                darkTheme: themeProvider.darkTheme,
                 themeMode: themeProvider.themeMode,
                 home: const AuthBootstrapScreen(),
             routes: {

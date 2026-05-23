@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/services/api_service.dart';
@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
   int _activeTab = 0;
   bool _locationSharing = true;
 
-  static const _avatarColors = [
+  static final _avatarColors = [
     Color(0xFF1565C0), Color(0xFF6A1B9A), Color(0xFFAD1457),
     Color(0xFFE65100), Color(0xFF00695C), Color(0xFF00897B),
   ];
@@ -310,7 +310,7 @@ class _HomePageState extends State<HomePage> {
                       title: Text('$familyTitle ($username)'),
                       subtitle: Text(mail),
                       trailing: isActive
-                          ? const Icon(Icons.check_circle, color: Color(0xFF00897B))
+                          ? Icon(Icons.check_circle, color: Color(0xFF00897B))
                           : null,
                       onTap: () async {
                         Navigator.of(sheetContext).pop();
@@ -332,7 +332,7 @@ class _HomePageState extends State<HomePage> {
                             MaterialPageRoute(builder: (_) => const LoginPage()),
                           );
                         },
-                        icon: const Icon(Icons.add),
+                        icon: Icon(Icons.add),
                         label: Text(_t('Add New Account', 'إضافة حساب جديد')),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF00897B),
@@ -353,7 +353,7 @@ class _HomePageState extends State<HomePage> {
                             await _loadWalletSummary();
                           }
                         },
-                        icon: const Icon(Icons.manage_accounts),
+                        icon: Icon(Icons.manage_accounts),
                         label: Text(_t('Manage Accounts', 'إدارة الحسابات')),
                       ),
                     ],
@@ -473,7 +473,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(dialogContext),
-                          icon: const Icon(Icons.close),
+                          icon: Icon(Icons.close),
                         ),
                       ],
                     ),
@@ -530,7 +530,7 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        suffixIcon: const Icon(Icons.calendar_today),
+                        suffixIcon: Icon(Icons.calendar_today),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -634,7 +634,7 @@ class _HomePageState extends State<HomePage> {
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        prefixIcon: const Icon(Icons.person_add, color: Color(0xFF00897B)),
+                                        prefixIcon: Icon(Icons.person_add, color: Color(0xFF00897B)),
                                       ),
                                       onChanged: (value) {
                                         setDialogState(() {});
@@ -653,19 +653,19 @@ class _HomePageState extends State<HomePage> {
                                 // Validation
                                 if (emailController.text.trim().isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please enter email address')),
+                                    SnackBar(content: Text('Please enter email address')),
                                   );
                                   return;
                                 }
                                 if (usernameController.text.trim().isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please enter username')),
+                                    SnackBar(content: Text('Please enter username')),
                                   );
                                   return;
                                 }
                                 if (birthdateController.text.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please select birth date')),
+                                    SnackBar(content: Text('Please select birth date')),
                                   );
                                   return;
                                 }
@@ -676,14 +676,14 @@ class _HomePageState extends State<HomePage> {
                                 if (showNewTypeField) {
                                   if (newMemberTypeController.text.trim().isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Please enter new member type name')),
+                                      SnackBar(content: Text('Please enter new member type name')),
                                     );
                                     return;
                                   }
                                   finalMemberType = newMemberTypeController.text.trim();
                                 } else if (selectedMemberType == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please select member type')),
+                                    SnackBar(content: Text('Please select member type')),
                                   );
                                   return;
                                 }
@@ -703,7 +703,7 @@ class _HomePageState extends State<HomePage> {
                                   if (mounted) {
                                     Navigator.pop(dialogContext);
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
+                                      SnackBar(
                                         content: Text('Member added successfully!'),
                                         backgroundColor: Colors.green,
                                         duration: Duration(seconds: 3),
@@ -829,7 +829,7 @@ class _HomePageState extends State<HomePage> {
             height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [AppColors.primary, AppColors.light],
@@ -842,7 +842,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            child: const Center(
+            child: Center(
               child: Text('👨‍👩‍👧‍👦', style: TextStyle(fontSize: 20)),
             ),
           ),
@@ -925,7 +925,7 @@ class _HomePageState extends State<HomePage> {
                 await _handleLogoutAll();
               }
             },
-            icon: const Icon(Icons.logout_outlined, size: 22, color: AppColors.primary),
+            icon: Icon(Icons.logout_outlined, size: 22, color: AppColors.primary),
             tooltip: _t('Logout', 'خروج'),
           ),
         ),
@@ -952,7 +952,7 @@ class _HomePageState extends State<HomePage> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.person_add_alt_1, color: AppColors.primary, size: 18),
+              child: Icon(Icons.person_add_alt_1, color: AppColors.primary, size: 18),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -966,7 +966,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.border),
+            Icon(Icons.chevron_right, color: AppColors.border),
           ],
         ),
       ),
@@ -1015,7 +1015,7 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.all(10),
       decoration: AppDecorations.card,
       child: _walletLoading
-          ? const Center(
+          ? Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 10),
                 child: SizedBox(
@@ -1098,7 +1098,7 @@ class _HomePageState extends State<HomePage> {
         Container(
           decoration: AppDecorations.card,
           child: _tasksLoading
-              ? const Center(
+              ? Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
                     child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
@@ -1111,7 +1111,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(14),
                         child: Row(
                           children: [
-                            const Icon(Icons.assignment_outlined, color: AppColors.secondary, size: 18),
+                            Icon(Icons.assignment_outlined, color: AppColors.secondary, size: 18),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -1119,7 +1119,7 @@ class _HomePageState extends State<HomePage> {
                                 style: GoogleFonts.poppins(fontSize: _sp(12), color: AppColors.secondary),
                               ),
                             ),
-                            const Icon(Icons.chevron_right, color: AppColors.border, size: 16),
+                            Icon(Icons.chevron_right, color: AppColors.border, size: 16),
                           ],
                         ),
                       ),
@@ -1211,7 +1211,7 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Center(child: Text('🤖', style: TextStyle(fontSize: 15))),
+              child: Center(child: Text('🤖', style: TextStyle(fontSize: 15))),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -1265,7 +1265,7 @@ class _HomePageState extends State<HomePage> {
         Container(
           decoration: AppDecorations.card,
           child: _eventsLoading
-              ? const Center(
+              ? Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
                     child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
@@ -1278,7 +1278,7 @@ class _HomePageState extends State<HomePage> {
                         padding: const EdgeInsets.all(14),
                         child: Row(
                           children: [
-                            const Icon(Icons.event_outlined, color: AppColors.secondary, size: 18),
+                            Icon(Icons.event_outlined, color: AppColors.secondary, size: 18),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -1286,7 +1286,7 @@ class _HomePageState extends State<HomePage> {
                                 style: GoogleFonts.poppins(fontSize: _sp(12), color: AppColors.secondary),
                               ),
                             ),
-                            const Icon(Icons.chevron_right, color: AppColors.border, size: 16),
+                            Icon(Icons.chevron_right, color: AppColors.border, size: 16),
                           ],
                         ),
                       ),
@@ -1378,7 +1378,7 @@ class _HomePageState extends State<HomePage> {
         Container(
           decoration: AppDecorations.card,
           child: _rankingLoading
-              ? const Center(
+              ? Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
                     child: CircularProgressIndicator(color: AppColors.primary),
@@ -1453,7 +1453,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: AppDecorations.cardWithShadow,
           child: _loading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+              ? Center(child: CircularProgressIndicator(color: AppColors.primary))
               : Wrap(
                   spacing: 12,
                   runSpacing: 10,
@@ -1762,7 +1762,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomNav() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.white,
         border: Border(top: BorderSide(color: AppColors.border)),
         boxShadow: [

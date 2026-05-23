@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/services/api_service.dart';
 
@@ -252,7 +252,7 @@ class _GroceryListDetailScreenState extends State<GroceryListDetailScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF00352E)),
+            icon: Icon(Icons.arrow_back_ios, color: Color(0xFF00352E)),
           ),
           Expanded(
             child: _isEditing
@@ -294,12 +294,12 @@ class _GroceryListDetailScreenState extends State<GroceryListDetailScreen> {
           if (_isEditing)
             IconButton(
               onPressed: _updateTitle,
-              icon: const Icon(Icons.check, color: Color(0xFF00897B)),
+              icon: Icon(Icons.check, color: Color(0xFF00897B)),
             )
           else
             IconButton(
               onPressed: _deleteList,
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              icon: Icon(Icons.delete_outline, color: Colors.red),
             ),
         ],
       ),
@@ -336,7 +336,7 @@ class _GroceryListDetailScreenState extends State<GroceryListDetailScreen> {
           ),
           IconButton(
             onPressed: _addItem,
-            icon: const Icon(Icons.add_circle,
+            icon: Icon(Icons.add_circle,
                 color: Color(0xFF00897B), size: 28),
           ),
         ],
@@ -388,7 +388,7 @@ class _GroceryListDetailScreenState extends State<GroceryListDetailScreen> {
           color: Colors.red[400],
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: Icon(Icons.delete, color: Colors.white),
       ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -418,7 +418,7 @@ class _GroceryListDetailScreenState extends State<GroceryListDetailScreen> {
                   ),
                 ),
                 child: isChecked
-                    ? const Icon(Icons.check, size: 16, color: Colors.white)
+                    ? Icon(Icons.check, size: 16, color: Colors.white)
                     : null,
               ),
             ),

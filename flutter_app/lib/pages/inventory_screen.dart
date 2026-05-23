@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -450,7 +450,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   width: double.infinity,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                       color: const Color(0xFF00897B),
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20),
@@ -466,7 +466,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         IconButton(
                             onPressed: () => Navigator.pop(dialogContext),
                             icon:
-                                const Icon(Icons.close, color: Colors.white),
+                                Icon(Icons.close, color: Colors.white),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints()),
                       ]),
@@ -1157,7 +1157,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: _loading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                         color: const Color(0xFF00897B)))
                 : Column(children: [
@@ -1180,7 +1180,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddEditItemDialog(),
         backgroundColor: const Color(0xFF00897B),
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: Icon(Icons.add, color: Colors.white),
         label: Text('Add Item',
             style: GoogleFonts.poppins(
                 color: Colors.white, fontWeight: FontWeight.w600)),
@@ -1203,7 +1203,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       child: Row(children: [
         IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios, color: const Color(0xFF00352E))),
+            icon: Icon(Icons.arrow_back_ios, color: const Color(0xFF00352E))),
         Expanded(
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1221,7 +1221,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           IconButton(
               onPressed: () =>
                   Navigator.pushNamed(context, '/inventory-alerts'),
-              icon: const Icon(Icons.notifications_outlined,
+              icon: Icon(Icons.notifications_outlined,
                   color: const Color(0xFF00897B))),
           if (_unreadAlerts > 0)
             Positioned(
@@ -1229,7 +1229,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 top: 6,
                 child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                         color: Colors.red, shape: BoxShape.circle),
                     child: Text(
                         _unreadAlerts > 9 ? '9+' : '$_unreadAlerts',
@@ -1243,7 +1243,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
               await Navigator.pushNamed(context, '/inventory-categories');
               _loadData();
             },
-            icon: const Icon(Icons.account_tree_outlined,
+            icon: Icon(Icons.account_tree_outlined,
                 color: const Color(0xFF00897B)),
             tooltip: 'Manage Categories'),
       ]),
@@ -1347,7 +1347,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     fontSize: 12, color: const Color(0xFF80CBC4))),
             const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.edit_outlined,
+              leading: Icon(Icons.edit_outlined,
                   color: const Color(0xFF00897B)),
               title: Text('Rename Inventory',
                   style: GoogleFonts.poppins()),
@@ -1358,7 +1358,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
             ListTile(
               leading:
-                  const Icon(Icons.delete_outline, color: Colors.red),
+                  Icon(Icons.delete_outline, color: Colors.red),
               title: Text('Delete Inventory',
                   style: GoogleFonts.poppins(color: Colors.red)),
               subtitle: Text(
@@ -1485,7 +1485,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                    const Icon(Icons.add,
+                    Icon(Icons.add,
                         size: 18, color: const Color(0xFF00897B)),
                     const SizedBox(width: 4),
                     Text('New',
@@ -1605,7 +1605,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
               hintText: 'Search items...',
               hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
               prefixIcon:
-                  const Icon(Icons.search, color: const Color(0xFF00897B)),
+                  Icon(Icons.search, color: const Color(0xFF00897B)),
               suffixIcon: PopupMenuButton<String>(
                 icon: Icon(Icons.sort, color: Colors.grey[600]),
                 tooltip: 'Sort by',
@@ -1729,7 +1729,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     color: const Color(0xFF00897B).withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.savings_outlined, color: const Color(0xFF00897B), size: 18),
+                  child: Icon(Icons.savings_outlined, color: const Color(0xFF00897B), size: 18),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

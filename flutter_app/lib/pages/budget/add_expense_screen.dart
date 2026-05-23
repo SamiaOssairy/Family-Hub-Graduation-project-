@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -69,12 +69,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final amount = double.tryParse(_amountCtrl.text.trim());
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter a valid amount')));
+          SnackBar(content: Text('Please enter a valid amount')));
       return;
     }
     if (_expenseScope == 'shared' && _selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a category')));
+          SnackBar(content: Text('Please select a category')));
       return;
     }
     setState(() => _isLoading = true);
@@ -102,7 +102,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
                 content: Text('Request submitted! Waiting for parent approval.'),
                 backgroundColor: Color(0xFF1565C0)));
         }
@@ -121,7 +121,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
                 content: Text('Expense added!'),
                 backgroundColor: AppColors.primary));
         }
@@ -162,7 +162,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       backgroundColor: bg,
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+          decoration: BoxDecoration(gradient: AppColors.primaryGradient),
         ),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
@@ -296,7 +296,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       decoration: BoxDecoration(
                           color: AppColors.primarySurface,
                           borderRadius: BorderRadius.circular(6)),
-                      child: const Icon(Icons.category_outlined,
+                      child: Icon(Icons.category_outlined,
                           size: 13, color: AppColors.primary),
                     ),
                     const SizedBox(width: 10),
@@ -310,7 +310,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   ]),
                   value: selectedCategoryValue,
                   dropdownColor: cardBg,
-                  icon: const Icon(Icons.keyboard_arrow_down,
+                  icon: Icon(Icons.keyboard_arrow_down,
                       color: AppColors.textSecondary),
                   items: categories.map((cat) {
                     final color = _parseColor(cat['color'] ?? '#00897B');
@@ -357,7 +357,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   lastDate: DateTime.now(),
                   builder: (ctx, child) => Theme(
                     data: Theme.of(ctx).copyWith(
-                      colorScheme: const ColorScheme.light(
+                      colorScheme: ColorScheme.light(
                           primary: AppColors.primary,
                           onPrimary: Colors.white),
                     ),
@@ -377,7 +377,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             : AppColors.textPrimary),
                   ),
                   const Spacer(),
-                  const Icon(Icons.calendar_today_outlined,
+                  Icon(Icons.calendar_today_outlined,
                       size: 18, color: AppColors.textSecondary),
                 ]),
               ),
@@ -443,7 +443,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             decoration: BoxDecoration(
                                 color: AppColors.primarySurface,
                                 borderRadius: BorderRadius.circular(10)),
-                            child: const Icon(Icons.camera_alt_outlined,
+                            child: Icon(Icons.camera_alt_outlined,
                                 size: 18, color: AppColors.primary),
                           ),
                           const SizedBox(width: 10),
@@ -475,7 +475,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     decoration: BoxDecoration(
                         color: const Color(0xFFFFF8E1),
                         borderRadius: BorderRadius.circular(10)),
-                    child: const Center(
+                    child: Center(
                       child: Text('⚡', style: TextStyle(fontSize: 17)),
                     ),
                   ),
@@ -525,7 +525,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 decoration: BoxDecoration(
                   gradient: _isLoading
                       ? null
-                      : const LinearGradient(
+                      : LinearGradient(
                           colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,

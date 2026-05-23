@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/services/api_service.dart';
 import '../core/localization/app_i18n.dart';
@@ -168,7 +168,7 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+          decoration: BoxDecoration(gradient: AppColors.primaryGradient),
         ),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
@@ -182,7 +182,7 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
                 color: Colors.white.withOpacity(0.18),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.smart_toy_outlined,
+              child: Icon(Icons.smart_toy_outlined,
                   color: Colors.white, size: 20),
             ),
             const SizedBox(width: 10),
@@ -207,7 +207,7 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
         actions: [
           if (_messages.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.delete_outline),
+              icon: Icon(Icons.delete_outline),
               tooltip: _t('Clear history', 'مسح السجل'),
               onPressed: _clearHistory,
             ),
@@ -217,7 +217,7 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
         children: [
           Expanded(
             child: _historyLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(color: AppColors.primary))
                 : _messages.isEmpty
                     ? _buildEmptyState()
@@ -253,7 +253,7 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
                   ),
                 ],
               ),
-              child: const Icon(Icons.smart_toy_outlined,
+              child: Icon(Icons.smart_toy_outlined,
                   color: Colors.white, size: 46),
             ),
           ),
@@ -316,7 +316,7 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
         ),
         child: Row(
           children: [
-            const Icon(Icons.chat_bubble_outline,
+            Icon(Icons.chat_bubble_outline,
                 color: AppColors.primary, size: 16),
             const SizedBox(width: 10),
             Expanded(
@@ -324,7 +324,7 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
                   style: GoogleFonts.poppins(
                       fontSize: _sp(12), color: AppColors.textPrimary)),
             ),
-            const Icon(Icons.arrow_forward_ios,
+            Icon(Icons.arrow_forward_ios,
                 size: 12, color: AppColors.textSecondary),
           ],
         ),
@@ -399,7 +399,7 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.smart_toy_outlined,
+                    Icon(Icons.smart_toy_outlined,
                         size: 13, color: AppColors.primary),
                     const SizedBox(width: 4),
                     Text(
@@ -516,16 +516,16 @@ class _PlanningChatScreenState extends State<PlanningChatScreen>
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: AppColors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: AppColors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide:
-                      const BorderSide(color: AppColors.primary, width: 1.5),
+                      BorderSide(color: AppColors.primary, width: 1.5),
                 ),
               ),
               onSubmitted: _sendMessage,

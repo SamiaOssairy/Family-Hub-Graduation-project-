@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
@@ -162,7 +162,7 @@ class _MealSuggestionsScreenState extends State<MealSuggestionsScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: _loading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(color: Color(0xFF00897B)))
                 : Column(
                     children: [
@@ -210,7 +210,7 @@ class _MealSuggestionsScreenState extends State<MealSuggestionsScreen> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                   color: surface, borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.arrow_back_ios_new,
+              child: Icon(Icons.arrow_back_ios_new,
                   size: 18, color: Color(0xFF00897B)),
             ),
           ),
@@ -260,7 +260,7 @@ class _MealSuggestionsScreenState extends State<MealSuggestionsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+              Icon(Icons.auto_awesome, color: Colors.white, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Generate Smart Suggestions',
@@ -577,7 +577,7 @@ class _MealSuggestionsScreenState extends State<MealSuggestionsScreen> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     onPressed: () => Navigator.pushNamed(context, '/meals'),
-                    icon: const Icon(Icons.calendar_today, size: 15),
+                    icon: Icon(Icons.calendar_today, size: 15),
                     label: Text('Plan This Meal',
                         style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600, fontSize: 13)),
@@ -708,7 +708,7 @@ class _MealTypePickerSheetState extends State<_MealTypePickerSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -807,7 +807,7 @@ class _MealTypePickerSheetState extends State<_MealTypePickerSheet> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.auto_awesome,
+                  Icon(Icons.auto_awesome,
                       color: Colors.white, size: 18),
                   const SizedBox(width: 8),
                   Text('Find Suggestions',

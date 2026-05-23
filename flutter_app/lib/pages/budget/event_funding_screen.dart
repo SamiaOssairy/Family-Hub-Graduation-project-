@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:app_frontend/core/services/api_service.dart';
@@ -142,7 +142,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
             final canPickMember = _isParent;
 
             return Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
@@ -232,14 +232,14 @@ class _EventFundingScreenState extends State<EventFundingScreen>
                           final amount = double.tryParse(amountController.text.trim());
                           if (amount == null || amount <= 0) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please enter a valid amount')),
+                              SnackBar(content: Text('Please enter a valid amount')),
                             );
                             return;
                           }
 
                           if (_isParent && (selectedMemberId == null || selectedMemberId!.isEmpty)) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please select a member')),
+                              SnackBar(content: Text('Please select a member')),
                             );
                             return;
                           }
@@ -258,7 +258,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
                             Navigator.pop(context);
                             await _loadData();
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Contribution saved'), backgroundColor: Colors.green),
+                              SnackBar(content: Text('Contribution saved'), backgroundColor: Colors.green),
                             );
                           } catch (e) {
                             if (!mounted) return;
@@ -356,7 +356,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
       if (!mounted) return;
       await _loadData();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Marked as paid'), backgroundColor: Colors.green),
+        SnackBar(content: Text('Marked as paid'), backgroundColor: Colors.green),
       );
     } catch (e) {
       if (!mounted) return;
@@ -402,7 +402,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
       if (!mounted) return;
       await _loadData();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Funding goal updated'), backgroundColor: Colors.green),
+        SnackBar(content: Text('Funding goal updated'), backgroundColor: Colors.green),
       );
     } catch (e) {
       if (!mounted) return;
@@ -419,7 +419,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
 
     if (requiredPoints <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No points requirement found for this event')),
+        SnackBar(content: Text('No points requirement found for this event')),
       );
       return;
     }
@@ -429,7 +429,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
       if (!mounted) return;
       await _loadData();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Spot redeemed successfully'), backgroundColor: Colors.green),
+        SnackBar(content: Text('Spot redeemed successfully'), backgroundColor: Colors.green),
       );
     } catch (e) {
       if (!mounted) return;
@@ -449,7 +449,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
         title: Text('Event Funding', style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00897B)))
+          ? Center(child: CircularProgressIndicator(color: Color(0xFF00897B)))
           : (_eventId == null || _eventId!.isEmpty)
               ? _buildErrorState('Missing event ID')
               : _buildContent(),
@@ -562,7 +562,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
               if (_isParent)
                 IconButton(
                   onPressed: _adjustFundingGoal,
-                  icon: const Icon(Icons.tune, color: Colors.white),
+                  icon: Icon(Icons.tune, color: Colors.white),
                   tooltip: 'Adjust Funding Goal',
                 ),
             ],
@@ -667,7 +667,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
             padding: const EdgeInsets.only(bottom: 10),
             child: ElevatedButton.icon(
               onPressed: () => _showContributeSheet(),
-              icon: const Icon(Icons.add),
+              icon: Icon(Icons.add),
               label: const Text('Add Contribution'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00897B),
@@ -740,7 +740,7 @@ class _EventFundingScreenState extends State<EventFundingScreen>
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: () => _markPaid(row),
-                icon: const Icon(Icons.check_circle_outline),
+                icon: Icon(Icons.check_circle_outline),
                 label: const Text('Mark as Paid'),
               ),
             ),

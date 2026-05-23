@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -118,7 +118,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
     return fallback[index % fallback.length];
   }
 
-  static const _memberColors = [
+  static final _memberColors = [
     {'bg': Color(0xFFE3F2FD), 'text': Color(0xFF1565C0), 'border': Color(0xFF90CAF9)},
     {'bg': Color(0xFFFFF3E0), 'text': Color(0xFFE65100), 'border': Color(0xFFFFCC80)},
     {'bg': Color(0xFFFCE4EC), 'text': Color(0xFFC2185B), 'border': Color(0xFFF48FB1)},
@@ -145,7 +145,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                     _buildHeader(context, provider, isDark),
                     Expanded(
                       child: provider.isLoading
-                          ? const Center(
+                          ? Center(
                               child: CircularProgressIndicator(color: AppColors.primary))
                           : provider.budgets.isEmpty
                               ? _buildEmptyState(context, provider)
@@ -188,7 +188,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
               ),
               IconButton(
                 onPressed: () => Navigator.pushNamed(context, '/combined-analytics'),
-                icon: const Icon(Icons.analytics_outlined, color: AppColors.primary),
+                icon: Icon(Icons.analytics_outlined, color: AppColors.primary),
                 tooltip: 'Analytics',
               ),
               Stack(
@@ -196,7 +196,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                   IconButton(
                     onPressed: () => Navigator.push(context,
                         MaterialPageRoute(builder: (_) => FutureEventsScreen())),
-                    icon: const Icon(Icons.event_outlined, color: AppColors.primary),
+                    icon: Icon(Icons.event_outlined, color: AppColors.primary),
                     tooltip: 'Events',
                   ),
                   if (reminders.isNotEmpty)
@@ -204,7 +204,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                       right: 8, top: 8,
                       child: Container(
                         width: 9, height: 9,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                             color: Colors.orange, shape: BoxShape.circle),
                       ),
                     ),
@@ -223,7 +223,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                     color: Colors.orange.shade700,
                     borderRadius: BorderRadius.circular(10)),
                 child: Row(children: [
-                  const Icon(Icons.notifications_active, color: Colors.white, size: 16),
+                  Icon(Icons.notifications_active, color: Colors.white, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -231,7 +231,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: _sp(11)),
                     ),
                   ),
-                  const Icon(Icons.chevron_right, color: Colors.white, size: 16),
+                  Icon(Icons.chevron_right, color: Colors.white, size: 16),
                 ]),
               ),
             ),
@@ -312,7 +312,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF00695C), Color(0xFF00ACC1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -631,7 +631,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
         ),
         const SizedBox(height: 6),
         if (_pendingLoading)
-          const Center(child: Padding(
+          Center(child: Padding(
             padding: EdgeInsets.all(16),
             child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
           ))
@@ -645,7 +645,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_outline, color: AppColors.primary, size: 18),
+                Icon(Icons.check_circle_outline, color: AppColors.primary, size: 18),
                 const SizedBox(width: 10),
                 Text('No pending expense requests',
                     style: GoogleFonts.poppins(
@@ -731,7 +731,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                           decoration: BoxDecoration(
                               color: AppColors.primarySurface,
                               borderRadius: BorderRadius.circular(9)),
-                          child: const Center(
+                          child: Center(
                             child: Text('✓',
                                 style: TextStyle(
                                     color: AppColors.primary,
@@ -749,7 +749,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                           decoration: BoxDecoration(
                               color: AppColors.errorSurface,
                               borderRadius: BorderRadius.circular(9)),
-                          child: const Center(
+                          child: Center(
                             child: Text('✕',
                                 style: TextStyle(
                                     color: AppColors.error,
@@ -782,12 +782,12 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
               Navigator.push(context, MaterialPageRoute(
                   builder: (_) => AddExpenseScreen(budget: budget)));
             },
-            icon: const Icon(Icons.add, size: 16, color: AppColors.primary),
+            icon: Icon(Icons.add, size: 16, color: AppColors.primary),
             label: Text('Add Expense',
                 style: GoogleFonts.poppins(
                     fontSize: _sp(12), color: AppColors.primary)),
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: AppColors.primary),
+              side: BorderSide(color: AppColors.primary),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(vertical: 11),
             ),
@@ -811,7 +811,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.pie_chart_outline, size: 16, color: Colors.white),
+                Icon(Icons.pie_chart_outline, size: 16, color: Colors.white),
                 const SizedBox(width: 8),
                 Text('Analytics',
                     style: GoogleFonts.poppins(
@@ -838,7 +838,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
               decoration: BoxDecoration(
                   color: AppColors.primarySurface,
                   borderRadius: BorderRadius.circular(24)),
-              child: const Icon(Icons.account_balance_wallet_outlined,
+              child: Icon(Icons.account_balance_wallet_outlined,
                   size: 40, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
@@ -862,7 +862,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.add, color: Colors.white),
+                  Icon(Icons.add, color: Colors.white),
                   const SizedBox(width: 8),
                   Text('Create Budget',
                       style: GoogleFonts.poppins(
@@ -884,7 +884,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
       child: Container(
         width: 54, height: 54,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -898,7 +898,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
             ),
           ],
         ),
-        child: const Icon(Icons.add, color: Colors.white, size: 26),
+        child: Icon(Icons.add, color: Colors.white, size: 26),
       ),
     );
   }
@@ -971,7 +971,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
     if (provider.inventoryCategories.isEmpty || provider.familyMembers.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Loading family inventories and members...')),
+          SnackBar(content: Text('Loading family inventories and members...')),
         );
       }
     }
@@ -1061,7 +1061,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                   child: Row(children: [
                     Container(
                       width: 16, height: 16,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Color(0xFF00897B),
                         shape: BoxShape.circle,
                       ),
@@ -1119,7 +1119,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.inventory_2_outlined, size: 18, color: Color(0xFF00897B)),
+                          Icon(Icons.inventory_2_outlined, size: 18, color: Color(0xFF00897B)),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(
@@ -1176,7 +1176,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                     final total = double.tryParse(totalCtrl.text.trim());
                     if (total == null || total <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter a valid total amount')));
+                        SnackBar(content: Text('Please enter a valid total amount')));
                       return;
                     }
                     final endDate = switch (periodType) {
@@ -1218,7 +1218,7 @@ class _BudgetDashboardScreenState extends State<BudgetDashboardScreen> {
                       if (ctx.mounted) Navigator.pop(ctx);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text('Budget created!'),
                             backgroundColor: Color(0xFF00897B),
                           ));

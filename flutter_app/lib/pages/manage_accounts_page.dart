@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/services/api_service.dart';
 import '../core/localization/app_i18n.dart';
 
@@ -103,7 +103,7 @@ class _ManageAccountsPageState extends State<ManageAccountsPage> {
           title: Text(_t('Manage Accounts', 'إدارة الحسابات')),
         ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : _profiles.isEmpty
                 ? Center(
                     child: Text(_t('No saved accounts', 'لا توجد حسابات محفوظة')),
@@ -146,12 +146,12 @@ class _ManageAccountsPageState extends State<ManageAccountsPage> {
                               ),
                             IconButton(
                               tooltip: _t('Switch account', 'تبديل الحساب'),
-                              icon: const Icon(Icons.swap_horiz),
+                              icon: Icon(Icons.swap_horiz),
                               onPressed: isActive ? null : () => _switchProfile(profileKey),
                             ),
                             IconButton(
                               tooltip: _t('Remove account', 'حذف الحساب'),
-                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                              icon: Icon(Icons.delete_outline, color: Colors.redAccent),
                               onPressed: () async {
                                 final confirmed = await showDialog<bool>(
                                   context: context,
@@ -179,7 +179,7 @@ class _ManageAccountsPageState extends State<ManageAccountsPage> {
                                 }
                               },
                             ),
-                            const Icon(Icons.drag_handle),
+                            Icon(Icons.drag_handle),
                           ],
                         ),
                       ),

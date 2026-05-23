@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme/app_theme.dart';
 
@@ -243,11 +243,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Container(
           width: 42,
           height: 42,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: AppColors.primaryGradient,
           ),
-          child: const Center(child: Text('👨‍👩‍👧‍👦', style: TextStyle(fontSize: 19))),
+          child: Center(child: Text('👨‍👩‍👧‍👦', style: TextStyle(fontSize: 19))),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -269,7 +269,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           child: IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_outlined, size: 22, color: AppColors.primary),
+            icon: Icon(Icons.notifications_outlined, size: 22, color: AppColors.primary),
             tooltip: 'Notifications',
           ),
         ),
@@ -312,7 +312,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     width: 16,
                     height: 16,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
@@ -356,10 +356,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String title,
     IconData icon,
     String? routeName, {
-    Color iconBg = AppColors.primarySurface,
-    Color iconColor = AppColors.primary,
+    Color? iconBg,
+    Color? iconColor,
     int? badge,
   }) {
+    iconBg ??= AppColors.primarySurface;
+    iconColor ??= AppColors.primary;
     return GestureDetector(
       onTap: () {
         if (routeName != null) Navigator.pushNamed(context, routeName);
@@ -388,7 +390,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Container(
                       width: 16,
                       height: 16,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.error,
                         shape: BoxShape.circle,
                       ),
@@ -414,7 +416,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             if (_editMode)
-              const Icon(Icons.drag_handle, size: 16, color: AppColors.secondary),
+              Icon(Icons.drag_handle, size: 16, color: AppColors.secondary),
           ],
         ),
       ),
@@ -443,7 +445,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: AppColors.primarySurface,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.add, size: 16, color: AppColors.primary),
+                child: Icon(Icons.add, size: 16, color: AppColors.primary),
               ),
             ),
           ],
@@ -455,7 +457,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 decoration: AppDecorations.card,
                 child: Row(
                   children: [
-                    const Icon(Icons.campaign_outlined, color: AppColors.secondary, size: 18),
+                    Icon(Icons.campaign_outlined, color: AppColors.secondary, size: 18),
                     const SizedBox(width: 10),
                     Text(
                       'No announcements yet. Tap + to add one!',
@@ -479,7 +481,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             color: AppColors.primarySurface,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.campaign_outlined,
+                          child: Icon(Icons.campaign_outlined,
                               color: AppColors.primary, size: 18),
                         ),
                         const SizedBox(width: 12),
@@ -530,7 +532,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: AppColors.primarySurface,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.add, size: 16, color: AppColors.primary),
+                child: Icon(Icons.add, size: 16, color: AppColors.primary),
               ),
             ),
           ],
@@ -603,7 +605,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildBottomNav() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.white,
         border: Border(top: BorderSide(color: AppColors.border)),
         boxShadow: [

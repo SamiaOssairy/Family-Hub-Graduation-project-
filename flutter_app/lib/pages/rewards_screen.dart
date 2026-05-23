@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
@@ -200,7 +200,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: _primary),
+          icon: Icon(Icons.arrow_back, color: _primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -211,7 +211,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
         actions: [
           TextButton.icon(
             onPressed: () => Navigator.pushNamed(context, '/redeem'),
-            icon: const Icon(Icons.card_giftcard, color: _primary),
+            icon: Icon(Icons.card_giftcard, color: _primary),
             label: Text(
               'Redeem',
               style: GoogleFonts.poppins(
@@ -222,7 +222,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
       ),
       bottomNavigationBar: const AppBottomNav(selectedIndex: 1),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: _primary))
+          ? Center(child: CircularProgressIndicator(color: _primary))
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
@@ -368,7 +368,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF00695C), _primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -442,7 +442,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  const Icon(Icons.arrow_forward,
+                  Icon(Icons.arrow_forward,
                       color: Colors.white, size: 16),
                 ],
               ),
@@ -852,7 +852,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
                 elevation: 2,
                 shadowColor: _primary.withValues(alpha: 0.4),
               ),
-              icon: const Icon(Icons.card_giftcard, size: 18),
+              icon: Icon(Icons.card_giftcard, size: 18),
               label: Text(
                 'Redeem This',
                 style: GoogleFonts.poppins(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../core/services/api_service.dart';
@@ -105,7 +105,7 @@ class _MealsScreenState extends State<MealsScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
+            colorScheme: ColorScheme.light(
               primary: Color(0xFF00897B),
               onPrimary: Colors.white,
               surface: Colors.white,
@@ -155,7 +155,7 @@ class _MealsScreenState extends State<MealsScreen> {
                     labelText: 'Meal Name',
                     hintText: 'e.g. Grilled Chicken Salad',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    prefixIcon: const Icon(Icons.restaurant_menu),
+                    prefixIcon: Icon(Icons.restaurant_menu),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -202,7 +202,7 @@ class _MealsScreenState extends State<MealsScreen> {
               onPressed: () async {
                 if (nameCtrl.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a meal name')),
+                    SnackBar(content: Text('Please enter a meal name')),
                   );
                   return;
                 }
@@ -254,7 +254,7 @@ class _MealsScreenState extends State<MealsScreen> {
                   decoration: InputDecoration(
                     labelText: 'Meal Name',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    prefixIcon: const Icon(Icons.restaurant_menu),
+                    prefixIcon: Icon(Icons.restaurant_menu),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -412,7 +412,7 @@ class _MealsScreenState extends State<MealsScreen> {
             minChildSize: 0.4,
             maxChildSize: 0.95,
             builder: (_, scrollCtrl) => Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
@@ -466,13 +466,13 @@ class _MealsScreenState extends State<MealsScreen> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(Icons.close, color: Colors.grey),
+                          icon: Icon(Icons.close, color: Colors.grey),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Divider(height: 1),
+                  Divider(height: 1),
                   // Items Section
                   Expanded(
                     child: ListView(
@@ -566,7 +566,7 @@ class _MealsScreenState extends State<MealsScreen> {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                    icon: Icon(Icons.delete_outline, color: Colors.red, size: 20),
                                     onPressed: () async {
                                       try {
                                         await _apiService.removeMealItem(
@@ -636,7 +636,7 @@ class _MealsScreenState extends State<MealsScreen> {
                                         _loadMeals();
                                         if (mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
+                                            SnackBar(
                                                 content:
                                                     Text('All ingredients deducted from inventory!')),
                                           );
@@ -753,7 +753,7 @@ class _MealsScreenState extends State<MealsScreen> {
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       suffixText: selectedItemUnit,
-                      prefixIcon: const Icon(Icons.straighten),
+                      prefixIcon: Icon(Icons.straighten),
                     ),
                   ),
                   if (selectedItemId != null) ...[
@@ -785,14 +785,14 @@ class _MealsScreenState extends State<MealsScreen> {
                 onPressed: () async {
                   if (selectedItemId == null || selectedUnitId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select an item')),
+                      SnackBar(content: Text('Please select an item')),
                     );
                     return;
                   }
                   final qty = double.tryParse(qtyCtrl.text) ?? 0;
                   if (qty <= 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Quantity must be greater than 0')),
+                      SnackBar(content: Text('Quantity must be greater than 0')),
                     );
                     return;
                   }
@@ -877,7 +877,7 @@ class _MealsScreenState extends State<MealsScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF2E3E33)),
+                    icon: Icon(Icons.arrow_back, color: Color(0xFF2E3E33)),
                   ),
                   Expanded(
                     child: Text(
@@ -908,13 +908,13 @@ class _MealsScreenState extends State<MealsScreen> {
                 children: [
                   IconButton(
                     onPressed: _goToPreviousDay,
-                    icon: const Icon(Icons.chevron_left, color: Color(0xFF00897B)),
+                    icon: Icon(Icons.chevron_left, color: Color(0xFF00897B)),
                   ),
                   GestureDetector(
                     onTap: _pickDate,
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today,
+                        Icon(Icons.calendar_today,
                             size: 18, color: Color(0xFF00897B)),
                         const SizedBox(width: 8),
                         Text(
@@ -935,7 +935,7 @@ class _MealsScreenState extends State<MealsScreen> {
                   ),
                   IconButton(
                     onPressed: _goToNextDay,
-                    icon: const Icon(Icons.chevron_right, color: Color(0xFF00897B)),
+                    icon: Icon(Icons.chevron_right, color: Color(0xFF00897B)),
                   ),
                 ],
               ),
@@ -943,7 +943,7 @@ class _MealsScreenState extends State<MealsScreen> {
             // Content
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF00897B)))
+                  ? Center(child: CircularProgressIndicator(color: Color(0xFF00897B)))
                   : RefreshIndicator(
                       onRefresh: _loadMeals,
                       color: const Color(0xFF00897B),
@@ -990,7 +990,7 @@ class _MealsScreenState extends State<MealsScreen> {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               colors: [Color(0xFF00695C), Color(0xFF00ACC1)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -1004,7 +1004,7 @@ class _MealsScreenState extends State<MealsScreen> {
               ),
             ],
           ),
-          child: const Icon(Icons.add, color: Colors.white),
+          child: Icon(Icons.add, color: Colors.white),
         ),
       ),
       bottomNavigationBar: const AppBottomNav(selectedIndex: 2),
@@ -1152,7 +1152,7 @@ class _MealsScreenState extends State<MealsScreen> {
                   value: 'detail',
                   child: Row(
                     children: [
-                      const Icon(Icons.visibility, size: 18),
+                      Icon(Icons.visibility, size: 18),
                       const SizedBox(width: 8),
                       Text('View Details', style: GoogleFonts.poppins(fontSize: 13)),
                     ],
@@ -1162,7 +1162,7 @@ class _MealsScreenState extends State<MealsScreen> {
                   value: 'edit',
                   child: Row(
                     children: [
-                      const Icon(Icons.edit, size: 18),
+                      Icon(Icons.edit, size: 18),
                       const SizedBox(width: 8),
                       Text('Edit', style: GoogleFonts.poppins(fontSize: 13)),
                     ],
@@ -1172,7 +1172,7 @@ class _MealsScreenState extends State<MealsScreen> {
                   value: 'delete',
                   child: Row(
                     children: [
-                      const Icon(Icons.delete, size: 18, color: Colors.red),
+                      Icon(Icons.delete, size: 18, color: Colors.red),
                       const SizedBox(width: 8),
                       Text('Delete',
                           style: GoogleFonts.poppins(fontSize: 13, color: Colors.red)),

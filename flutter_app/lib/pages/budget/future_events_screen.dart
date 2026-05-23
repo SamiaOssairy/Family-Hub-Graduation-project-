@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +29,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
     Color(0xFFE0F2F1), Color(0xFFFFF8E1), Color(0xFFE8F5F5),
     Color(0xFFE3F2FD), Color(0xFFFCE4EC), Color(0xFFF3E5F5),
   ];
-  static const _eventColors = [
+  static final _eventColors = [
     AppColors.primary, Color(0xFFFB8C00), Color(0xFF43A047),
     Color(0xFF1565C0), Color(0xFFE91E63), Color(0xFF7B1FA2),
   ];
@@ -130,11 +130,11 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                   controller: nameCtrl,
                   decoration: InputDecoration(
                     labelText: 'Event Name (e.g. Eid)',
-                    prefixIcon: const Icon(Icons.event_outlined, color: AppColors.primary),
+                    prefixIcon: Icon(Icons.event_outlined, color: AppColors.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -143,11 +143,11 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     labelText: 'Estimated Cost (EGP)',
-                    prefixIcon: const Icon(Icons.attach_money, color: AppColors.primary),
+                    prefixIcon: Icon(Icons.attach_money, color: AppColors.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -156,11 +156,11 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     labelText: 'Already Saved (EGP)',
-                    prefixIcon: const Icon(Icons.savings_outlined, color: AppColors.primary),
+                    prefixIcon: Icon(Icons.savings_outlined, color: AppColors.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -173,7 +173,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                       lastDate: DateTime.now().add(const Duration(days: 3650)),
                       builder: (ctx, child) => Theme(
                         data: Theme.of(ctx).copyWith(
-                          colorScheme: const ColorScheme.light(
+                          colorScheme: ColorScheme.light(
                               primary: AppColors.primary,
                               onPrimary: Colors.white),
                         ),
@@ -190,14 +190,14 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(children: [
-                      const Icon(Icons.calendar_today_outlined,
+                      Icon(Icons.calendar_today_outlined,
                           color: AppColors.primary, size: 18),
                       const SizedBox(width: 10),
                       Text(DateFormat('MMM dd, yyyy').format(selectedDate),
                           style: GoogleFonts.poppins(
                               fontSize: _sp(13), color: AppColors.textPrimary)),
                       const Spacer(),
-                      const Icon(Icons.keyboard_arrow_down,
+                      Icon(Icons.keyboard_arrow_down,
                           size: 18, color: AppColors.textSecondary),
                     ]),
                   ),
@@ -301,7 +301,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                     decoration: BoxDecoration(
                       gradient: isLoading
                           ? null
-                          : const LinearGradient(
+                          : LinearGradient(
                               colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight),
@@ -391,7 +391,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
           appBar: AppBar(
             flexibleSpace: Container(
               decoration:
-                  const BoxDecoration(gradient: AppColors.primaryGradient),
+                  BoxDecoration(gradient: AppColors.primaryGradient),
             ),
             backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
@@ -401,7 +401,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                     fontSize: _sp(17), fontWeight: FontWeight.w700)),
             actions: [
               IconButton(
-                icon: const Icon(Icons.refresh_outlined, color: Colors.white),
+                icon: Icon(Icons.refresh_outlined, color: Colors.white),
                 onPressed: _fetchEvents,
               ),
             ],
@@ -411,7 +411,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
             child: Container(
               width: 54, height: 54,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -424,12 +424,12 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 26),
+              child: Icon(Icons.add, color: Colors.white, size: 26),
             ),
           ),
           bottomNavigationBar: const AppBottomNav(selectedIndex: 1),
           body: _eventsLoading
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(color: AppColors.primary))
               : _localEvents.isEmpty
                   ? _buildEmptyState(ctx, provider, isDark)
@@ -560,7 +560,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                     decoration: BoxDecoration(
                         color: AppColors.primarySurface,
                         borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.edit_outlined,
+                    child: Icon(Icons.edit_outlined,
                         size: 14, color: AppColors.primary),
                   ),
                 ),
@@ -572,7 +572,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                     decoration: BoxDecoration(
                         color: AppColors.errorSurface,
                         borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.delete_outline,
+                    child: Icon(Icons.delete_outline,
                         size: 14, color: AppColors.error),
                   ),
                 ),
@@ -639,7 +639,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                     onTap: () {
                       if (eventId.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                               content: Text('Event ID is missing')));
                         return;
                       }
@@ -709,7 +709,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                   decoration: BoxDecoration(
                       color: AppColors.primarySurface,
                       borderRadius: BorderRadius.circular(24)),
-                  child: const Icon(Icons.event_note_outlined,
+                  child: Icon(Icons.event_note_outlined,
                       size: 40, color: AppColors.primary),
                 ),
                 const SizedBox(height: 16),
@@ -731,7 +731,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 13),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -746,7 +746,7 @@ class _FutureEventsScreenState extends State<FutureEventsScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.add, color: Colors.white, size: 18),
+                        Icon(Icons.add, color: Colors.white, size: 18),
                         const SizedBox(width: 8),
                         Text('Add First Event',
                             style: GoogleFonts.poppins(

@@ -9,7 +9,8 @@
       "Bash(node -e \"require\\('./controllers/receiptController'\\); console.log\\('controller OK'\\)\")",
       "Bash(node -e \"require\\('./routes/receiptRoutes'\\); console.log\\('routes OK'\\)\")",
       "Bash(flutter analyze *)",
-      "Bash(node -e \"require\\('./controllers/receiptController'\\); console.log\\('OK'\\)\")"
+      "Bash(node -e \"require\\('./controllers/receiptController'\\); console.log\\('OK'\\)\")",
+      "Bash(grep -v \"//\")"
     ]
   }
 }

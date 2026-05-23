@@ -79,11 +79,11 @@ class FutureEventCard extends StatelessWidget {
             if (expDate != null) ...[
               const SizedBox(height: 6),
               Row(children: [
-                const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                Icon(Icons.calendar_today, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(DateFormat('dd MMM yyyy').format(expDate), style: const TextStyle(color: Colors.grey, fontSize: 13)),
                 const SizedBox(width: 12),
-                const Icon(Icons.schedule, size: 14, color: Colors.grey),
+                Icon(Icons.schedule, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
                   '$monthsUntil months away',
@@ -122,7 +122,7 @@ class FutureEventCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(color: const Color(0xFFE8F5F5), borderRadius: BorderRadius.circular(8)),
                 child: Row(children: [
-                  const Icon(Icons.lightbulb_outline, color: Color(0xFF00897B), size: 18),
+                  Icon(Icons.lightbulb_outline, color: Color(0xFF00897B), size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -139,7 +139,7 @@ class FutureEventCard extends StatelessWidget {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: onOpenFunding,
-                  icon: const Icon(Icons.account_balance_wallet_outlined),
+                  icon: Icon(Icons.account_balance_wallet_outlined),
                   label: const Text('Open Funding Details'),
                 ),
               ),

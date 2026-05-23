@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
@@ -170,7 +170,7 @@ class _StatusScreenState extends State<StatusScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: _primary),
+          icon: Icon(Icons.arrow_back, color: _primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -180,13 +180,13 @@ class _StatusScreenState extends State<StatusScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: _primary),
+            icon: Icon(Icons.refresh, color: _primary),
             onPressed: _loadTaskStatus,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: _primary))
           : Center(
               child: ConstrainedBox(
@@ -561,7 +561,7 @@ class _StatusScreenState extends State<StatusScreen> {
           horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         gradient: isFirst
-            ? const LinearGradient(
+            ? LinearGradient(
                 colors: [Color(0xFF00695C), _primaryLight],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

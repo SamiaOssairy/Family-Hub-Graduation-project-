@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +32,7 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
 
   final Map<String, Map<String, dynamic>> _memberCombinedById = {};
 
-  static const List<Color> _chartColors = [
+  static final List<Color> _chartColors = [
     AppColors.primary,
     AppColors.primaryLight,
     Color(0xFF5E35B1),
@@ -229,7 +229,7 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         flexibleSpace: Container(
-          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+          decoration: BoxDecoration(gradient: AppColors.primaryGradient),
         ),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
@@ -241,7 +241,7 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
           IconButton(
               tooltip: 'Refresh',
               onPressed: _loadData,
-              icon: const Icon(Icons.refresh)),
+              icon: Icon(Icons.refresh)),
           IconButton(
             tooltip: 'Export PDF',
             onPressed: _isExporting ? null : _exportCombinedReportPdf,
@@ -251,12 +251,12 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
                     height: 18,
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white))
-                : const Icon(Icons.picture_as_pdf),
+                : Icon(Icons.picture_as_pdf),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: AppColors.primary))
           : RefreshIndicator(
               color: AppColors.primary,
@@ -686,7 +686,7 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 18),
+                  Icon(Icons.warning_amber_rounded, color: Colors.red, size: 18),
                   const SizedBox(width: 6),
                   Text('Over budget', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600)),
                 ],
@@ -785,7 +785,7 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
                   fontSize: _sp(14),
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary)),
-          const Divider(height: 16, color: AppColors.borderLight),
+          Divider(height: 16, color: AppColors.borderLight),
           child,
         ],
       ),
@@ -797,7 +797,7 @@ class _CombinedAnalyticsScreenState extends State<CombinedAnalyticsScreen> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          const Icon(Icons.insights, color: Color(0xFF1B5E20), size: 18),
+          Icon(Icons.insights, color: Color(0xFF1B5E20), size: 18),
           const SizedBox(width: 6),
           Expanded(
             child: Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),

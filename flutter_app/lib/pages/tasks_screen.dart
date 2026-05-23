@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
@@ -288,7 +288,7 @@ class _TasksScreenState extends State<TasksScreen>
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Task added and assigned to you!'),
             backgroundColor: Color(0xFF00897B),
           ),
@@ -319,7 +319,7 @@ class _TasksScreenState extends State<TasksScreen>
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: _primary),
+            Icon(Icons.check_circle_outline, color: _primary),
             const SizedBox(width: 10),
             Text('Complete Task',
                 style: GoogleFonts.poppins(
@@ -383,7 +383,7 @@ class _TasksScreenState extends State<TasksScreen>
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Task completed! Rewards applied.'),
             backgroundColor: Color(0xFF00897B),
           ),
@@ -549,7 +549,7 @@ class _TasksScreenState extends State<TasksScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: _primary),
+          icon: Icon(Icons.arrow_back, color: _primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('My Tasks',
@@ -557,7 +557,7 @@ class _TasksScreenState extends State<TasksScreen>
                 color: textPrimary, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: _primary),
+            icon: Icon(Icons.refresh, color: _primary),
             onPressed: _loadTasks,
           ),
           IconButton(
@@ -570,7 +570,7 @@ class _TasksScreenState extends State<TasksScreen>
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: _primary))
+          ? Center(child: CircularProgressIndicator(color: _primary))
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
@@ -809,7 +809,7 @@ class _TasksScreenState extends State<TasksScreen>
       width: 56,
       height: 56,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -829,7 +829,7 @@ class _TasksScreenState extends State<TasksScreen>
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: _showAddTaskModal,
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
+          child: Icon(Icons.add, color: Colors.white, size: 28),
         ),
       ),
     );
@@ -843,7 +843,7 @@ class _TasksScreenState extends State<TasksScreen>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: _deleteSelectedTasks,
-              icon: const Icon(Icons.delete, color: Colors.white),
+              icon: Icon(Icons.delete, color: Colors.white),
               label: Text('Delete Selected',
                   style: GoogleFonts.poppins(
                       color: Colors.white, fontWeight: FontWeight.w600)),
@@ -991,7 +991,7 @@ class _TasksScreenState extends State<TasksScreen>
                   : () async {
                       if (_taskNameController.text.trim().isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                               content: Text('Please enter a task name')),
                         );
                         return;
@@ -1279,7 +1279,7 @@ class _TasksScreenState extends State<TasksScreen>
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.hourglass_top,
+                        Icon(Icons.hourglass_top,
                             size: 14,
                             color: Color(0xFF1E88E5)),
                         const SizedBox(width: 6),
@@ -1324,7 +1324,7 @@ class _TasksScreenState extends State<TasksScreen>
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,

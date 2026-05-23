@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../core/services/api_service.dart';
@@ -112,7 +112,7 @@ class _LeftoversScreenState extends State<LeftoversScreen> with SingleTickerProv
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Appcolor.foodPrimary))
+                ? Center(child: CircularProgressIndicator(color: Appcolor.foodPrimary))
                 : Column(
                     children: [
                       // Header
@@ -128,7 +128,7 @@ class _LeftoversScreenState extends State<LeftoversScreen> with SingleTickerProv
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.arrow_back_ios_new,
+                                child: Icon(Icons.arrow_back_ios_new,
                                     size: 18, color: Appcolor.foodPrimary),
                               ),
                             ),
@@ -177,7 +177,7 @@ class _LeftoversScreenState extends State<LeftoversScreen> with SingleTickerProv
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: () => _showAddEditDialog(),
-                            icon: const Icon(Icons.add, color: Colors.white),
+                            icon: Icon(Icons.add, color: Colors.white),
                             label: Text('Add Leftover',
                                 style: GoogleFonts.poppins(
                                     color: Colors.white, fontWeight: FontWeight.w600)),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
@@ -216,7 +216,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
               style: GoogleFonts.poppins(
                   color: textPrimary, fontWeight: FontWeight.bold)),
         ),
-        body: const Center(
+        body: Center(
             child: CircularProgressIndicator(color: _tmPrimary)),
       );
     }
@@ -227,7 +227,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: _tmPrimary),
+          icon: Icon(Icons.arrow_back, color: _tmPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('Manage Tasks',
@@ -235,7 +235,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                 color: textPrimary, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: _tmPrimary),
+            icon: Icon(Icons.refresh, color: _tmPrimary),
             onPressed: _loadData,
           ),
         ],
@@ -823,7 +823,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () => _markTaskComplete(taskDetail['_id']),
-                      icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+                      icon: Icon(Icons.check_circle_outline, color: Colors.white),
                       label: Text('Mark as Completed',
                           style: GoogleFonts.poppins(
                               color: Colors.white, fontWeight: FontWeight.w600)),
@@ -1029,7 +1029,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
         }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Row(
                 children: [
                   Icon(Icons.check_circle, color: Colors.white),
@@ -1246,7 +1246,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline, color: _tmPrimary),
+                Icon(Icons.info_outline, color: _tmPrimary),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -1267,7 +1267,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: _showAssignTaskDialog,
-              icon: const Icon(Icons.add_task, color: Colors.white),
+              icon: Icon(Icons.add_task, color: Colors.white),
               label: Text('Assign New Task',
                   style: GoogleFonts.poppins(
                       color: Colors.white, fontWeight: FontWeight.w600)),
@@ -1625,7 +1625,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                   onPressed: () async {
                     if (selectedTaskId == null || selectedMemberMail == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                             content:
                                 Text('Please select task and member')),
                       );
@@ -1685,7 +1685,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: _openCreateTaskScreen,
-                  icon: const Icon(Icons.add, color: Colors.white),
+                  icon: Icon(Icons.add, color: Colors.white),
                   label: Text('Create Task Template',
                       style: GoogleFonts.poppins(
                           color: Colors.white, fontWeight: FontWeight.w600)),
@@ -1700,7 +1700,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
               const SizedBox(width: 12),
               ElevatedButton.icon(
                 onPressed: _showCreateCategoryDialog,
-                icon: const Icon(Icons.category, color: Colors.white),
+                icon: Icon(Icons.category, color: Colors.white),
                 label: Text('+ Category',
                     style: GoogleFonts.poppins(
                         color: Colors.white, fontWeight: FontWeight.w600)),
@@ -1930,7 +1930,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
               onPressed: () async {
                 if (titleController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter category name')),
+                    SnackBar(content: Text('Please enter category name')),
                   );
                   return;
                 }
@@ -1943,7 +1943,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
 
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text('Category created!'),
                       backgroundColor: Colors.green,
                     ),
@@ -1991,7 +1991,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
       try {
         await _apiService.deleteTask(taskId);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
               content: Text('Task deleted'), backgroundColor: Colors.green),
         );
         _loadData();
@@ -2060,7 +2060,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle, size: 60, color: Color(0xFF80CBC4)),
+            Icon(Icons.check_circle, size: 60, color: Color(0xFF80CBC4)),
             const SizedBox(height: 16),
             Text('No pending assignment requests',
                 style: GoogleFonts.poppins(color: textSec)),
@@ -2103,7 +2103,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                         style: GoogleFonts.poppins(fontSize: 10, color: textSec)),
                     const SizedBox(height: 3),
                     Row(children: [
-                      const Icon(Icons.star, size: 12, color: Color(0xFFFB8C00)),
+                      Icon(Icons.star, size: 12, color: Color(0xFFFB8C00)),
                       const SizedBox(width: 3),
                       Text('${assignment['assigned_points']} pts',
                           style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: _tmPrimary)),
@@ -2140,7 +2140,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.task_alt, size: 60, color: Color(0xFF80CBC4)),
+            Icon(Icons.task_alt, size: 60, color: Color(0xFF80CBC4)),
             const SizedBox(height: 16),
             Text('All caught up!',
                 style: GoogleFonts.poppins(
@@ -2306,7 +2306,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                         padding:
                             const EdgeInsets.symmetric(vertical: 11),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
@@ -2323,7 +2323,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.check,
+                            Icon(Icons.check,
                                 color: Colors.white, size: 17),
                             const SizedBox(width: 6),
                             Text('Approve',
@@ -2356,7 +2356,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.close,
+                            Icon(Icons.close,
                                 color: Color(0xFFE53935), size: 17),
                             const SizedBox(width: 6),
                             Text('Reject',
@@ -2415,7 +2415,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                 ),
               ],
             ),
-            child: const Center(
+            child: Center(
               child: Text('🎉', style: TextStyle(fontSize: 22)),
             ),
           ),
@@ -2469,7 +2469,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
           shape: BoxShape.circle,
           border: Border.all(color: _tmBorderLight),
         ),
-        child: const Icon(Icons.check, color: _tmPrimary, size: 18),
+        child: Icon(Icons.check, color: _tmPrimary, size: 18),
       ),
     );
   }
@@ -2485,7 +2485,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
           shape: BoxShape.circle,
           border: Border.all(color: const Color(0xFFFFCDD2)),
         ),
-        child: const Icon(Icons.close, color: Color(0xFFE53935), size: 18),
+        child: Icon(Icons.close, color: Color(0xFFE53935), size: 18),
       ),
     );
   }
@@ -2524,7 +2524,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const Icon(Icons.close, color: Color(0xFFE53935)),
+            Icon(Icons.close, color: Color(0xFFE53935)),
             const SizedBox(width: 8),
             Text('Reject Task',
                 style: GoogleFonts.poppins(
@@ -2718,7 +2718,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               colors: [Color(0xFF00695C), _tmPrimaryLight],
             ),
             borderRadius: BorderRadius.circular(16),
@@ -2745,7 +2745,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.notifications_active, color: Colors.white, size: 16),
+                      Icon(Icons.notifications_active, color: Colors.white, size: 16),
                       const SizedBox(width: 8),
                       Text(
                         '$pendingAssignmentCount assignment requests • $completionApprovalCount completion requests',
@@ -3007,7 +3007,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                   const SizedBox(height: 3),
                   Row(
                     children: [
-                      const Icon(Icons.warning_amber,
+                      Icon(Icons.warning_amber,
                           size: 11, color: Color(0xFFE53935)),
                       const SizedBox(width: 3),
                       Text(
@@ -3108,7 +3108,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                     PopupMenuItem<String>(
                       value: 'penalty',
                       child: Row(children: [
-                        const Icon(Icons.warning_amber,
+                        Icon(Icons.warning_amber,
                             color: Color(0xFFE65100), size: 18),
                         const SizedBox(width: 10),
                         Text('Apply Penalty',
@@ -3121,7 +3121,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                     PopupMenuItem<String>(
                       value: 'details',
                       child: Row(children: [
-                        const Icon(Icons.visibility_outlined,
+                        Icon(Icons.visibility_outlined,
                             color: _tmPrimary, size: 18),
                         const SizedBox(width: 10),
                         Text('View Details',
@@ -3438,7 +3438,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                 if (_isParent) ...[
                   const SizedBox(width: 4),
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert,
+                    icon: Icon(Icons.more_vert,
                         color: Colors.white70, size: 20),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
@@ -3452,7 +3452,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                         value: 'penalty',
                         child: Row(
                           children: [
-                            const Icon(Icons.warning_amber,
+                            Icon(Icons.warning_amber,
                                 color: Color(0xFFE65100), size: 18),
                             const SizedBox(width: 10),
                             Text('Apply Penalty',
@@ -3543,7 +3543,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                 // Timeline
                 if (createdAt != null || completedAt != null || approvedAt != null) ...[
                   const SizedBox(height: 12),
-                  const Divider(),
+                  Divider(),
                   const SizedBox(height: 8),
                   Text('Timeline', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
                   const SizedBox(height: 8),
@@ -3595,7 +3595,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => _approveAssignment(taskDetail['_id'], true),
-                            icon: const Icon(Icons.check, size: 18),
+                            icon: Icon(Icons.check, size: 18),
                             label: Text('Approve Assignment', style: GoogleFonts.poppins(fontSize: 12)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
@@ -3608,7 +3608,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => _approveAssignment(taskDetail['_id'], false),
-                            icon: const Icon(Icons.close, size: 18),
+                            icon: Icon(Icons.close, size: 18),
                             label: Text('Reject', style: GoogleFonts.poppins(fontSize: 12)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red[100],
@@ -3626,7 +3626,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: () => _approveCompletion(taskDetail['_id'], true),
-                              icon: const Icon(Icons.check, size: 18),
+                              icon: Icon(Icons.check, size: 18),
                               label: Text('Approve', style: GoogleFonts.poppins(fontSize: 12)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
@@ -3640,7 +3640,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: () => _approveCompletion(taskDetail['_id'], false),
-                              icon: const Icon(Icons.close, size: 18),
+                              icon: Icon(Icons.close, size: 18),
                               label: Text('Reject', style: GoogleFonts.poppins(fontSize: 12)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red[100],
@@ -3975,7 +3975,7 @@ class _TaskManagementScreenState extends State<TaskManagementScreen>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [
                           Color(0xFFE65100),
                           Color(0xFFFF8F00)

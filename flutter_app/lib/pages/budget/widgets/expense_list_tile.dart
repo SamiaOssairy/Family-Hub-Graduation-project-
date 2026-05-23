@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ExpenseListTile extends StatelessWidget {
@@ -49,7 +49,7 @@ class ExpenseListTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           )),
           if (hasPhoto)
-            const Icon(Icons.photo, size: 14, color: Colors.grey),
+            Icon(Icons.photo, size: 14, color: Colors.grey),
         ]),
         subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(expense['category_name'] ?? '',
@@ -78,7 +78,7 @@ class ExpenseListTile extends StatelessWidget {
           if (onDelete != null)
             GestureDetector(
               onTap: onDelete,
-              child: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+              child: Icon(Icons.delete_outline, size: 18, color: Colors.grey),
             ),
         ]),
       ),

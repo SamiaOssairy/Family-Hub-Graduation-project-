@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -41,7 +41,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
   static const double _minSyncDistanceMeters = 20;
 
   // Map palette for member markers
-  static const List<Color> _markerColors = [
+  static final List<Color> _markerColors = [
     Color(0xFF1E88E5), // blue
     Color(0xFFE53935), // red
     Color(0xFF43A047), // green
@@ -148,7 +148,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
+                    Icon(Icons.notifications_active_outlined, color: AppColors.primary),
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
@@ -171,10 +171,10 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                   ],
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1),
               Expanded(
                 child: alerts.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
                           'No location notifications yet',
                           style: TextStyle(color: Colors.grey),
@@ -182,7 +182,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                       )
                     : ListView.separated(
                         itemCount: alerts.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        separatorBuilder: (_, __) => Divider(height: 1),
                         itemBuilder: (_, i) {
                           final alert = Map<String, dynamic>.from(alerts[i]);
                           final isRead = alert['is_read'] == true;
@@ -206,7 +206,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                             ),
                             subtitle: Text(createdAt),
                             trailing: isRead
-                                ? const Icon(Icons.done, size: 18, color: Colors.grey)
+                                ? Icon(Icons.done, size: 18, color: Colors.grey)
                                 : TextButton(
                                     onPressed: () async {
                                       if (alertId.isEmpty) return;
@@ -271,7 +271,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
     if (!_hasCoordinates(loc)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This member has no saved location yet.')),
+        SnackBar(content: Text('This member has no saved location yet.')),
       );
       return;
     }
@@ -298,7 +298,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not open Google Maps on this device.')),
+      SnackBar(content: Text('Could not open Google Maps on this device.')),
     );
   }
 
@@ -418,7 +418,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('SOS alert sent to all family members!'),
             backgroundColor: Colors.red,
           ),
@@ -449,7 +449,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
           : _error != null
               ? _buildError()
               : _buildMap(),
@@ -464,7 +464,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.location_off, size: 64, color: Colors.grey),
+            Icon(Icons.location_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(_error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 16),
@@ -476,7 +476,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                 });
                 _loadData();
               },
-              icon: const Icon(Icons.refresh),
+              icon: Icon(Icons.refresh),
               label: const Text('Retry'),
             ),
           ],
@@ -550,7 +550,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [Color(0xFFF5FCFF), Color(0xFFEAFBF3)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -571,14 +571,14 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [Color(0xFF1AA7EC), Color(0xFF4FC3A1)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.location_searching, color: Colors.white),
+                  child: Icon(Icons.location_searching, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -609,7 +609,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [Color(0xFFE0F7FF), Color(0xFFD7FCE8)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -619,7 +619,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        const Center(
+                        Center(
                           child: Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 22),
                         ),
                         if (_unreadLocationAlerts > 0)
@@ -652,7 +652,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [Color(0xFFE9F7FF), Color(0xFFE8FFF4)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -688,7 +688,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
             child: Container(
               height: 114,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [Color(0xFFF9FDFF), Color(0xFFF2FFF9)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -740,7 +740,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                 heroTag: 'recenter',
                 backgroundColor: Colors.white,
                 onPressed: () => _mapController.move(center, _mapController.camera.zoom),
-                child: const Icon(Icons.my_location, color: AppColors.primary),
+                child: Icon(Icons.my_location, color: AppColors.primary),
               ),
               const SizedBox(height: 8),
               GuardedFab(
@@ -1098,7 +1098,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
                     alignment: Alignment.centerLeft,
                     child: OutlinedButton.icon(
                       onPressed: _hasCoordinates(loc) ? () => _openDirectionsToMember(loc) : null,
-                      icon: const Icon(Icons.directions, size: 18),
+                      icon: Icon(Icons.directions, size: 18),
                       label: const Text('Directions'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF0B8FCE),
@@ -1112,7 +1112,7 @@ class _FamilyMapScreenState extends State<FamilyMapScreen> {
             ),
             IconButton(
               onPressed: () => setState(() => _selectedMember = null),
-              icon: const Icon(Icons.close, size: 20),
+              icon: Icon(Icons.close, size: 20),
             ),
           ],
         ),

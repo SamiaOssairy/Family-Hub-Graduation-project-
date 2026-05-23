@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/services/api_service.dart';
 import '../core/styling/app_color.dart';
@@ -86,7 +86,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   Future<void> _saveRecipe() async {
     if (_nameCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recipe name is required')),
+        SnackBar(content: Text('Recipe name is required')),
       );
       return;
     }
@@ -111,7 +111,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Recipe created! Now add ingredients and steps.')),
+            SnackBar(content: Text('Recipe created! Now add ingredients and steps.')),
           );
         }
       } else {
@@ -122,7 +122,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Recipe updated')),
+            SnackBar(content: Text('Recipe updated')),
           );
         }
       }
@@ -172,7 +172,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.arrow_back_ios_new, size: 18, color: Appcolor.foodPrimary),
+                          child: Icon(Icons.arrow_back_ios_new, size: 18, color: Appcolor.foodPrimary),
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -190,7 +190,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       if (!_isNew && !_editing)
                         IconButton(
                           onPressed: () => setState(() => _editing = true),
-                          icon: const Icon(Icons.edit_outlined, color: Appcolor.foodPrimary),
+                          icon: Icon(Icons.edit_outlined, color: Appcolor.foodPrimary),
                         ),
                     ],
                   ),
@@ -361,7 +361,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.scale, color: Appcolor.foodPrimary, size: 22),
+          Icon(Icons.scale, color: Appcolor.foodPrimary, size: 22),
           const SizedBox(width: 12),
           Text('Scale:', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
           const Spacer(),
@@ -369,13 +369,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             onPressed: _scaledServings > 1
                 ? () => setState(() => _scaledServings--)
                 : null,
-            icon: const Icon(Icons.remove_circle_outline, color: Appcolor.foodPrimary),
+            icon: Icon(Icons.remove_circle_outline, color: Appcolor.foodPrimary),
           ),
           Text('$_scaledServings servings',
               style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15)),
           IconButton(
             onPressed: () => setState(() => _scaledServings++),
-            icon: const Icon(Icons.add_circle_outline, color: Appcolor.foodPrimary),
+            icon: Icon(Icons.add_circle_outline, color: Appcolor.foodPrimary),
           ),
           if (scale != 1.0)
             Container(
@@ -425,7 +425,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.add, size: 16, color: Appcolor.foodPrimary),
+                      Icon(Icons.add, size: 16, color: Appcolor.foodPrimary),
                       const SizedBox(width: 4),
                       Text('Add',
                           style: GoogleFonts.poppins(
@@ -517,7 +517,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () => _removeIngredient(ingId),
-                      child: const Icon(Icons.close, size: 18, color: Colors.red),
+                      child: Icon(Icons.close, size: 18, color: Colors.red),
                     ),
                   ],
                 ),
@@ -557,7 +557,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.add, size: 16, color: Appcolor.foodPrimary),
+                      Icon(Icons.add, size: 16, color: Appcolor.foodPrimary),
                       const SizedBox(width: 4),
                       Text('Add',
                           style: GoogleFonts.poppins(
@@ -721,7 +721,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.inventory_2_outlined,
+                                  Icon(Icons.inventory_2_outlined,
                                       size: 16, color: Appcolor.foodPrimary),
                                   const SizedBox(width: 8),
                                   Expanded(
@@ -842,13 +842,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   onPressed: () async {
                     if (nameCtrl.text.trim().isEmpty || qtyCtrl.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter ingredient name and quantity')),
+                        SnackBar(content: Text('Please enter ingredient name and quantity')),
                       );
                       return;
                     }
                     if (selectedUnitId == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please select a unit')),
+                        SnackBar(content: Text('Please select a unit')),
                       );
                       return;
                     }

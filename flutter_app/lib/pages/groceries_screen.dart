@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/services/api_service.dart';
 import '../core/styling/app_color.dart';
@@ -135,7 +135,7 @@ class _GroceriesScreenState extends State<GroceriesScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: _loading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                         color: Appcolor.foodPrimary))
                 : Column(
@@ -182,7 +182,7 @@ class _GroceriesScreenState extends State<GroceriesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateListDialog,
         backgroundColor: Appcolor.foodPrimary,
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: Icon(Icons.add, color: Colors.white),
         label: Text('New List',
             style: GoogleFonts.poppins(
                 color: Colors.white, fontWeight: FontWeight.w600)),
@@ -220,7 +220,7 @@ class _GroceriesScreenState extends State<GroceriesScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios, color: Appcolor.textDark),
+            icon: Icon(Icons.arrow_back_ios, color: Appcolor.textDark),
           ),
           Expanded(
             child: Text(
@@ -386,7 +386,7 @@ class _GroceriesScreenState extends State<GroceriesScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.grey),
+            Icon(Icons.chevron_right, color: Colors.grey),
           ],
         ),
       ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/services/api_service.dart';
 
@@ -56,7 +56,7 @@ class _FamilyPointsScreenState extends State<FamilyPointsScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh),
             onPressed: _loadFamilyPoints,
           ),
         ],
@@ -65,7 +65,7 @@ class _FamilyPointsScreenState extends State<FamilyPointsScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: _isLoading
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(color: Color(0xFF00897B)))
               : _errorMessage != null
                   ? _buildErrorView()
@@ -92,7 +92,7 @@ class _FamilyPointsScreenState extends State<FamilyPointsScreen> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadFamilyPoints,
-              icon: const Icon(Icons.refresh),
+              icon: Icon(Icons.refresh),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00897B),
@@ -135,7 +135,7 @@ class _FamilyPointsScreenState extends State<FamilyPointsScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [Color(0xFF00695C), Color(0xFF00ACC1)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -151,7 +151,7 @@ class _FamilyPointsScreenState extends State<FamilyPointsScreen> {
             ),
             child: Column(
               children: [
-                const Icon(
+                Icon(
                   Icons.emoji_events,
                   size: 48,
                   color: Colors.amber,
@@ -283,7 +283,7 @@ class _FamilyPointsScreenState extends State<FamilyPointsScreen> {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               colors: [Color(0xFF00897B), Color(0xFF00ACC1)],
             ),
             borderRadius: BorderRadius.circular(20),

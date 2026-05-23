@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +19,7 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen>
   late TabController _tabCtrl;
   int _touchedIndex = -1;
 
-  static const _pieColors = [
+  static final _pieColors = [
     Color(0xFF00897B), Color(0xFF00ACC1), Color(0xFFFB8C00),
     Color(0xFF4DB6AC), Color(0xFF7B1FA2), Color(0xFFE91E63),
   ];
@@ -76,7 +76,7 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen>
             _buildHeader(isDark, budgetTitle, dateRange),
             Expanded(
               child: provider.isLoading || analytics == null
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(color: Color(0xFF00897B)))
                   : TabBarView(
                       controller: _tabCtrl,
@@ -98,7 +98,7 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen>
     return AnimatedBuilder(
       animation: _tabCtrl,
       builder: (_, __) => Container(
-        decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+        decoration: BoxDecoration(gradient: AppColors.primaryGradient),
         child: SafeArea(
           bottom: false,
           child: Column(
@@ -107,7 +107,7 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen>
                 padding: const EdgeInsets.fromLTRB(4, 6, 8, 0),
                 child: Row(children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new,
+                    icon: Icon(Icons.arrow_back_ios_new,
                         color: Colors.white, size: 18),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -129,7 +129,7 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen>
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.ios_share_outlined,
+                    icon: Icon(Icons.ios_share_outlined,
                         color: Colors.white, size: 20),
                     onPressed: () {},
                   ),

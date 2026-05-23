@@ -4,49 +4,63 @@ import 'package:google_fonts/google_fonts.dart';
 class AppColors {
   AppColors._();
 
-  // ── Backgrounds ──────────────────────────────
-  static const Color background     = Color(0xFFE8F5F5);
-  static const Color navBg          = Color(0xFFFFFFFF);
+  // ── Mutable seed — updated by ThemeProvider.setPalette() ──────────────────
+  // All derived getters below automatically use the new value on every rebuild.
+  static Color primary = const Color(0xFF00897B);
 
-  // ── Primary Teal ─────────────────────────────
-  static const Color primary        = Color(0xFF00897B);
-  static const Color primaryLight   = Color(0xFF00ACC1);
-  static const Color primarySurface = Color(0xFFE0F2F1);
+  // ── Derived accent colours ────────────────────────────────────────────────
+  static Color get primaryLight   => Color.lerp(primary, Colors.white, 0.32)!;
+  static Color get primarySurface => Color.lerp(primary, Colors.white, 0.88)!;
 
-  // ── Text ─────────────────────────────────────
-  static const Color textPrimary    = Color(0xFF00352E);
-  static const Color textSecondary  = Color(0xFF4DB6AC);
-  static const Color textHint       = Color(0xFF80CBC4);
+  // ── Background ────────────────────────────────────────────────────────────
+  static Color get background     => Color.lerp(primary, Colors.white, 0.93)!;
+  static const Color navBg        = Color(0xFFFFFFFF);
 
-  // ── Borders ──────────────────────────────────
-  static const Color border         = Color(0xFFB2DFDB);
-  static const Color borderLight    = Color(0xFFE0F2F1);
+  // ── Text ─────────────────────────────────────────────────────────────────
+  // textPrimary stays const (near-black) so it works in const contexts.
+  static const Color textPrimary  = Color(0xFF00352E);
+  static const Color textSecondary = Color(0xFF4DB6AC);
+  static const Color textHint     = Color(0xFF80CBC4);
 
-  // ── Status / Badge ────────────────────────────
+  // ── Borders ──────────────────────────────────────────────────────────────
+  static Color get border         => Color.lerp(primary, Colors.white, 0.65)!;
+  static Color get borderLight    => Color.lerp(primary, Colors.white, 0.85)!;
+
+  // ── Status / Badge ────────────────────────────────────────────────────────
   static const Color success        = Color(0xFF43A047);
   static const Color successSurface = Color(0xFFE8F5F5);
   static const Color warning        = Color(0xFFFB8C00);
   static const Color warningSurface = Color(0xFFFFF3E0);
   static const Color error          = Color(0xFFE53935);
   static const Color errorSurface   = Color(0xFFFFEBEE);
-  static const Color onlineDot      = Color(0xFF00897B);
+  static Color get onlineDot        => primary;
 
-  // ── Member Ring Colors ────────────────────────
-  static const Color ring1          = Color(0xFFCE93D8);
-  static const Color ring2          = Color(0xFF80DEEA);
-  static const Color ring3          = Color(0xFFFFCC80);
-  static const Color ring4          = Color(0xFFF48FB1);
-  static const Color ring5          = Color(0xFFA5D6A7);
-  static const Color ring6          = Color(0xFF90CAF9);
+  // ── Food module accent (kept separate so food screens stay on-brand) ──────
+  static const Color foodPrimary   = Color(0xFF43A047);
 
-  // ── Gradients ────────────────────────────────
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF00695C), Color(0xFF00ACC1)],
+  // ── Member Ring Colors ────────────────────────────────────────────────────
+  static const Color ring1 = Color(0xFFCE93D8);
+  static const Color ring2 = Color(0xFF80DEEA);
+  static const Color ring3 = Color(0xFFFFCC80);
+  static const Color ring4 = Color(0xFFF48FB1);
+  static const Color ring5 = Color(0xFFA5D6A7);
+  static const Color ring6 = Color(0xFF90CAF9);
+
+  // ── Gradients ────────────────────────────────────────────────────────────
+  // Non-const getters so they automatically reflect the current primary.
+  static LinearGradient get primaryGradient => LinearGradient(
+    colors: [
+      Color.lerp(primary, Colors.black, 0.22)!,
+      Color.lerp(primary, Colors.white, 0.22)!,
+    ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-  static const LinearGradient heroGradient = LinearGradient(
-    colors: [Color(0xFF00897B), Color(0xFF00BCD4)],
+  static LinearGradient get heroGradient => LinearGradient(
+    colors: [
+      primary,
+      Color.lerp(primary, Colors.white, 0.28)!,
+    ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -57,13 +71,13 @@ class AppColors {
   static const Color darkBorder = Color(0xFF1E3A4A);
   static const Color darkText   = Color(0xFFE0F2F1);
 
-  // ── Backwards-compat aliases (used in home.dart) ──────────────────────────
-  static const Color secondary  = textSecondary;
-  static const Color textDark   = textPrimary;
-  static const Color light      = primaryLight;
-  static const Color dark       = Color(0xFF00695C);
-  static const Color white      = Color(0xFFFFFFFF);
-  static const Color cardBg     = primarySurface;
+  // ── Backwards-compat aliases ──────────────────────────────────────────────
+  static Color get secondary => Color.lerp(primary, Colors.white, 0.35)!;
+  static const Color textDark = textPrimary;
+  static Color get light      => primaryLight;
+  static Color get dark       => Color.lerp(primary, Colors.black, 0.25)!;
+  static const Color white    = Color(0xFFFFFFFF);
+  static Color get cardBg     => primarySurface;
 }
 
 class AppRadius {
@@ -79,40 +93,41 @@ class AppRadius {
 class AppText {
   AppText._();
 
-  static TextStyle pageTitle = GoogleFonts.poppins(
+  // Getters (not fields) so they always use the current AppColors.primary value.
+  static TextStyle get pageTitle => GoogleFonts.poppins(
     fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.3,
   );
-  static TextStyle sectionLabel = GoogleFonts.poppins(
+  static TextStyle get sectionLabel => GoogleFonts.poppins(
     fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.8,
   );
-  static TextStyle cardTitle = GoogleFonts.poppins(
+  static TextStyle get cardTitle => GoogleFonts.poppins(
     fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary,
   );
-  static TextStyle cardSubtitle = GoogleFonts.poppins(
+  static TextStyle get cardSubtitle => GoogleFonts.poppins(
     fontSize: 10, fontWeight: FontWeight.w400, color: AppColors.textSecondary,
   );
-  static TextStyle bodyMedium = GoogleFonts.poppins(
+  static TextStyle get bodyMedium => GoogleFonts.poppins(
     fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary,
   );
-  static TextStyle bodySmall = GoogleFonts.poppins(
+  static TextStyle get bodySmall => GoogleFonts.poppins(
     fontSize: 10, fontWeight: FontWeight.w400, color: AppColors.textSecondary,
   );
-  static TextStyle statValue = GoogleFonts.poppins(
+  static TextStyle get statValue => GoogleFonts.poppins(
     fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary,
   );
-  static TextStyle badge = GoogleFonts.poppins(
+  static TextStyle get badge => GoogleFonts.poppins(
     fontSize: 9, fontWeight: FontWeight.w600,
   );
-  static TextStyle navLabel = GoogleFonts.poppins(
+  static TextStyle get navLabel => GoogleFonts.poppins(
     fontSize: 10, fontWeight: FontWeight.w500, color: Colors.grey,
   );
-  static TextStyle navLabelActive = GoogleFonts.poppins(
+  static TextStyle get navLabelActive => GoogleFonts.poppins(
     fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary,
   );
-  static TextStyle memberName = GoogleFonts.poppins(
+  static TextStyle get memberName => GoogleFonts.poppins(
     fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textPrimary,
   );
-  static TextStyle memberRole = GoogleFonts.poppins(
+  static TextStyle get memberRole => GoogleFonts.poppins(
     fontSize: 9, fontWeight: FontWeight.w400,
   );
 }
@@ -146,9 +161,10 @@ class AppDecorations {
     ],
   );
 
-  static BoxDecoration get aiGradient => const BoxDecoration(
+  // No longer const — primaryGradient is now a getter.
+  static BoxDecoration get aiGradient => BoxDecoration(
     gradient: AppColors.primaryGradient,
-    borderRadius: BorderRadius.all(Radius.circular(AppRadius.card)),
+    borderRadius: const BorderRadius.all(Radius.circular(AppRadius.card)),
   );
 
   static BoxDecoration iconWrap(Color bg) => BoxDecoration(
@@ -202,7 +218,7 @@ class AppCard extends StatelessWidget {
   }
 }
 
-// ── ThemeData ─────────────────────────────────────────────────────────────────
+// ── Static theme objects (kept for backward-compat; main.dart uses dynamic builders) ──
 
 ThemeData appLightTheme = ThemeData(
   useMaterial3: true,
@@ -218,7 +234,7 @@ ThemeData appLightTheme = ThemeData(
     elevation: 0,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.card),
-      side: const BorderSide(color: AppColors.border, width: 0.8),
+      side: BorderSide(color: AppColors.border, width: 0.8),
     ),
   ),
   appBarTheme: AppBarTheme(
@@ -229,7 +245,7 @@ ThemeData appLightTheme = ThemeData(
       fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary,
     ),
   ),
-  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
     backgroundColor: AppColors.white,
     selectedItemColor: AppColors.primary,
     unselectedItemColor: Colors.grey,
@@ -270,7 +286,7 @@ ThemeData appDarkTheme = ThemeData(
       fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.darkText,
     ),
   ),
-  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
     backgroundColor: AppColors.darkCard,
     selectedItemColor: AppColors.primaryLight,
     unselectedItemColor: Colors.grey,
@@ -283,6 +299,123 @@ ThemeData appDarkTheme = ThemeData(
         s.contains(WidgetState.selected) ? AppColors.primarySurface : Colors.grey.shade800),
   ),
 );
+
+// ── Dynamic theme builders (used by ThemeProvider for palette support) ────────
+
+ThemeData buildLightTheme(Color seed) {
+  final cs  = ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light);
+  final bg  = Color.lerp(seed, Colors.white, 0.93)!;
+  final srf = Color.lerp(seed, Colors.white, 0.88)!;
+  final bdr = Color.lerp(seed, Colors.white, 0.65)!;
+  return ThemeData(
+    useMaterial3: true,
+    colorScheme: cs,
+    scaffoldBackgroundColor: bg,
+    textTheme: GoogleFonts.poppinsTextTheme(),
+    cardTheme: CardThemeData(
+      color: AppColors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        side: BorderSide(color: bdr, width: 0.8),
+      ),
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: bg,
+      elevation: 0,
+      iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      titleTextStyle: GoogleFonts.poppins(
+        fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary,
+      ),
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: AppColors.white,
+      selectedItemColor: cs.primary,
+      unselectedItemColor: Colors.grey,
+      elevation: 0,
+    ),
+    dividerColor: Color.lerp(seed, Colors.white, 0.80)!,
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((s) =>
+          s.contains(WidgetState.selected) ? cs.primary : Colors.grey),
+      trackColor: WidgetStateProperty.resolveWith((s) =>
+          s.contains(WidgetState.selected) ? srf : Colors.grey.shade200),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: cs.primary,
+      foregroundColor: cs.onPrimary,
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
+      ),
+    ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith((s) =>
+          s.contains(WidgetState.selected) ? cs.primary : null),
+    ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: cs.primary,
+    ),
+  );
+}
+
+ThemeData buildDarkTheme(Color seed) {
+  final cs = ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark);
+  return ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: cs,
+    scaffoldBackgroundColor: AppColors.darkBg,
+    textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+    cardTheme: CardThemeData(
+      color: AppColors.darkCard,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        side: const BorderSide(color: AppColors.darkBorder, width: 0.8),
+      ),
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: AppColors.darkBg,
+      elevation: 0,
+      iconTheme: const IconThemeData(color: AppColors.darkText),
+      titleTextStyle: GoogleFonts.poppins(
+        fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.darkText,
+      ),
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: AppColors.darkCard,
+      selectedItemColor: cs.primary,
+      unselectedItemColor: Colors.grey,
+    ),
+    dividerColor: AppColors.darkBorder,
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((s) =>
+          s.contains(WidgetState.selected) ? cs.primary : Colors.grey),
+      trackColor: WidgetStateProperty.resolveWith((s) =>
+          s.contains(WidgetState.selected) ? cs.primaryContainer : Colors.grey.shade800),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: cs.primary,
+      foregroundColor: cs.onPrimary,
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
+      ),
+    ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith((s) =>
+          s.contains(WidgetState.selected) ? cs.primary : null),
+    ),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: cs.primary,
+    ),
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/services/api_service.dart';
@@ -340,7 +340,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.subdirectory_arrow_right,
+                  Icon(Icons.subdirectory_arrow_right,
                       size: 18, color: const Color(0xFF00897B)),
                   const SizedBox(width: 6),
                   Expanded(
@@ -439,7 +439,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCategoryDialog(),
         backgroundColor: const Color(0xFF00897B), // teal primary
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: Icon(Icons.add, color: Colors.white),
         label: Text('Add Category',
             style: GoogleFonts.poppins(
                 color: Colors.white, fontWeight: FontWeight.w600)),
@@ -456,7 +456,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios, color: const Color(0xFF00352E)),
+            icon: Icon(Icons.arrow_back_ios, color: const Color(0xFF00352E)),
           ),
           Expanded(
             child: Column(
@@ -495,12 +495,12 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
                 }
               });
             },
-            icon: const Icon(Icons.unfold_more, color: const Color(0xFF00897B)),
+            icon: Icon(Icons.unfold_more, color: const Color(0xFF00897B)),
           ),
           IconButton(
             tooltip: 'Collapse all',
             onPressed: () => setState(() => _expandedIds.clear()),
-            icon: const Icon(Icons.unfold_less, color: const Color(0xFF00897B)),
+            icon: Icon(Icons.unfold_less, color: const Color(0xFF00897B)),
           ),
         ],
       ),
@@ -685,7 +685,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(color: const Color(0xFF00897B)),
       );
     }
@@ -796,7 +796,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
                     AnimatedRotation(
                       turns: isExpanded ? 0.25 : 0,
                       duration: const Duration(milliseconds: 200),
-                      child: const Icon(Icons.chevron_right,
+                      child: Icon(Icons.chevron_right,
                           size: 22, color: const Color(0xFF4DB6AC)),
                     )
                   else
@@ -932,7 +932,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
           value: 'edit',
           child: Row(
             children: [
-              const Icon(Icons.edit_outlined,
+              Icon(Icons.edit_outlined,
                   size: 18, color: const Color(0xFF00897B)),
               const SizedBox(width: 8),
               Text('Edit', style: GoogleFonts.poppins(fontSize: 14)),
@@ -943,7 +943,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
           value: 'add_sub',
           child: Row(
             children: [
-              const Icon(Icons.add_circle_outline,
+              Icon(Icons.add_circle_outline,
                   size: 18, color: const Color(0xFF00ACC1)),
               const SizedBox(width: 8),
               Text('Add Subcategory',
@@ -955,7 +955,7 @@ class _InventoryCategoriesScreenState extends State<InventoryCategoriesScreen> {
           value: 'delete',
           child: Row(
             children: [
-              const Icon(Icons.delete_outline, size: 18, color: const Color(0xFFE53935)),
+              Icon(Icons.delete_outline, size: 18, color: const Color(0xFFE53935)),
               const SizedBox(width: 8),
               Text('Delete',
                   style:
