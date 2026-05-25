@@ -24,11 +24,11 @@
       "Bash(grep -n -A 20 'appBar: AppBar' 'G:/UNI/graduation project/Modules/Authentication module/auth implementation/flutter_app/lib/pages/__TRACKED_VAR__')",
       "Bash(grep -n -A 20 'return Scaffold' 'G:/UNI/graduation project/Modules/Authentication module/auth implementation/flutter_app/lib/pages/__TRACKED_VAR__')",
       "Bash(grep -n -A 30 '_buildHeader\\\\\\(\\\\\\)' 'G:/UNI/graduation project/Modules/Authentication module/auth implementation/flutter_app/lib/pages/__TRACKED_VAR__')",
-      "PowerShell(Get-ChildItem \"G:\\\\UNI\\\\graduation project\\\\Modules\\\\Authentication module\\\\auth implementation\\\\React_frontend\" -Recurse | Where-Object { !$_.PSIsContainer } | Select-Object -ExpandProperty FullName | Sort-Object)",
-      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:8000/api/auth/families?mail=shahd_tarek@gmail.com\" -TimeoutSec 5; $r.Content)",
-      "Bash(netstat -ano)",
-      "Bash(findstr \":3000\")",
-      "Bash(findstr \":8000\")"
+      "Read(//c/Users/LOQ/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/8653381d-e03b-4f5d-8f06-42ad42ff4389/064dce96-833e-4cba-afcc-5d54b90422e5/skills/docx/**)",
+      "Bash(python scripts/office/unpack.py \"D:\\\\FUE\\\\Level 4\\\\Spring 2026\\\\Family_Hub_All_Screens.docx\" unpacked_doc/)",
+      "Bash(pip install *)",
+      "Bash(dir \"D:\\\\FUE\\\\Level 4\\\\Spring 2026\\\\GP \\(Second Semester\\)\\\\Graduation-project-code\\\\Family-Hub-Graduation-project-\\\\React_frontend\" /b)",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }

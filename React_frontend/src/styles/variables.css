@@ -1,0 +1,87 @@
+/* ═══════════════════════════════════════════════════════════════
+   Family Hub — CSS Design Tokens (mirrors Flutter AppColors)
+   Primary seed: #00897B (teal-green)
+═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* ── Primary ─────────────────────────────────────────── */
+  --color-primary:        #00897B;
+  --color-primary-light:  #5BA89E;   /* lerp(primary, white, 0.32) */
+  --color-primary-surface:#D1ECEB;   /* lerp(primary, white, 0.88) */
+  --color-background:     #E4F5F4;   /* lerp(primary, white, 0.93) */
+
+  /* ── Text ────────────────────────────────────────────── */
+  --color-text-primary:   #00352E;
+  --color-text-secondary: #5FA09A;   /* lerp(primary, white, 0.35) */
+  --color-text-hint:      #8CBFBB;   /* lerp(primary, white, 0.54) */
+
+  /* ── Border ──────────────────────────────────────────── */
+  --color-border:         #95C5C1;   /* lerp(primary, white, 0.65) */
+  --color-border-light:   #CDEAE9;   /* lerp(primary, white, 0.85) */
+
+  /* ── Status ──────────────────────────────────────────── */
+  --color-success:        #43A047;
+  --color-success-surface:#E8F5E9;
+  --color-warning:        #FB8C00;
+  --color-warning-surface:#FFF3E0;
+  --color-error:          #E53935;
+  --color-error-surface:  #FFEBEE;
+
+  /* ── Neutrals ────────────────────────────────────────── */
+  --color-white:          #FFFFFF;
+  --color-nav-bg:         #FFFFFF;
+
+  /* ── Dark mode ────────────────────────────────────────── */
+  --color-dark-bg:        #0A1628;
+  --color-dark-card:      #122030;
+  --color-dark-border:    #1E3A4A;
+  --color-dark-text:      #E0F2F1;
+
+  /* ── Radii ───────────────────────────────────────────── */
+  --radius-card:   16px;
+  --radius-button: 14px;
+  --radius-chip:   20px;
+  --radius-input:  12px;
+
+  /* ── Shadows ─────────────────────────────────────────── */
+  --shadow-card:   0 2px 8px rgba(0,0,0,0.05);
+  --shadow-card-md:0 5px 14px rgba(0,0,0,0.07);
+  --shadow-primary:0 4px 12px rgba(0,137,123,0.35);
+
+  /* ── Font ────────────────────────────────────────────── */
+  --font-family: 'Poppins', sans-serif;
+}
+
+/* Dark theme class applied to <body> or root element */
+[data-theme="dark"] {
+  --color-background:     #0A1628;
+  --color-white:          #122030;
+  --color-nav-bg:         #122030;
+  --color-text-primary:   #E0F2F1;
+  --color-text-secondary: #8CBFBB;
+  --color-border:         #1E3A4A;
+  --color-border-light:   #1E3A4A;
+  --color-primary-surface:#0D2235;
+}
+
+/* ── Global reset ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* RTL support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
