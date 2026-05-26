@@ -749,4 +749,149 @@ export async function deactivateAccount(email, password) {
   return res.data;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUDGET — PERIOD BUDGETS
+// ═══════════════════════════════════════════════════════════════════════════════
+export async function getBudgets() {
+  const res = await api.get('/budget/periods');
+  return res.data?.data?.budgets || res.data?.data || [];
+}
+
+export async function getBudget(budgetId) {
+  const res = await api.get(`/budget/periods/${budgetId}`);
+  return res.data?.data?.budget || res.data?.data || {};
+}
+
+export async function createBudget(data) {
+  const res = await api.post('/budget/periods', data);
+  return res.data;
+}
+
+export async function updateBudget(budgetId, data) {
+  const res = await api.patch(`/budget/periods/${budgetId}`, data);
+  return res.data;
+}
+
+export async function deleteBudget(budgetId) {
+  await api.delete(`/budget/periods/${budgetId}`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUDGET — EXPENSES
+// ═══════════════════════════════════════════════════════════════════════════════
+export async function createExpense(data) {
+  const res = await api.post('/budget/expenses/new', data);
+  return res.data;
+}
+
+export async function submitExpenseRequest(data) {
+  const res = await api.post('/budget/expense-requests', data);
+  return res.data;
+}
+
+export async function getExpenseRequests({ status } = {}) {
+  let url = '/budget/expense-requests';
+  if (status) url += `?status=${status}`;
+  const res = await api.get(url);
+  return res.data?.data?.requests || res.data?.data || [];
+}
+
+export async function approveExpenseRequest(id) {
+  const res = await api.patch(`/budget/expense-requests/${id}/approve`);
+  return res.data;
+}
+
+export async function rejectExpenseRequest(id) {
+  const res = await api.patch(`/budget/expense-requests/${id}/reject`);
+  return res.data;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUDGET — ANALYTICS
+// ═══════════════════════════════════════════════════════════════════════════════
+export async function getBudgetAnalytics(periodBudgetId) {
+  const res = await api.get(`/budget/analytics?period_budget_id=${periodBudgetId}`);
+  return res.data?.data || {};
+}
+
+export async function getExpensesByBudget(periodBudgetId) {
+  const res = await api.get(`/budget/expenses?period_budget_id=${periodBudgetId}`);
+  return res.data?.data?.expenses || [];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUDGET — INVENTORY CATEGORIES (for budget creation)
+// ═══════════════════════════════════════════════════════════════════════════════
+export async function getInventoryCategoriesForBudget() {
+  const res = await api.get('/inventory-categories');
+  return res.data?.data?.categories || [];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BUDGET — FUTURE EVENTS (SAVINGS GOALS)
+// ═══════════════════════════════════════════════════════════════════════════════
+export async function createFutureEvent(data) {
+  const res = await api.post('/budgets/future-events', data);
+  return res.data;
+}
+
+export async function updateFutureEvent(eventId, data) {
+  const res = await api.patch(`/budgets/future-events/${eventId}`, data);
+  return res.data;
+}
+
+export async function deleteFutureEvent(eventId) {
+  await api.delete(`/budgets/future-events/${eventId}`);
+}
+
+export async function getEventFundingStatus(eventId) {
+  const res = await api.get(`/budgets/future-events/${eventId}/funding`);
+  return res.data?.data || {};
+}
+
+export async function contributeToEvent(eventId, { contributionType, amount, paymentMode, memberId, manualEntry }) {
+  const body = { contribution_type: contributionType, amount, payment_mode: paymentMode };
+  if (memberId) body.member_id = memberId;
+  if (manualEntry !== undefined) body.manual_entry = manualEntry;
+  const res = await api.post(`/budgets/future-events/${eventId}/contribute`, body);
+  return res.data;
+}
+
+export async function markEventContributionPaid(eventId, { memberId, contributionType, amount }) {
+  const res = await api.patch(`/budgets/future-events/${eventId}/mark-paid`, {
+    member_id: memberId,
+    contribution_type: contributionType,
+    amount,
+  });
+  return res.data;
+}
+
+export async function adjustEventFundingGoal(eventId, estimatedCost) {
+  const res = await api.patch(`/budgets/future-events/${eventId}/adjust-goal`, { estimated_cost: estimatedCost });
+  return res.data;
+}
+
+export async function redeemEventSpot({ eventId, pointsToUse }) {
+  const res = await api.post('/redeem/event-spot', { event_id: eventId, points_to_use: pointsToUse });
+  return res.data;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WALLET — CONVERSIONS & BALANCE DETAILS
+// ═══════════════════════════════════════════════════════════════════════════════
+export async function convertMoneyToPoints(amount) {
+  const res = await api.post('/budget/wallet/convert-to-points', { amount });
+  return res.data;
+}
+
+export async function convertPointsToMoney(amount) {
+  const res = await api.post('/budget/wallet/convert-from-points', { amount });
+  return res.data;
+}
+
+export async function getBalanceWalletDetails() {
+  const res = await api.get('/budget/wallet/balance-details');
+  return res.data?.data || {};
+}
+
 export default api;

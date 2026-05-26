@@ -12,7 +12,7 @@ import './DashboardScreen.css';
 const MODULES = [
   { label: 'Tasks',      labelAr: 'المهام',         emoji: '✅', route: '/tasks',                iconBg: '#D1ECEB', iconColor: '#00897B' },
   { label: 'Budget',     labelAr: 'الميزانية',       emoji: '💰', route: '/budget',               iconBg: '#E4F5F4', iconColor: '#00897B' },
-  { label: 'Events',     labelAr: 'الأحداث',         emoji: '📅', route: '/event-funding',        iconBg: '#FFF3E0', iconColor: '#E65100' },
+  { label: 'Events',     labelAr: 'الأحداث',         emoji: '📅', route: '/future-events',        iconBg: '#FFF3E0', iconColor: '#E65100' },
   { label: 'Wallet',     labelAr: 'المحفظة',         emoji: '💳', route: '/combined-wallet',      iconBg: '#D1ECEB', iconColor: '#00352E' },
   { label: 'Rewards',    labelAr: 'المكافآت',        emoji: '🏆', route: '/rewards',              iconBg: '#FFF8E1', iconColor: '#F9A825' },
   { label: 'Redeem',     labelAr: 'استبدال',         emoji: '🎁', route: '/redeem',               iconBg: '#FCE4EC', iconColor: '#AD1457' },
@@ -35,6 +35,8 @@ const IMPLEMENTED = new Set([
   '/meal-suggestions', '/leftovers', '/inventory', '/inventory-categories',
   '/inventory-alerts', '/groceries', '/receipts', '/planning-chat',
   '/dashboard', '/settings',
+  '/budget', '/budget/add-expense', '/future-events', '/event-funding',
+  '/combined-wallet', '/wallet-details',
 ]);
 
 // ─────────────────────────────────────────────────────────────────────────────

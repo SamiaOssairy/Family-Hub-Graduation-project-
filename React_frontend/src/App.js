@@ -33,6 +33,17 @@ import RedeemScreen         from './pages/tasks/RedeemScreen';
 import FamilyPointsScreen   from './pages/tasks/FamilyPointsScreen';
 import StatusScreen         from './pages/tasks/StatusScreen';
 
+// ── Budget module ─────────────────────────────────────────────────────────────
+import BudgetDashboardScreen  from './pages/budget/BudgetDashboardScreen';
+import AddExpenseScreen       from './pages/budget/AddExpenseScreen';
+import BudgetAnalyticsScreen  from './pages/budget/BudgetAnalyticsScreen';
+import FutureEventsScreen     from './pages/budget/FutureEventsScreen';
+import EventFundingScreen     from './pages/budget/EventFundingScreen';
+
+// ── Wallet module ─────────────────────────────────────────────────────────────
+import CombinedWalletScreen        from './pages/wallet/CombinedWalletScreen';
+import BalanceWalletDetailsScreen  from './pages/wallet/BalanceWalletDetailsScreen';
+
 // ── Food Hub module ───────────────────────────────────────────────────────────
 import FoodHubScreen             from './pages/food/FoodHubScreen';
 import RecipesScreen             from './pages/food/RecipesScreen';
@@ -82,6 +93,18 @@ export default function App() {
         <Route path="/redeem"          element={<ProtectedRoute><RedeemScreen /></ProtectedRoute>} />
         <Route path="/family-points"   element={<ProtectedRoute><FamilyPointsScreen /></ProtectedRoute>} />
         <Route path="/status"          element={<ProtectedRoute><StatusScreen /></ProtectedRoute>} />
+
+        {/* ── Budget module ── */}
+        <Route path="/budget"                  element={<ProtectedRoute><BudgetDashboardScreen /></ProtectedRoute>} />
+        <Route path="/budget/add-expense"      element={<ProtectedRoute><AddExpenseScreen /></ProtectedRoute>} />
+        <Route path="/budget/analytics/:id"    element={<ProtectedRoute><BudgetAnalyticsScreen /></ProtectedRoute>} />
+        <Route path="/future-events"           element={<ProtectedRoute><FutureEventsScreen /></ProtectedRoute>} />
+        <Route path="/event-funding"           element={<ProtectedRoute><EventFundingScreen /></ProtectedRoute>} />
+        <Route path="/event-funding/:id"       element={<ProtectedRoute><EventFundingScreen /></ProtectedRoute>} />
+
+        {/* ── Wallet module ── */}
+        <Route path="/combined-wallet"         element={<ProtectedRoute><CombinedWalletScreen /></ProtectedRoute>} />
+        <Route path="/wallet-details"          element={<ProtectedRoute><BalanceWalletDetailsScreen /></ProtectedRoute>} />
 
         {/* ── Food Hub module ── */}
         <Route path="/food-hub"                element={<ProtectedRoute><FoodHubScreen /></ProtectedRoute>} />

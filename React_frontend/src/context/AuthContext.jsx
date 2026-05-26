@@ -76,15 +76,17 @@ export function AuthProvider({ children }) {
   //   (data, tkn)                                 ← legacy format (flat fields)
   const login = (responseDataOrData, legacyToken) => {
     // Friend's format: first arg is { token, data: { member, family } }
+    // Also handles backend's flat format: { token, data: { memberId, familyId, ... } }
     if (legacyToken === undefined && responseDataOrData?.token && responseDataOrData?.data) {
       const { token: tok, data } = responseDataOrData;
       setToken(tok);
-      setMember(data?.member || null);
-      setFamily(data?.family || null);
-      setIsFirstLogin(data?.member?.isFirstLogin || false);
-      localStorage.setItem('isFirstLogin', data?.member?.isFirstLogin ? 'true' : 'false');
 
       if (data?.member && data?.family) {
+        // True nested format
+        setMember(data.member);
+        setFamily(data.family);
+        setIsFirstLogin(data.member?.isFirstLogin || false);
+        localStorage.setItem('isFirstLogin', data.member?.isFirstLogin ? 'true' : 'false');
         const account = {
           token: tok,
           member: data.member,
@@ -94,6 +96,26 @@ export function AuthProvider({ children }) {
         setSavedAccounts(prev => {
           const filtered = prev.filter(a => a.key !== account.key);
           return [account, ...filtered].slice(0, 10);
+        });
+      } else {
+        // Backend's actual flat format: { memberId, familyId, mail, username, familyTitle, memberType, isFirstLogin }
+        localStorage.setItem('memberType',  data.memberType  || '');
+        localStorage.setItem('username',    data.username    || '');
+        localStorage.setItem('familyTitle', data.familyTitle || '');
+        localStorage.setItem('familyId',    String(data.familyId  || ''));
+        localStorage.setItem('memberId',    String(data.memberId  || ''));
+        localStorage.setItem('memberMail',  data.mail        || '');
+        localStorage.setItem('isFirstLogin', data.isFirstLogin ? 'true' : 'false');
+        setIsFirstLogin(data.isFirstLogin || false);
+        setMember({
+          _id: data.memberId || '',
+          username: data.username || '',
+          mail: data.mail || '',
+          member_type_id: { type: data.memberType || '' },
+        });
+        setFamily({
+          _id: data.familyId || '',
+          Title: data.familyTitle || '',
         });
       }
     } else {
