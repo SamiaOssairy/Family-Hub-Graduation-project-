@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // Family Hub — API Service  (mirrors Flutter's api_service.dart exactly)
-// Base URL: http://localhost:8000/api
+// Base URL: set REACT_APP_API_URL env var in production, falls back to localhost
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8000/api';
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 // ── Axios instance ────────────────────────────────────────────────────────────
 const api = axios.create({ baseURL: BASE_URL });
