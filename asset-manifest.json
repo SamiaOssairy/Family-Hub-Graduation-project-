@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Family-Hub-Graduation-project-/static/css/main.1c5930f1.css",
+    "main.js": "/Family-Hub-Graduation-project-/static/js/main.7d4dcb95.js",
+    "static/js/453.fc2dd0f9.chunk.js": "/Family-Hub-Graduation-project-/static/js/453.fc2dd0f9.chunk.js",
+    "index.html": "/Family-Hub-Graduation-project-/index.html",
+    "main.1c5930f1.css.map": "/Family-Hub-Graduation-project-/static/css/main.1c5930f1.css.map",
+    "main.7d4dcb95.js.map": "/Family-Hub-Graduation-project-/static/js/main.7d4dcb95.js.map",
+    "453.fc2dd0f9.chunk.js.map": "/Family-Hub-Graduation-project-/static/js/453.fc2dd0f9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1c5930f1.css",
+    "static/js/main.7d4dcb95.js"
+  ]
+}
