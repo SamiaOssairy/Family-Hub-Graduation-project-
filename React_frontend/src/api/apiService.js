@@ -618,7 +618,8 @@ export async function getSpendingSummary({ startDate, endDate } = {}) {
 // ═══════════════════════════════════════════════════════════════════════════════
 export async function getAllGroceryLists() {
   const res = await api.get('/grocery-lists');
-  return res.data?.data?.groceryLists || [];
+  // Backend returns { data: { lists: [...] } } — key is 'lists', not 'groceryLists'
+  return res.data?.data?.lists || [];
 }
 
 export async function createGroceryList(data) {
