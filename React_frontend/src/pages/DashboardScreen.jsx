@@ -26,6 +26,7 @@ const MODULES = [
   { label: 'Receipts',   labelAr: 'الإيصالات',       emoji: '🧾', route: '/receipts',             iconBg: '#E8EAF6', iconColor: '#283593' },
   { label: 'Groceries',  labelAr: 'البقالة',         emoji: '🛒', route: '/groceries',            iconBg: '#D1ECEB', iconColor: '#00352E' },
   { label: 'Categories', labelAr: 'الفئات',          emoji: '📂', route: '/inventory-categories', iconBg: '#F3E5F5', iconColor: '#7B1FA2' },
+  { label: 'Analytics',  labelAr: 'التحليلات',        emoji: '📊', route: '/combined-analytics',   iconBg: '#E3F2FD', iconColor: '#1565C0' },
 ];
 
 // Routes actually implemented in the React app
@@ -37,6 +38,7 @@ const IMPLEMENTED = new Set([
   '/dashboard', '/settings',
   '/budget', '/budget/add-expense', '/future-events', '/event-funding',
   '/combined-wallet', '/wallet-details',
+  '/combined-analytics',
 ]);
 
 // ─────────────────────────────────────────────────────────────────────────────

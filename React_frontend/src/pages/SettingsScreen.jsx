@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { PALETTES } from '../context/ThemeContext';
 import {
   getAllMembers, getCombinedBalance, setConversionRate,
   getMyLocation, toggleLocationSharing, setPassword, deactivateAccount,
@@ -17,8 +18,8 @@ import './SettingsScreen.css';
 // ─────────────────────────────────────────────────────────────────────────────
 export default function SettingsScreen() {
   const navigate  = useNavigate();
-  const { familyTitle, username, memberId, isParent, savedAccounts, token, logout, member } = useAuth();
-  const { theme, language, toggleTheme, toggleLanguage } = useTheme();
+  const { familyTitle, username, memberId, isParent, savedAccounts, token, logout, logoutAll, switchAccount, removeAccount, member } = useAuth();
+  const { theme, language, toggleTheme, toggleLanguage, palette, setPalette } = useTheme();
   const t = (en, ar) => language === 'ar' ? ar : en;
   const isDark = theme === 'dark';
 
@@ -206,6 +207,12 @@ export default function SettingsScreen() {
     navigate('/login', { replace: true });
   }
 
+  function handleLogoutAll() {
+    setShowLogout(false);
+    logoutAll();
+    navigate('/login', { replace: true });
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
   const getAvatarEmoji = (memberType) => {
     const t2 = (memberType || '').toLowerCase();
@@ -309,6 +316,7 @@ export default function SettingsScreen() {
               value={isDark}
               onChanged={toggleTheme}
             />
+            <ColorThemePicker palette={palette} setPalette={setPalette} t={t} />
             <SettingsToggleRow
               icon="📍" iconBg="#D1ECEB" iconColor="#00897B"
               title={updatingLocation
@@ -499,16 +507,32 @@ export default function SettingsScreen() {
                 const accTitle = acc.family?.Title || acc.family?.title || '';
                 const accUser  = acc.member?.username || '';
                 const accMail  = acc.member?.mail || '';
+                const accKey   = acc.key || acc.token;
                 const isActive = acc.token === token;
                 return (
                   <div
-                    key={acc.key || acc.token}
+                    key={accKey}
                     className={`ss-profile-item${isActive ? ' active' : ''}`}
-                    onClick={() => { setShowSwitchProfile(false); }}
+                    onClick={() => {
+                      if (!isActive) { switchAccount(acc); setShowSwitchProfile(false); showToast(t('Profile switched', 'تم تبديل الحساب')); }
+                    }}
                   >
-                    <div className="ss-profile-item-name">{accTitle} ({accUser})</div>
-                    <div className="ss-profile-item-mail">{accMail}</div>
-                    {isActive && <span className="ss-check">✓</span>}
+                    <div className="ss-profile-item-body">
+                      <div className="ss-profile-item-name">{accTitle} ({accUser})</div>
+                      <div className="ss-profile-item-mail">{accMail}</div>
+                    </div>
+                    <div className="ss-profile-item-actions">
+                      {isActive && <span className="ss-check">✓</span>}
+                      <button
+                        className="ss-profile-remove-btn"
+                        title={t('Remove', 'حذف')}
+                        onClick={e => {
+                          e.stopPropagation();
+                          removeAccount(accKey);
+                          if (isActive && savedAccounts.length <= 1) { setShowSwitchProfile(false); handleLogout(); }
+                        }}
+                      >✕</button>
+                    </div>
                   </div>
                 );
               })}
@@ -557,7 +581,7 @@ export default function SettingsScreen() {
           <div className="ss-dialog-actions">
             <button className="ss-btn-text" onClick={() => setShowLogout(false)}>{t('Cancel', 'إلغاء')}</button>
             <button className="ss-btn-text" onClick={handleLogout}>{t('Logout current', 'خروج الحساب الحالي')}</button>
-            <button className="ss-btn-text danger" onClick={handleLogout}>{t('Logout all', 'خروج الكل')}</button>
+            <button className="ss-btn-text danger" onClick={handleLogoutAll}>{t('Logout all', 'خروج الكل')}</button>
           </div>
         </Overlay>
       )}
@@ -629,6 +653,38 @@ function SettingsToggleRow({ icon, iconBg, iconColor, title, subtitle, value, on
       >
         <div className="ss-toggle-knob" />
       </div>
+    </div>
+  );
+}
+
+function ColorThemePicker({ palette, setPalette, t }) {
+  return (
+    <div className="ss-row ss-color-picker-row">
+      <div className="ss-row-icon" style={{ background: '#D1ECEB' }}>
+        <span>🎨</span>
+      </div>
+      <div className="ss-row-body">
+        <span className="ss-row-title">{t('Color Theme', 'لون التطبيق')}</span>
+        <div className="ss-palette-dots">
+          {PALETTES.map(p => {
+            const isSelected = palette?.id === p.id;
+            return (
+              <button
+                key={p.id}
+                className={`ss-palette-dot${isSelected ? ' selected' : ''}`}
+                style={{ background: p.seed, boxShadow: isSelected ? `0 0 0 3px ${p.seed}55` : undefined }}
+                title={p.displayName}
+                onClick={() => setPalette(p.id)}
+              >
+                {isSelected && <span className="ss-palette-check">✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <span className="ss-row-sub" style={{ fontSize: 11, color: 'var(--color-primary)', fontWeight: 600 }}>
+        {palette?.displayName || ''}
+      </span>
     </div>
   );
 }

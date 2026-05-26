@@ -40,6 +40,9 @@ import BudgetAnalyticsScreen  from './pages/budget/BudgetAnalyticsScreen';
 import FutureEventsScreen     from './pages/budget/FutureEventsScreen';
 import EventFundingScreen     from './pages/budget/EventFundingScreen';
 
+// ── Analytics module ──────────────────────────────────────────────────────────
+import CombinedAnalyticsScreen from './pages/analytics/CombinedAnalyticsScreen';
+
 // ── Wallet module ─────────────────────────────────────────────────────────────
 import CombinedWalletScreen        from './pages/wallet/CombinedWalletScreen';
 import BalanceWalletDetailsScreen  from './pages/wallet/BalanceWalletDetailsScreen';
@@ -101,6 +104,9 @@ export default function App() {
         <Route path="/future-events"           element={<ProtectedRoute><FutureEventsScreen /></ProtectedRoute>} />
         <Route path="/event-funding"           element={<ProtectedRoute><EventFundingScreen /></ProtectedRoute>} />
         <Route path="/event-funding/:id"       element={<ProtectedRoute><EventFundingScreen /></ProtectedRoute>} />
+
+        {/* ── Analytics module ── */}
+        <Route path="/combined-analytics" element={<ProtectedRoute><CombinedAnalyticsScreen /></ProtectedRoute>} />
 
         {/* ── Wallet module ── */}
         <Route path="/combined-wallet"         element={<ProtectedRoute><CombinedWalletScreen /></ProtectedRoute>} />

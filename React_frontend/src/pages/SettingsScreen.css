@@ -720,6 +720,92 @@
   background: var(--color-border-light);
 }
 
+/* ── Color Theme Picker ───────────────────────────────────────── */
+.ss-color-picker-row {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.ss-palette-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.ss-palette-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+
+.ss-palette-dot.selected {
+  transform: scale(1.25);
+  outline: 3px solid currentColor;
+  outline-offset: 2px;
+}
+
+.ss-palette-dot:hover:not(.selected) { transform: scale(1.1); }
+
+.ss-palette-check {
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+/* ── Profile item actions (remove button) ─────────────────────── */
+.ss-profile-item {
+  flex-direction: row;
+  align-items: center;
+}
+
+.ss-profile-item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ss-profile-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ss-profile-remove-btn {
+  background: none;
+  border: none;
+  color: #EF9A9A;
+  font-size: 14px;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+  line-height: 1;
+}
+
+.ss-profile-remove-btn:hover {
+  background: #FFEBEE;
+  color: #E53935;
+}
+
 /* ── Toast ────────────────────────────────────────────────────── */
 .ss-toast {
   position: fixed;

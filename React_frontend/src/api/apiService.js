@@ -809,6 +809,11 @@ export async function rejectExpenseRequest(id) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // BUDGET — ANALYTICS
 // ═══════════════════════════════════════════════════════════════════════════════
+export async function getCombinedAnalytics() {
+  const res = await api.get('/budget/analytics');
+  return res.data?.data || {};
+}
+
 export async function getBudgetAnalytics(periodBudgetId) {
   const res = await api.get(`/budget/analytics?period_budget_id=${periodBudgetId}`);
   return res.data?.data || {};

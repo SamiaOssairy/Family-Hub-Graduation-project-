@@ -157,6 +157,13 @@ export function AuthProvider({ children }) {
       .forEach(k => localStorage.removeItem(k));
   };
 
+  // ── logoutAll — clears all saved accounts then logs out ──────────────────────
+  const logoutAll = () => {
+    setSavedAccounts([]);
+    localStorage.removeItem('savedAccounts');
+    logout();
+  };
+
   // ── clearFirstLogin ─────────────────────────────────────────────────────────
   function clearFirstLogin() {
     localStorage.setItem('isFirstLogin', 'false');
@@ -193,7 +200,7 @@ export function AuthProvider({ children }) {
       memberType, username, familyTitle, familyId, memberId, memberMail,
       isFirstLogin, isParent,
       // Actions
-      login, logout, clearFirstLogin, syncFromStorage,
+      login, logout, logoutAll, clearFirstLogin, syncFromStorage,
       switchAccount, removeAccount,
     }}>
       {children}
