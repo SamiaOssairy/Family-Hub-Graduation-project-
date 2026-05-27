@@ -19,15 +19,17 @@ import LoginScreen      from './pages/LoginScreen';
 import SignUpScreen     from './pages/SignUpScreen';
 
 // ── Main navigation screens (Flutter parity) ──────────────────────────────────
-import HomeScreen        from './pages/HomeScreen';
-import DashboardScreen   from './pages/DashboardScreen';
-import SettingsScreen    from './pages/SettingsScreen';
-import PlanningChatScreen from './pages/PlanningChatScreen';
-import FamilyMapScreen   from './pages/FamilyMapScreen';
+import HomeScreen           from './pages/HomeScreen';
+import DashboardScreen      from './pages/DashboardScreen';
+import SettingsScreen       from './pages/SettingsScreen';
+import PlanningChatScreen   from './pages/PlanningChatScreen';
+import FamilyMapScreen      from './pages/FamilyMapScreen';
+import ManageAccountsPage   from './pages/ManageAccountsPage';
 
 // ── Tasks module ──────────────────────────────────────────────────────────────
 import TasksScreen          from './pages/tasks/TasksScreen';
 import TaskManagementScreen from './pages/tasks/TaskManagementScreen';
+import CreateTaskScreen     from './pages/tasks/CreateTaskScreen';
 import RewardsScreen        from './pages/tasks/RewardsScreen';
 import RedeemScreen         from './pages/tasks/RedeemScreen';
 import FamilyPointsScreen   from './pages/tasks/FamilyPointsScreen';
@@ -87,10 +89,12 @@ export default function App() {
         <Route path="/dashboard"     element={<ProtectedRoute><DashboardScreen /></ProtectedRoute>} />
         <Route path="/settings"      element={<ProtectedRoute><SettingsScreen /></ProtectedRoute>} />
         <Route path="/planning-chat" element={<ProtectedRoute><PlanningChatScreen /></ProtectedRoute>} />
-        <Route path="/family-map"    element={<ProtectedRoute><FamilyMapScreen /></ProtectedRoute>} />
+        <Route path="/family-map"       element={<ProtectedRoute><FamilyMapScreen /></ProtectedRoute>} />
+        <Route path="/manage-accounts"  element={<ProtectedRoute><ManageAccountsPage /></ProtectedRoute>} />
 
         {/* ── Tasks module ── */}
         <Route path="/tasks"           element={<ProtectedRoute><TasksScreen /></ProtectedRoute>} />
+        <Route path="/create-task"     element={<ProtectedRoute><CreateTaskScreen /></ProtectedRoute>} />
         <Route path="/task-management" element={<ProtectedRoute><TaskManagementScreen /></ProtectedRoute>} />
         <Route path="/rewards"         element={<ProtectedRoute><RewardsScreen /></ProtectedRoute>} />
         <Route path="/redeem"          element={<ProtectedRoute><RedeemScreen /></ProtectedRoute>} />

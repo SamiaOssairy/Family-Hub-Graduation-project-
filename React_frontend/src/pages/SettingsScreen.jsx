@@ -270,9 +270,9 @@ export default function SettingsScreen() {
             />
             <SettingsRow
               icon="🔄" iconBg="#E3F2FD" iconColor="#1565C0"
-              title={t('Switch Profile', 'تبديل الحساب')}
+              title={t('Manage Accounts', 'إدارة الحسابات')}
               subtitle={`${savedAccounts.length} ${t('saved', 'محفوظ')}`}
-              onTap={() => setShowSwitchProfile(true)}
+              onTap={() => navigate('/manage-accounts')}
             />
           </SettingsSection>
 

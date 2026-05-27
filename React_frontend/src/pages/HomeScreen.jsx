@@ -488,6 +488,9 @@ export default function HomeScreen() {
               <button className="hs-btn-outlined" onClick={() => { setShowAccountSwitcher(false); navigate('/login'); }}>
                 + {t('Add New Account', 'إضافة حساب جديد')}
               </button>
+              <button className="hs-btn-outlined" onClick={() => { setShowAccountSwitcher(false); navigate('/manage-accounts'); }}>
+                {t('Manage Accounts', 'إدارة الحسابات')}
+              </button>
             </div>
           </div>
         </div>

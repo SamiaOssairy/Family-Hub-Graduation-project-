@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { CheckSquare, RefreshCw, Trash2, X, Plus, Clock, CheckCircle, CircleDot } from 'lucide-react';
 import AppBar, { IconBtn } from '../../components/common/AppBar';
 import Avatar from '../../components/common/Avatar';
@@ -79,6 +80,7 @@ function fromJson(json) {
 export default function TasksScreen() {
   const { t } = useTranslation();
   const toast = useToast();
+  const navigate = useNavigate();
   const { memberMail, username } = useAuth();
 
   const [activeTab, setActiveTab] = useState(0); // 0 = Mandatory, 1 = Available
@@ -166,9 +168,20 @@ export default function TasksScreen() {
     setAvailableTasks(t => t.map(x => ({ ...x, isSelectedToDelete: false })));
   }
 
-  function deleteSelected() {
-    setMandatoryTasks(t => t.filter(x => !x.isSelectedToDelete));
-    setAvailableTasks(t => t.filter(x => !x.isSelectedToDelete));
+  async function deleteSelected() {
+    const toDelete = [
+      ...mandatoryTasks.filter(x => x.isSelectedToDelete),
+      ...availableTasks.filter(x => x.isSelectedToDelete),
+    ];
+    if (toDelete.length === 0) { setIsDeleteMode(false); return; }
+    try {
+      await Promise.all(toDelete.map(x => api.deleteTask(x.id)));
+      setMandatoryTasks(t => t.filter(x => !x.isSelectedToDelete));
+      setAvailableTasks(t => t.filter(x => !x.isSelectedToDelete));
+      toast.success(`${toDelete.length} task(s) deleted`);
+    } catch {
+      toast.error('Failed to delete tasks');
+    }
     setIsDeleteMode(false);
   }
 
@@ -533,7 +546,7 @@ export default function TasksScreen() {
           </button>
         ) : (
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => navigate('/create-task', { state: { categories } })}
             style={{
               width: 56, height: 56, borderRadius: '50%',
               background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-light))',

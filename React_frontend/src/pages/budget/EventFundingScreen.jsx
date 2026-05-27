@@ -16,8 +16,9 @@ export default function EventFundingScreen() {
   const toast = useToast();
   const { isParent } = useAuth();
 
+  const { id: paramId } = useParams();
   // Get eventId from route state or params (mirrors Flutter didChangeDependencies)
-  const eventId = location.state?.eventId || useParams().id || null;
+  const eventId = location.state?.eventId || paramId || null;
 
   const [isLoading, setIsLoading] = useState(true);
   const [funding, setFunding] = useState({});

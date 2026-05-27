@@ -17,12 +17,13 @@ export default function RecipeDetailScreen() {
   const { t } = useTranslation();
   const toast = useToast();
 
-  const [loading, setLoading]         = useState(true);
-  const [recipe, setRecipe]           = useState(null);
-  const [ingredients, setIngredients] = useState([]);
-  const [steps, setSteps]             = useState([]);
-  const [units, setUnits]             = useState([]);
-  const [servings, setServings]       = useState(null);
+  const [loading, setLoading]           = useState(true);
+  const [recipe, setRecipe]             = useState(null);
+  const [ingredients, setIngredients]   = useState([]);
+  const [steps, setSteps]               = useState([]);
+  const [units, setUnits]               = useState([]);
+  const [servings, setServings]         = useState(null);
+  const [inventoryItems, setInventoryItems] = useState([]);
 
   // Add ingredient modal
   const [showIngModal, setShowIngModal] = useState(false);
@@ -42,15 +43,17 @@ export default function RecipeDetailScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [recipeData, unitData] = await Promise.all([
+      const [recipeData, unitData, invItems] = await Promise.all([
         api.getRecipe(id),
         api.getAllUnits().catch(() => []),
+        api.getAllFamilyItems().catch(() => []),
       ]);
       const r = recipeData?.data?.recipe || recipeData?.data || recipeData;
       setRecipe(r);
       setIngredients(recipeData?.data?.ingredients || []);
       setSteps(recipeData?.data?.steps || []);
       setUnits(unitData);
+      setInventoryItems(invItems);
       if (unitData.length > 0) setIngUnit(unitData[0]._id);
       setServings(r?.serving_size || 1);
     } catch (e) {

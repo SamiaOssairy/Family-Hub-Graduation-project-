@@ -71,7 +71,7 @@ export default function MealsScreen() {
     const d = date || selectedDate;
     setLoading(true);
     try {
-      const meals = await api.getMeals(toDateStr(d));
+      const meals = await api.getMeals({ date: toDateStr(d) });
       setMeals(meals);
     } catch (e) { toast(e.message, 'error'); }
     finally { setLoading(false); }
@@ -81,7 +81,7 @@ export default function MealsScreen() {
     setLoading(true);
     try {
       const [ms, items] = await Promise.all([
-        api.getMeals(toDateStr(selectedDate)),
+        api.getMeals({ date: toDateStr(selectedDate) }),
         api.getAllFamilyItems().catch(() => []),
       ]);
       setMeals(ms);

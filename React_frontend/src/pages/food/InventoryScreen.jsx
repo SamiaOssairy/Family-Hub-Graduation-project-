@@ -216,7 +216,7 @@ export default function InventoryScreen() {
     if (!newInvTitle.trim()) return;
     setSavingInv(true);
     try {
-      await api.createInventory(newInvTitle.trim(), { type: newInvType });
+      await api.createInventory(newInvTitle.trim(), newInvType);
       toast('Inventory created');
       setShowInvModal(false); setNewInvTitle('');
       load();

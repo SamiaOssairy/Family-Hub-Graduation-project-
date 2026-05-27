@@ -209,6 +209,7 @@ export default function BudgetDashboardScreen() {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [reminderCount, setReminderCount] = useState(0);
 
   const loadBudgets = useCallback(async () => {
     setLoading(true);
@@ -234,7 +235,21 @@ export default function BudgetDashboardScreen() {
     }
   }, [isParent]);
 
-  useEffect(() => { loadBudgets(); loadPending(); }, [loadBudgets, loadPending]);
+  // Load future events and count upcoming ones (within 30 days) — mirrors Flutter activeReminders
+  const loadReminders = useCallback(async () => {
+    try {
+      const events = await api.getFutureEvents();
+      const now = new Date();
+      const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const upcoming = (Array.isArray(events) ? events : []).filter(e => {
+        const d = new Date(e.event_date);
+        return d >= now && d <= in30;
+      });
+      setReminderCount(upcoming.length);
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => { loadBudgets(); loadPending(); loadReminders(); }, [loadBudgets, loadPending, loadReminders]);
 
   const handleApprove = async (id) => {
     try {
@@ -252,9 +267,6 @@ export default function BudgetDashboardScreen() {
       loadPending();
     } catch (e) { toast(e.message, 'error'); }
   };
-
-  // Count upcoming event reminders from budgets that have them
-  const reminderCount = 0; // simplified — full implementation would check event dates
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--color-background)' }}>

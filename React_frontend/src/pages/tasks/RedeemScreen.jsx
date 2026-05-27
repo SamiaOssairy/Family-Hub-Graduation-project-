@@ -25,6 +25,7 @@ export default function RedeemScreen() {
   const [activeTab, setActiveTab]     = useState(0);
   const [loading, setLoading]         = useState(true);
   const [wallet, setWallet]           = useState(null);
+  const [moneyBalance, setMoneyBalance] = useState(0);
   const [wishlist, setWishlist]       = useState([]);
   const [redemptions, setRedemptions] = useState([]);
   const [pending, setPending]         = useState([]);
@@ -52,13 +53,16 @@ export default function RedeemScreen() {
         api.getMyWallet(),
         api.getMyWishlistItems(),
         api.getMyRedemptions(),
+        api.getCombinedBalance().catch(() => ({})),
       ];
       if (isParent) tasks.push(api.getPendingRedemptions());
       const results = await Promise.all(tasks);
       setWallet(results[0]);
       setWishlist(results[1]);
       setRedemptions(results[2]);
-      if (isParent && results[3]) setPending(results[3]);
+      const combined = results[3] || {};
+      setMoneyBalance(+(combined?.moneyWallet?.balance || combined?.balance || 0));
+      if (isParent && results[4]) setPending(results[4]);
     } catch (e) {
       toast(e.message, 'error');
     } finally {
