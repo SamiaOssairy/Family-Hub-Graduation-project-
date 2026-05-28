@@ -1,4 +1,5 @@
 ﻿import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/styling/responsive.dart';
@@ -61,6 +62,31 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     super.dispose();
   }
 
+  /// Decodes a JWT and returns the payload map, or null on any error.
+  Map<String, dynamic>? _decodeJWT(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      // Base64url → base64 padding fix
+      String payload = parts[1];
+      while (payload.length % 4 != 0) payload += '=';
+      final decoded = utf8.decode(base64Url.decode(payload));
+      return json.decode(decoded) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Returns true if the JWT is missing, malformed, or its exp has passed.
+  bool _isTokenExpired(String? token) {
+    if (token == null || token.isEmpty) return true;
+    final payload = _decodeJWT(token);
+    if (payload == null) return true;
+    final exp = payload['exp'];
+    if (exp == null) return false; // no exp claim → treat as valid
+    return (DateTime.now().millisecondsSinceEpoch / 1000) > (exp as num);
+  }
+
   Future<void> _checkAuthAndNavigate() async {
     await Future.delayed(const Duration(seconds: 3));
 
@@ -69,7 +95,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-    if (token != null && token.isNotEmpty) {
+    if (_isTokenExpired(token)) {
+      // Token missing or expired — clear stale data
+      await prefs.remove('token');
+    }
+
+    if (!mounted) return;
+
+    if (!_isTokenExpired(token)) {
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       Navigator.pushReplacementNamed(context, '/onboarding');

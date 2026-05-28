@@ -6,11 +6,69 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+// ── Token helpers ─────────────────────────────────────────────────────────────
+
+/** Decode a JWT payload without any library (base64url → JSON). */
+function decodeJWT(token) {
+  try {
+    const payload = token.split('.')[1];
+    // base64url → base64 (replace - with + and _ with /)
+    const b64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(b64));
+  } catch {
+    return null;
+  }
+}
+
+/** True if the JWT's exp claim has passed (or token is malformed). */
+function isJWTExpired(token) {
+  if (!token) return true;
+  const payload = decodeJWT(token);
+  if (!payload) return true;
+  if (!payload.exp) return false; // no exp → backend never expires it
+  return Date.now() / 1000 > payload.exp;
+}
+
+/**
+ * Web sessions are shorter than Flutter's 90-day JWT life.
+ * We use the JWT's `iat` (issued-at) claim: if the token was issued
+ * more than WEB_SESSION_DAYS ago, treat the web session as expired.
+ */
+const WEB_SESSION_DAYS = 7; // 7 days for web (Flutter keeps full 90 days)
+
+function isWebSessionExpired(token) {
+  if (!token) return true;
+  const payload = decodeJWT(token);
+  if (!payload || !payload.iat) return false; // no iat → can't check, assume ok
+  const sessionExpiry = (payload.iat + WEB_SESSION_DAYS * 24 * 60 * 60) * 1000;
+  return Date.now() > sessionExpiry;
+}
+
+/** Returns true if the token is usable (not JWT-expired AND within web session). */
+function isValidToken(token) {
+  if (!token) return false;
+  return !isJWTExpired(token) && !isWebSessionExpired(token);
+}
+
+const AUTH_KEYS = ['token','member','family','memberType','username',
+                   'familyTitle','familyId','memberId','memberMail','isFirstLogin'];
+
+function clearAuthStorage() {
+  AUTH_KEYS.forEach(k => localStorage.removeItem(k));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   // ── Core state (friend's approach: full objects) ────────────────────────────
-  const [token, setToken]   = useState(() => localStorage.getItem('token') || null);
+  const [token, setToken] = useState(() => {
+    const stored = localStorage.getItem('token');
+    // Validate immediately on mount — don't hydrate an expired token
+    if (stored && isValidToken(stored)) return stored;
+    if (stored) clearAuthStorage(); // stale token found → wipe it now
+    return null;
+  });
   const [member, setMember] = useState(() => {
     try { return JSON.parse(localStorage.getItem('member')) || null; } catch { return null; }
   });
@@ -33,8 +91,28 @@ export function AuthProvider({ children }) {
   const familyId    = family?._id   || localStorage.getItem('familyId')    || '';
   const memberId    = member?._id   || localStorage.getItem('memberId')    || '';
   const memberMail  = member?.mail  || localStorage.getItem('memberMail')  || '';
-  const isParent    = memberType === 'Parent';
-  const isLoggedIn  = !!token;
+  const isParent   = memberType === 'Parent';
+  // isLoggedIn: token must exist AND pass expiry + web-session checks
+  const isLoggedIn = !!token && isValidToken(token);
+
+  // ── Session expiry watcher ───────────────────────────────────────────────────
+  // Check every 5 minutes; if the token has expired while the tab was open,
+  // auto-logout so the user isn't silently stuck with a dead session.
+  useEffect(() => {
+    const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+    const id = setInterval(() => {
+      const stored = localStorage.getItem('token');
+      if (stored && !isValidToken(stored)) {
+        clearAuthStorage();
+        setToken(null);
+        setMember(null);
+        setFamily(null);
+        // Redirect to login — use window.location so it works outside React Router context
+        window.location.replace('/login');
+      }
+    }, CHECK_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, []);
 
   // ── Persist to localStorage ─────────────────────────────────────────────────
   useEffect(() => {

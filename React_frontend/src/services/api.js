@@ -14,6 +14,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// 401 interceptor — auto-logout when token is rejected by the server
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      ['token','member','family','memberType','username',
+       'familyTitle','familyId','memberId','memberMail','isFirstLogin']
+        .forEach(k => localStorage.removeItem(k));
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+        window.location.replace('/login');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const authAPI = {
   // Step 1: get all families linked to an email

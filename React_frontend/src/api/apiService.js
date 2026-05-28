@@ -17,6 +17,26 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+// ── 401 interceptor — auto-logout when token is rejected by the server ────────
+// This catches expired tokens that somehow passed the client-side check,
+// or tokens invalidated server-side (e.g. different JWT_SECRET on dev machine).
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      // Clear all auth data from localStorage
+      ['token','member','family','memberType','username',
+       'familyTitle','familyId','memberId','memberMail','isFirstLogin']
+        .forEach(k => localStorage.removeItem(k));
+      // Hard redirect to login so the React Router state also resets
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+        window.location.replace('/login');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ── Error helper ──────────────────────────────────────────────────────────────
 function extractError(err) {
   return err?.response?.data?.message || err?.message || 'An error occurred';
