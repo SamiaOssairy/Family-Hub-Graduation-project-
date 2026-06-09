@@ -11,6 +11,8 @@ const memberSchema = new mongoose.Schema({
   mail:{
     type: String,
     required: [true, 'Please provide your email'],
+    lowercase: true,
+    trim: true,
     validate: [validator.isEmail, 'Please provide a valid email']
   },
   password: {

@@ -38,13 +38,14 @@ function StepEmail({ onNext, onGoSignup }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim()) { setError('Please enter your email'); return; }
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) { setError('Please enter your email'); return; }
     setError('');
     setLoading(true);
     try {
-      const families = await authAPI.getFamiliesByEmail(email.trim());
+      const families = await authAPI.getFamiliesByEmail(normalizedEmail);
       if (!families.length) { setError('No family account found for this email'); return; }
-      onNext({ email: email.trim(), families });
+      onNext({ email: normalizedEmail, families });
     } catch (err) {
       setError(err.response?.data?.message || 'Could not find families. Check your email.');
     } finally {
@@ -74,6 +75,9 @@ function StepEmail({ onNext, onGoSignup }) {
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               autoFocus
             />
           </div>
@@ -162,6 +166,7 @@ function StepPassword({ email, family, onBack, onSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error,        setError]        = useState('');
   const [loading,      setLoading]      = useState(false);
+  const [firstLogin,   setFirstLogin]   = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -172,7 +177,12 @@ function StepPassword({ email, family, onBack, onSuccess }) {
     try {
       const data = await authAPI.login({ mail: email, password, family_id: family.family_id || family._id });
       login(data);
-      onSuccess();
+      // First-time members log in with the family/parent password, then must set their own.
+      if (data?.data?.isFirstLogin) {
+        setFirstLogin(true);
+      } else {
+        onSuccess();
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Incorrect password. Please try again.');
     } finally {
@@ -228,6 +238,80 @@ function StepPassword({ email, family, onBack, onSuccess }) {
         <p className="auth-switch-text" style={{ color: 'var(--text-hint)', fontSize: 12 }}>
           Your password is securely encrypted
         </p>
+      </div>
+
+      {firstLogin && <FirstLoginPasswordModal onDone={onSuccess} />}
+    </div>
+  );
+}
+
+// ─── First-login: force the member to set their own password ──────────────────
+function FirstLoginPasswordModal({ onDone }) {
+  const [pw,      setPw]      = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [show,    setShow]    = useState(false);
+  const [error,   setError]   = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!pw || !confirm) { setError('Please fill in both fields'); return; }
+    if (pw !== confirm)  { setError('Passwords do not match'); return; }
+    setError(''); setLoading(true);
+    try {
+      await authAPI.setPassword({ newPassword: pw, confirmPassword: confirm });
+      onDone();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not set your password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+      <div className="auth-card" style={{ maxWidth: 400, width: '100%' }}>
+        <h1 className="auth-heading">Set Your Password</h1>
+        <p className="auth-subheading">Welcome! Create your own password to finish setting up your account.</p>
+
+        {error && <div className="error-box">{error}</div>}
+
+        <form onSubmit={submit} className="auth-form">
+          <div className="input-wrapper">
+            <span className="input-icon"><LockIcon /></span>
+            <input
+              className="field-input"
+              type={show ? 'text' : 'password'}
+              placeholder="New password"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              autoFocus
+            />
+            <button type="button" className="input-suffix" onClick={() => setShow(!show)}>
+              <EyeIcon open={show} />
+            </button>
+          </div>
+
+          <div className="input-wrapper">
+            <span className="input-icon"><LockIcon /></span>
+            <input
+              className="field-input"
+              type={show ? 'text' : 'password'}
+              placeholder="Confirm password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+          </div>
+
+          <p className="auth-switch-text" style={{ color: 'var(--text-hint)', fontSize: 11, marginTop: 0 }}>
+            At least 8 characters, with uppercase, lowercase, a number, and a special character.
+          </p>
+
+          <button className="btn-primary" type="submit" disabled={loading}>
+            {loading ? 'Saving...' : 'Set Password & Continue'}
+          </button>
+        </form>
       </div>
     </div>
   );

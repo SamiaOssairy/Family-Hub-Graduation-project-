@@ -3,7 +3,14 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8000/api';
+  // API base URL. Override at build/run time with:
+  //   flutter run --dart-define=API_URL=https://your-app.onrender.com/api
+  //   flutter build web --dart-define=API_URL=https://your-app.onrender.com/api
+  // Falls back to localhost for local development.
+  static const String baseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'http://localhost:8000/api',
+  );
   static const String _profilesKey = 'savedProfiles';
   static const String _activeProfileKey = 'activeProfileKey';
   
@@ -201,7 +208,24 @@ class ApiService {
       throw Exception('Failed to load members');
     }
   }
-  
+
+  // Upcoming birthdays in the family (derived from members' birth_date).
+  // [days] is the lookahead window (default 30).
+  Future<List<dynamic>> getUpcomingBirthdays({int days = 30}) async {
+    final headers = await _getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/members/birthdays?days=$days'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      return responseData['data']['birthdays'] ?? [];
+    } else {
+      throw Exception('Failed to load birthdays');
+    }
+  }
+
   Future<Map<String, dynamic>> createMember(Map<String, dynamic> data) async {
     final token = await _getToken();
     print('🔵 Token for createMember: ${token != null ? "EXISTS" : "NULL - THIS IS THE PROBLEM!"}');

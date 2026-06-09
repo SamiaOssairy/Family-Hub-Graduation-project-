@@ -176,7 +176,7 @@ export default function HomeScreen() {
         const res = await createMemberType(newTypeName.trim());
         typeId = res?.data?.memberType?._id || res?.data?._id || '';
       }
-      const payload = { mail: addForm.mail.trim(), username: addForm.username.trim() };
+      const payload = { mail: addForm.mail.trim().toLowerCase(), username: addForm.username.trim() };
       if (addForm.birth_date) payload.birth_date = addForm.birth_date;
       if (typeId) payload.member_type_id = typeId;
       await createMember(payload);
@@ -526,6 +526,9 @@ export default function HomeScreen() {
                 type="email"
                 placeholder={t('Enter email address', 'أدخل البريد الإلكتروني')}
                 value={addForm.mail}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 onChange={e => setAddForm({ ...addForm, mail: e.target.value })}
               />
             </div>

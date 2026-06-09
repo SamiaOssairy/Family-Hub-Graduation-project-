@@ -9,6 +9,8 @@ const familyAccountSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide your email"],
       unique: true,
+      lowercase: true,
+      trim: true,
       validate: [validator.isEmail, "Please provide a valid email"],
     },
     password: {

@@ -66,6 +66,8 @@ class _HomePageState extends State<HomePage> {
   bool _eventsLoading = true;
   List<dynamic> _pointsRanking = [];
   bool _rankingLoading = true;
+  List<dynamic> _upcomingBirthdays = [];
+  bool _birthdaysLoading = true;
 
   @override
   void initState() {
@@ -77,6 +79,7 @@ class _HomePageState extends State<HomePage> {
     _fetchRecentTasks();
     _fetchFutureEvents();
     _fetchPointsRanking();
+    _fetchUpcomingBirthdays();
   }
 
   Future<void> _loadUserData() async {
@@ -160,6 +163,20 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _fetchUpcomingBirthdays() async {
+    try {
+      final birthdays = await _apiService.getUpcomingBirthdays(days: 30);
+      if (!mounted) return;
+      setState(() {
+        _upcomingBirthdays = birthdays;
+        _birthdaysLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _birthdaysLoading = false);
+    }
+  }
+
   // Returns a member's display name from their email using the loaded members list.
   String _getMemberName(String mail) {
     for (final m in _familyMembers) {
@@ -178,6 +195,7 @@ class _HomePageState extends State<HomePage> {
       await _fetchRecentTasks();
       await _fetchFutureEvents();
       await _fetchPointsRanking();
+      await _fetchUpcomingBirthdays();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_t('Switched account', 'تم تبديل الحساب'))),
@@ -804,6 +822,8 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 12),
                         _buildEventsCard(),
                         const SizedBox(height: 12),
+                        _buildBirthdaysCard(),
+                        const SizedBox(height: 12),
                         _buildLeaderboardCard(),
                         const SizedBox(height: 80),
                       ],
@@ -1352,6 +1372,84 @@ class _HomePageState extends State<HomePage> {
                         );
                       }).toList(),
                     ),
+        ),
+      ],
+    );
+  }
+
+  // ── BIRTHDAYS CARD ────────────────────────────────────────────────────────
+
+  // Friendly "in N days" / "Today!" / "Tomorrow" label.
+  String _birthdayWhen(int days) {
+    if (days <= 0) return _t('Today 🎉', 'اليوم 🎉');
+    if (days == 1) return _t('Tomorrow', 'غدًا');
+    return _t('in $days days', 'خلال $days يوم');
+  }
+
+  Widget _buildBirthdaysCard() {
+    // While loading, show nothing to avoid a flash; once loaded, hide if no
+    // birthdays in the next 30 days so the home page stays clean.
+    if (_birthdaysLoading || _upcomingBirthdays.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('UPCOMING BIRTHDAYS', 'أعياد الميلاد القادمة'),
+        const SizedBox(height: 8),
+        Container(
+          decoration: AppDecorations.card,
+          child: Column(
+            children: _upcomingBirthdays.take(4).toList().asMap().entries.map((entry) {
+              final b   = entry.value as Map<String, dynamic>;
+              final idx = entry.key;
+              final count = _upcomingBirthdays.length < 4 ? _upcomingBirthdays.length : 4;
+              final isLast = idx == count - 1;
+
+              final name    = (b['username'] ?? '').toString();
+              final days    = (b['days_until'] ?? 0) as int;
+              final age     = (b['turning_age'] ?? 0) as int;
+              final isToday = b['is_today'] == true;
+
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  border: isLast ? null : Border(bottom: BorderSide(color: AppColors.primarySurface)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(9)),
+                      child: const Center(child: Text('🎂', style: TextStyle(fontSize: 13))),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(name,
+                              style: GoogleFonts.poppins(fontSize: _sp(12), fontWeight: FontWeight.w600, color: AppColors.textDark),
+                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(_t('Turning $age', 'يبلغ $age'),
+                              style: GoogleFonts.poppins(fontSize: _sp(10), color: AppColors.secondary)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(_birthdayWhen(days),
+                        style: GoogleFonts.poppins(
+                          fontSize: _sp(11),
+                          fontWeight: FontWeight.w700,
+                          color: isToday ? AppColors.primary : AppColors.secondary,
+                        )),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );

@@ -45,6 +45,15 @@ export const authAPI = {
     return res.data; // { token, data: { member, family } }
   },
 
+  // Set / change own password (first login passes no currentPassword)
+  setPassword: async ({ currentPassword, newPassword, confirmPassword }) => {
+    const body = { newPassword, confirmPassword };
+    if (currentPassword) body.currentPassword = currentPassword;
+    const res = await api.post('/auth/setPassword', body);
+    if (res.status === 200) localStorage.setItem('isFirstLogin', 'false');
+    return res.data;
+  },
+
   // Sign up — create new family + parent member
   signup: async ({ familyTitle, mail, username, password, birthDate }) => {
     const res = await api.post('/auth/signup', {

@@ -17,7 +17,7 @@ const mongoose = require("mongoose");
 
 // Get families linked to an email so user can choose which family to login to
 exports.getFamiliesByMail = catchAsync(async (req, res, next) => {
-  const mail = (req.query.mail || req.body.mail || '').trim();
+  const mail = (req.query.mail || req.body.mail || '').trim().toLowerCase();
 
   if (!mail) {
     return next(new AppError("Please provide email", 400));
@@ -58,6 +58,18 @@ const signToken = (payload) => {
 
 //========================================================================================
 
+// Password policy: at least 8 characters, with one uppercase letter, one lowercase
+// letter, one digit, and one special character.
+const PASSWORD_RULE_MESSAGE =
+  "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character";
+
+const isStrongPassword = (password) => {
+  const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+  return typeof password === "string" && strong.test(password);
+};
+
+//========================================================================================
+
 // automatically add mail of parent to members when signing up
 exports.signUp = catchAsync(async (req, res, next) => {
   const { mail, password, Title, username, birth_date } = req.body;
@@ -67,46 +79,62 @@ exports.signUp = catchAsync(async (req, res, next) => {
     return next(new AppError("Please provide all required fields: mail, password, Title, username, birth_date", 400));
   }
 
-  // Step 1: Create family account first
-  const newAccount = await familyAccountModel.create({
-    mail,
-    password,
-    Title,
-    isActivated: true,
-  });
+  // Enforce password strength policy
+  if (!isStrongPassword(password)) {
+    return next(new AppError(PASSWORD_RULE_MESSAGE, 400));
+  }
 
-  // Step 2: Create "Parent" member type for this family
-  const parentType = await memberTypeModel.create({ 
-    type: "Parent",
-    family_id: newAccount._id
-  });
+  // Create the family account, its Parent member type, the parent member, and the
+  // parent's point wallet + wishlist as a single ATOMIC unit. If any step fails,
+  // the whole signup is rolled back so we never leave a half-created family
+  // (e.g. a family account with no parent member, or a member with no wallet).
+  const session = await mongoose.startSession();
 
-  // Step 3: Create parent member (Parent already has password via family account, so isFirstLogin = false)
-  const newMember = await memberModel.create({
-    username,
-    mail,
-    family_id: newAccount._id,
-    member_type_id: parentType._id,
-    birth_date,
-    isFirstLogin: false, // Parent uses family password, no need to set new password
-  });
+  let newAccount, parentType, newMember;
 
-  // Step 4: Auto-create Point Wallet and Wishlist for parent
   try {
-    await PointWallet.create({
-      member_mail: mail,
-      family_id: newAccount._id,
-      total_points: 0
+    await session.withTransaction(async () => {
+      // Step 1: Create family account first.
+      // .create() with a session must be called with an array and returns an array.
+      [newAccount] = await familyAccountModel.create([{
+        mail,
+        password,
+        Title,
+        isActivated: true,
+      }], { session });
+
+      // Step 2: Create "Parent" member type for this family
+      [parentType] = await memberTypeModel.create([{
+        type: "Parent",
+        family_id: newAccount._id,
+      }], { session });
+
+      // Step 3: Create parent member (Parent already has password via family account, so isFirstLogin = false)
+      [newMember] = await memberModel.create([{
+        username,
+        mail,
+        family_id: newAccount._id,
+        member_type_id: parentType._id,
+        birth_date,
+        isFirstLogin: false, // Parent uses family password, no need to set new password
+      }], { session });
+
+      // Step 4: Auto-create Point Wallet and Wishlist for parent.
+      // These are now part of the transaction — if they fail, signup rolls back.
+      await PointWallet.create([{
+        member_mail: mail,
+        family_id: newAccount._id,
+        total_points: 0,
+      }], { session });
+
+      await Wishlist.create([{
+        member_mail: mail,
+        family_id: newAccount._id,
+        title: `${username}'s Wishlist`,
+      }], { session });
     });
-    
-    await Wishlist.create({
-      member_mail: mail,
-      family_id: newAccount._id,
-      title: `${username}'s Wishlist`
-    });
-  } catch (err) {
-    // If wallet/wishlist creation fails, log but don't fail the signup
-    console.log("Note: Wallet/Wishlist may already exist or creation failed:", err.message);
+  } finally {
+    await session.endSession();
   }
 
   const token = signToken({ id: newAccount._id, member_id: newMember._id });
@@ -132,8 +160,9 @@ exports.signUp = catchAsync(async (req, res, next) => {
 // go search for mails in members ,then check for the family he belong to (if it is activated or not )
 // , then go to memberType to check for the type of this member
 exports.login = catchAsync(async (req, res, next) => {
-  const { mail, password, family_id } = req.body;
-  
+  const { password, family_id } = req.body;
+  const mail = (req.body.mail || '').trim().toLowerCase();
+
   if (!mail || !password) {
     return next(new AppError("Please provide email and password", 400));
   }
@@ -248,12 +277,10 @@ exports.setPassword = catchAsync(async (req, res, next) => {
     return next(new AppError("Passwords do not match", 400));
   }
   
-  // TESTING PHASE ONLY:
-  // Minimum password length check is temporarily disabled to simplify test accounts.
-  // Re-enable this block before release.
-  // if (newPassword.length < 6) {
-  //   return next(new AppError("Password must be at least 6 characters", 400));
-  // }
+  // Enforce password strength policy
+  if (!isStrongPassword(newPassword)) {
+    return next(new AppError(PASSWORD_RULE_MESSAGE, 400));
+  }
   
   // Get the member with password
   const member = await memberModel.findById(req.memberId).select('+password');
@@ -354,8 +381,8 @@ exports.restrictTo = (...memberTypes) => {
 //========================================================================================
 // Forgot Password - generates and sends reset token
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  const { mail } = req.body;
-  
+  const mail = (req.body.mail || '').trim().toLowerCase();
+
   if (!mail) {
     return next(new AppError("Please provide your email address", 400));
   }
@@ -431,6 +458,11 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   if (password !== passwordConfirm) {
     return next(new AppError("Passwords do not match", 400));
+  }
+
+  // Enforce password strength policy
+  if (!isStrongPassword(password)) {
+    return next(new AppError(PASSWORD_RULE_MESSAGE, 400));
   }
 
   // Step 1: Hash the token from URL to compare with database

@@ -6,8 +6,9 @@ const memberTypeController=require("./MemberTypeController");
 //========================================================================================
 
 exports.createMember = catchAsync(async (req, res, next) => {
-  const { mail, username, birth_date, member_type } = req.body;
-  
+  const { username, birth_date, member_type } = req.body;
+  const mail = (req.body.mail || '').trim().toLowerCase();
+
   // Validate required fields
   if (!mail || !username || !birth_date || !member_type) {
     return next(new AppError("Please provide all required fields: mail, username, birth_date, member_type", 400));
@@ -93,6 +94,63 @@ exports.getAllMembers = catchAsync(async (req, res, next) => {
     status: "success",
     results: members.length,
     data: { members },
+  });
+});
+
+//========================================================================================
+// Upcoming birthdays for the family.
+// Derived from each member's birth_date — no separate model needed.
+// Query: ?days=N  (lookahead window, default 30). Use days=366 to list everyone.
+exports.getUpcomingBirthdays = catchAsync(async (req, res, next) => {
+  const family_id = req.familyAccount._id;
+
+  // Clamp the window to a sane range (1..366 days)
+  let windowDays = parseInt(req.query.days, 10);
+  if (Number.isNaN(windowDays)) windowDays = 30;
+  windowDays = Math.min(Math.max(windowDays, 1), 366);
+
+  const members = await member.find({ family_id }).populate('member_type_id');
+
+  // Work in whole days from "today" (local server time), ignoring the time component.
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+  const upcoming = members
+    .filter((m) => m.birth_date)
+    .map((m) => {
+      const dob = new Date(m.birth_date);
+      const month = dob.getMonth();
+      const day = dob.getDate();
+
+      // Next occurrence of this month/day on/after today.
+      let next = new Date(today.getFullYear(), month, day);
+      if (next < today) {
+        next = new Date(today.getFullYear() + 1, month, day);
+      }
+
+      const daysUntil = Math.round((next - today) / MS_PER_DAY);
+      const turningAge = next.getFullYear() - dob.getFullYear();
+
+      return {
+        member_id: m._id,
+        username: m.username,
+        mail: m.mail,
+        memberType: m.member_type_id?.type || null,
+        birth_date: m.birth_date,
+        next_birthday: next,
+        days_until: daysUntil,
+        turning_age: turningAge,
+        is_today: daysUntil === 0,
+      };
+    })
+    .filter((b) => b.days_until <= windowDays)
+    .sort((a, b) => a.days_until - b.days_until);
+
+  res.status(200).json({
+    status: "success",
+    results: upcoming.length,
+    data: { window_days: windowDays, birthdays: upcoming },
   });
 });
 

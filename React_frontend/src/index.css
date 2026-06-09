@@ -21,6 +21,16 @@
   box-sizing: border-box;
 }
 
+/* Prevent any stray element from making the page wider than the screen (mobile fit) */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img, video, canvas {
+  max-width: 100%;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background-color: var(--background);
