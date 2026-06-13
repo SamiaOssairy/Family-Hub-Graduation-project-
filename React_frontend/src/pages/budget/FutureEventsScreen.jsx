@@ -15,7 +15,7 @@ const EVENT_BG = [
   'var(--color-primary-surface)', '#FFF8E1', 'var(--color-background)',
   '#E3F2FD', '#FCE4EC', '#F3E5F5',
 ];
-const EVENT_COLORS = ['#00897B', '#FB8C00', '#43A047', '#1565C0', '#E91E63', '#7B1FA2'];
+const EVENT_COLORS = ['var(--color-primary)', '#FB8C00', '#43A047', '#1565C0', '#E91E63', '#7B1FA2'];
 const EVENT_EMOJIS = ['✈️', '🛍️', '🎒', '🎉', '🏖️', '🎓'];
 
 // ─────────────────────────────────────────────────────────────────

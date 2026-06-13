@@ -252,13 +252,13 @@ export default function SettingsScreen() {
           {/* ── My Account ────────────────────────────────────────────────── */}
           <SettingsSection label={t('MY ACCOUNT', 'حسابي')}>
             <SettingsRow
-              icon="👤" iconBg="#D1ECEB" iconColor="#00897B"
+              icon="👤" iconBg="var(--color-primary-surface)" iconColor="var(--color-primary)"
               title={t('Edit Profile', 'تعديل الملف الشخصي')}
               subtitle={displayUsername || undefined}
               onTap={() => { setEditUsername(displayUsername); setShowEditProfile(true); }}
             />
             <SettingsRow
-              icon="👨‍👩‍👧‍👦" iconBg="#E4F5F4" iconColor="#00897B"
+              icon="👨‍👩‍👧‍👦" iconBg="var(--color-background)" iconColor="var(--color-primary)"
               title={t('Family Members', 'أفراد العائلة')}
               subtitle={membersLoading ? undefined : `${familyMembers.length} ${t('members', 'أعضاء')}`}
               onTap={() => setShowMembers(true)}
@@ -280,7 +280,7 @@ export default function SettingsScreen() {
           {isParent && (
             <SettingsSection label={t('FAMILY SETTINGS', 'إعدادات العائلة')}>
               <SettingsRow
-                icon="💱" iconBg="#E4F5F4" iconColor="#00897B"
+                icon="💱" iconBg="var(--color-background)" iconColor="var(--color-primary)"
                 title={t('Conversion Rates', 'أسعار التحويل')}
                 subtitle={`1 EGP = ${moneyToPointsRate.toFixed(0)} pts  •  100 pts = ${(pointsToMoneyRate * 100).toFixed(0)} EGP`}
                 onTap={() => { setM2p(String(Math.round(moneyToPointsRate))); setP2m(String(Math.round(pointsToMoneyRate * 100))); setShowConversion(true); }}
@@ -298,7 +298,7 @@ export default function SettingsScreen() {
               onChanged={handleToggleNotifications}
             />
             <SettingsRow
-              icon="🌐" iconBg="#D1ECEB" iconColor="#00897B"
+              icon="🌐" iconBg="var(--color-primary-surface)" iconColor="var(--color-primary)"
               title={t('Language', 'اللغة')}
               trailing={
                 <div className="ss-lang-badge">
@@ -309,8 +309,8 @@ export default function SettingsScreen() {
             />
             <SettingsToggleRow
               icon={isDark ? '🌙' : '☀️'}
-              iconBg={isDark ? '#1A1A2E' : '#D1ECEB'}
-              iconColor={isDark ? '#FFFFFF' : '#00897B'}
+              iconBg={isDark ? '#1A1A2E' : 'var(--color-primary-surface)'}
+              iconColor={isDark ? '#FFFFFF' : 'var(--color-primary)'}
               title={t('Dark Mode', 'الوضع الداكن')}
               subtitle={isDark ? t('On', 'مفعّل') : t('Off', 'معطّل')}
               value={isDark}
@@ -318,7 +318,7 @@ export default function SettingsScreen() {
             />
             <ColorThemePicker palette={palette} setPalette={setPalette} t={t} />
             <SettingsToggleRow
-              icon="📍" iconBg="#D1ECEB" iconColor="#00897B"
+              icon="📍" iconBg="var(--color-primary-surface)" iconColor="var(--color-primary)"
               title={updatingLocation
                 ? t('Location Sharing (updating…)', 'مشاركة الموقع (جارٍ التحديث…)')
                 : t('Location Sharing', 'مشاركة الموقع')}
@@ -344,7 +344,7 @@ export default function SettingsScreen() {
               onTap={() => showToast(t('Coming soon', 'قريباً'))}
             />
             <SettingsRow
-              icon="ℹ️" iconBg="#D1ECEB" iconColor="#00897B"
+              icon="ℹ️" iconBg="var(--color-primary-surface)" iconColor="var(--color-primary)"
               title={t('About Family Hub', 'عن فاميلي هب')}
               onTap={() => showToast(t('Coming soon', 'قريباً'))}
             />
@@ -660,7 +660,7 @@ function SettingsToggleRow({ icon, iconBg, iconColor, title, subtitle, value, on
 function ColorThemePicker({ palette, setPalette, t }) {
   return (
     <div className="ss-row ss-color-picker-row">
-      <div className="ss-row-icon" style={{ background: '#D1ECEB' }}>
+      <div className="ss-row-icon" style={{ background: 'var(--color-primary-surface)' }}>
         <span>🎨</span>
       </div>
       <div className="ss-row-body">

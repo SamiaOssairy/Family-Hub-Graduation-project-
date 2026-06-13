@@ -112,7 +112,7 @@ export default function RecipeDetailScreen() {
     } catch (e) { toast(e.message, 'error'); }
   }
 
-  const CAT_COLORS = { Breakfast:'#FB8C00', Lunch:'#00897B', Dinner:'#1565C0', Dessert:'#E91E63', Snack:'#9C27B0', Other:'#607D8B' };
+  const CAT_COLORS = { Breakfast:'#FB8C00', Lunch:'var(--color-primary)', Dinner:'#1565C0', Dessert:'#E91E63', Snack:'#9C27B0', Other:'#607D8B' };
   const catColor = CAT_COLORS[recipe?.category] || '#607D8B';
 
   return (

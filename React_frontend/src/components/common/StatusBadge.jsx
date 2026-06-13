@@ -12,6 +12,9 @@ const STATUS_MAP = {
   pending:          { dot: '#FB8C00', bg: '#FFF8E1', border: '#FFE082', label: 'Pending' },
   accepted:         { dot: '#00BFA5', bg: '#E0F7F4', border: '#80CBC4', label: 'Accepted' },
   cancelled:        { dot: '#9E9E9E', bg: '#F5F5F5', border: '#E0E0E0', label: 'Cancelled' },
+  // Redeem lifecycle
+  parent_approved:  { dot: '#00897B', bg: '#E0F2F1', border: '#80CBC4', label: 'Approved — accept it' },
+  child_accepted:   { dot: '#00BFA5', bg: '#E0F7F4', border: '#80CBC4', label: 'Redeemed ✓' },
 };
 
 export default function StatusBadge({ status }) {

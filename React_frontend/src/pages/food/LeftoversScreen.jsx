@@ -22,7 +22,7 @@ function expiryColor(days) {
   if (days === 0) return '#FF5722';
   if (days <= 2) return '#FF9800';
   if (days <= 5) return '#FFC107';
-  return '#00897B';
+  return 'var(--color-primary)';
 }
 
 function expiryText(days) {

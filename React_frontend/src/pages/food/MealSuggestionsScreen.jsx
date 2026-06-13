@@ -12,7 +12,7 @@ import * as api from '../../api/apiService';
 
 const MEAL_TYPE_OPTIONS = [
   { label: 'Breakfast', emoji: '🌅', color: '#FB8C00', subtitle: 'Morning recipes' },
-  { label: 'Lunch',     emoji: '☀️', color: '#00897B', subtitle: 'Midday meals' },
+  { label: 'Lunch',     emoji: '☀️', color: 'var(--color-primary)', subtitle: 'Midday meals' },
   { label: 'Dinner',    emoji: '🌙', color: '#1565C0', subtitle: 'Evening dishes' },
   { label: 'Snack',     emoji: '🍿', color: '#E91E63', subtitle: 'Light bites' },
   { label: 'Any',       emoji: '✨', color: '#7B1FA2', subtitle: 'All categories' },
@@ -77,7 +77,7 @@ export default function MealSuggestionsScreen() {
             disabled={generating}
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              background: generating ? '#5BA89E' : 'var(--color-primary)',
+              background: generating ? 'var(--color-primary-light)' : 'var(--color-primary)',
               color: '#fff', border: 'none', borderRadius: 14, padding: '14px 20px',
               fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 14, cursor: generating ? 'not-allowed' : 'pointer',
               marginBottom: 12,
@@ -207,13 +207,13 @@ function SuggestionCard({ s, navigate }) {
 
   const MEAL_TYPE_OPTIONS = [
     { label: 'Breakfast', emoji: '🌅', color: '#FB8C00' },
-    { label: 'Lunch',     emoji: '☀️', color: '#00897B' },
+    { label: 'Lunch',     emoji: '☀️', color: 'var(--color-primary)' },
     { label: 'Dinner',    emoji: '🌙', color: '#1565C0' },
     { label: 'Snack',     emoji: '🍿', color: '#E91E63' },
     { label: 'Any',       emoji: '✨', color: '#7B1FA2' },
   ];
   const opt = MEAL_TYPE_OPTIONS.find(o => o.label === mealType) || MEAL_TYPE_OPTIONS[MEAL_TYPE_OPTIONS.length - 1];
-  const matchColor = matchPct >= 80 ? '#00897B' : matchPct >= 50 ? '#FB8C00' : '#E53935';
+  const matchColor = matchPct >= 80 ? 'var(--color-primary)' : matchPct >= 50 ? '#FB8C00' : '#E53935';
 
   return (
     <div style={{
@@ -268,7 +268,7 @@ function SuggestionCard({ s, navigate }) {
       <div style={{ padding: '12px 16px 16px' }}>
         {availableRaw.length > 0 && (
           <>
-            <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, fontWeight: 600, color: '#00897B', marginBottom: 6 }}>✅ Available in your kitchen</p>
+            <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, fontWeight: 600, color: 'var(--color-primary)', marginBottom: 6 }}>✅ Available in your kitchen</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
               {availableRaw.map((name, i) => (
                 <span key={i} style={{ background: 'var(--color-primary-surface)', color: 'var(--color-primary)', padding: '4px 8px', borderRadius: 8, fontFamily: 'var(--font-family)', fontSize: 11 }}>
@@ -297,7 +297,7 @@ function SuggestionCard({ s, navigate }) {
           </>
         )}
         {availableRaw.length === 0 && missingRaw.length === 0 && (
-          <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, color: '#00897B', fontWeight: 500, marginBottom: 10 }}>All ingredients ready!</p>
+          <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, color: 'var(--color-primary)', fontWeight: 500, marginBottom: 10 }}>All ingredients ready!</p>
         )}
 
         <button onClick={() => navigate('/meals')} style={{

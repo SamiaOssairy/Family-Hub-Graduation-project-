@@ -35,7 +35,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00897B, #5BA89E);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   box-shadow: 0 3px 10px rgba(0,137,123,0.3);
   display: flex;
   align-items: center;
@@ -377,7 +377,7 @@
 
 /* ── AI Card ──────────────────────────────────────────────────── */
 .hs-ai-card {
-  background: linear-gradient(135deg, #00897B, #5BA89E);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   border-radius: 14px;
   padding: 12px;
   display: flex;

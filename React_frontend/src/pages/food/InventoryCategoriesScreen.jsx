@@ -12,8 +12,8 @@ import { useToast } from '../../components/common/Toast';
 import * as api from '../../api/apiService';
 
 const CAT_COLORS = [
-  '#00897B', '#26A69A', '#FB8C00', '#607D8B',
-  '#7B1FA2', '#E91E63', '#1565C0', '#6D4C41', '#00352E',
+  'var(--color-primary)', '#26A69A', '#FB8C00', '#607D8B',
+  '#7B1FA2', '#E91E63', '#1565C0', '#6D4C41', 'var(--color-text-primary)',
 ];
 
 function getCategoryIcon(title) {
@@ -487,7 +487,7 @@ function TreeNode({ node, depth, colorIndex, expandedIds, toggleExpand, searchQu
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             fontFamily: 'var(--font-family)', fontWeight: 600, margin: 0,
-            fontSize: depth === 0 ? 15 : 14, color: '#00352E',
+            fontSize: depth === 0 ? 15 : 14, color: 'var(--color-text-primary)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{title}</p>
           {desc && (
@@ -520,7 +520,7 @@ function TreeNode({ node, depth, colorIndex, expandedIds, toggleExpand, searchQu
               border: '1px solid var(--color-border)', borderRadius: 10, zIndex: 100,
               boxShadow: 'var(--shadow-card)', minWidth: 150, overflow: 'hidden',
             }}>
-              <button onClick={() => onEdit(node)} style={menuBtnStyle('#00897B')}>✏️ Edit</button>
+              <button onClick={() => onEdit(node)} style={menuBtnStyle('var(--color-primary)')}>✏️ Edit</button>
               <button onClick={() => onAddSub(node)} style={menuBtnStyle('#26A69A')}>➕ Add Subcategory</button>
               <button onClick={() => onDelete(node)} style={menuBtnStyle('#E53935')}>🗑️ Delete</button>
             </div>

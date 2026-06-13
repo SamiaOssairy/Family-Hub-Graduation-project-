@@ -280,7 +280,7 @@ function MoneyCard({ moneyBalance, lifetimeMoneySaved, onConvert }) {
   return (
     <div style={{
       padding: 18, borderRadius: 18,
-      background: 'linear-gradient(135deg, #00352E, #00897B)',
+      background: 'linear-gradient(135deg, var(--color-text-primary), var(--color-primary))',
       boxShadow: '0 6px 16px rgba(0,137,123,0.3)',
       position: 'relative', overflow: 'hidden',
     }}>
@@ -308,7 +308,7 @@ function PointsCard({ pointsBalance, lifetimePointsEarned, m2p, p2m, onConvert }
   return (
     <div style={{
       padding: 18, borderRadius: 18,
-      background: 'linear-gradient(135deg, #00838F, #5BA89E)',
+      background: 'linear-gradient(135deg, #00838F, var(--color-primary-light))',
       boxShadow: '0 6px 16px rgba(91,168,158,0.3)',
       position: 'relative', overflow: 'hidden',
     }}>
@@ -419,7 +419,7 @@ function ConversionPanel({ m2p, p2m, onMoneyToPoints, onPointsToMoney }) {
       <div style={{ display: 'flex', gap: 10 }}>
         <button onClick={onMoneyToPoints} style={{
           flex: 1, padding: '12px 4px', borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg, #00352E, #00897B)',
+          background: 'linear-gradient(135deg, var(--color-text-primary), var(--color-primary))',
           boxShadow: '0 3px 8px rgba(0,137,123,0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}>
@@ -428,7 +428,7 @@ function ConversionPanel({ m2p, p2m, onMoneyToPoints, onPointsToMoney }) {
         </button>
         <button onClick={onPointsToMoney} style={{
           flex: 1, padding: '12px 4px', borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg, #00838F, #5BA89E)',
+          background: 'linear-gradient(135deg, #00838F, var(--color-primary-light))',
           boxShadow: '0 3px 8px rgba(91,168,158,0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
         }}>

@@ -69,10 +69,10 @@ export default function FamilyPointsScreen() {
                         }}>🥇</div>
                         <div style={{ flex: 1 }}>
                           <p style={{ fontFamily: 'var(--font-family)', fontWeight: 800, fontSize: 18, color: '#fff', margin: 0 }}>
-                            {topThree[0].member_mail?.split('@')[0] || topThree[0].username || 'Member'}
+                            {topThree[0].username || topThree[0].mail?.split('@')[0] || 'Member'}
                           </p>
                           <p style={{ fontFamily: 'var(--font-family)', fontSize: 11, color: 'rgba(255,255,255,0.8)', margin: 0 }}>
-                            {topThree[0].member_mail}
+                            {topThree[0].mail}
                           </p>
                         </div>
                         <div style={{ textAlign: 'right' }}>
@@ -96,9 +96,9 @@ export default function FamilyPointsScreen() {
                           boxShadow: 'var(--shadow-card)',
                         }}>
                           <span style={{ fontSize: 26 }}>{MEDALS[i + 1]}</span>
-                          <Avatar name={member.member_mail?.split('@')[0] || '?'} size={36} />
+                          <Avatar name={member.username || member.mail?.split('@')[0] || 'M'} size={36} />
                           <p style={{ fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 12, color: 'var(--color-text-primary)', margin: 0, textAlign: 'center' }}>
-                            {member.member_mail?.split('@')[0] || 'Member'}
+                            {member.username || member.mail?.split('@')[0] || 'Member'}
                           </p>
                           <p style={{ fontFamily: 'var(--font-family)', fontWeight: 800, fontSize: 16, color: 'var(--color-primary)', margin: 0 }}>
                             {member.total_points || 0} pts
@@ -129,13 +129,13 @@ export default function FamilyPointsScreen() {
                           fontFamily: 'var(--font-family)', fontWeight: 800, fontSize: 16,
                           color: 'var(--color-text-hint)', width: 24, textAlign: 'center',
                         }}>{i + 4}</span>
-                        <Avatar name={member.member_mail?.split('@')[0] || '?'} size={36} />
+                        <Avatar name={member.username || member.mail?.split('@')[0] || 'M'} size={36} />
                         <div style={{ flex: 1 }}>
                           <p style={{ fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 13, color: 'var(--color-text-primary)', margin: 0 }}>
-                            {member.member_mail?.split('@')[0] || 'Member'}
+                            {member.username || member.mail?.split('@')[0] || 'Member'}
                           </p>
                           <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: 'var(--color-text-secondary)', margin: 0 }}>
-                            {member.member_mail}
+                            {member.mail}
                           </p>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>

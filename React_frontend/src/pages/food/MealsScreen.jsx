@@ -16,7 +16,7 @@ const MEAL_TYPE_ORDER = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
 const MEAL_TYPE_META = {
   Breakfast: { emoji: '🌅', color: '#FF9800', bg: '#FFF3E0' },
-  Lunch:     { emoji: '☀️', color: '#00897B', bg: '#D1ECEB' },
+  Lunch:     { emoji: '☀️', color: 'var(--color-primary)', bg: 'var(--color-primary-surface)' },
   Dinner:    { emoji: '🌙', color: '#2196F3', bg: '#E3F2FD' },
   Snack:     { emoji: '🍿', color: '#E91E63', bg: '#FCE4EC' },
 };
@@ -49,6 +49,7 @@ export default function MealsScreen() {
   const [editMeal, setEditMeal] = useState(null);
   const [mealName, setMealName] = useState('');
   const [mealType, setMealType] = useState('Breakfast');
+  const [servings, setServings] = useState(1);
   const [saving, setSaving] = useState(false);
 
   // Delete modal
@@ -63,8 +64,11 @@ export default function MealsScreen() {
   // Add item to meal modal
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [addItemMeal, setAddItemMeal] = useState(null);
+  const [itemMode, setItemMode] = useState('inventory'); // 'inventory' | 'custom'
   const [selectedItemId, setSelectedItemId] = useState('');
   const [itemQty, setItemQty] = useState('1');
+  const [customName, setCustomName] = useState('');
+  const [customUnit, setCustomUnit] = useState('');
   const [savingItem, setSavingItem] = useState(false);
 
   const loadMeals = useCallback(async (date) => {
@@ -107,12 +111,13 @@ export default function MealsScreen() {
   }
 
   function openAdd() {
-    setEditMeal(null); setMealName(''); setMealType('Breakfast');
+    setEditMeal(null); setMealName(''); setMealType('Breakfast'); setServings(1);
     setShowAddModal(true);
   }
 
   function openEdit(meal) {
     setEditMeal(meal); setMealName(meal.meal_name || ''); setMealType(meal.meal_type || 'Breakfast');
+    setServings(meal.servings && meal.servings > 0 ? meal.servings : 1);
     setShowAddModal(true);
   }
 
@@ -121,9 +126,9 @@ export default function MealsScreen() {
     setSaving(true);
     try {
       if (editMeal) {
-        await api.updateMeal(editMeal._id, { meal_name: mealName.trim(), meal_type: mealType });
+        await api.updateMeal(editMeal._id, { meal_name: mealName.trim(), meal_type: mealType, servings });
       } else {
-        await api.createMeal({ meal_name: mealName.trim(), meal_date: toDateStr(selectedDate), meal_type: mealType });
+        await api.createMeal({ meal_name: mealName.trim(), meal_date: toDateStr(selectedDate), meal_type: mealType, servings });
       }
       setShowAddModal(false);
       toast(editMeal ? 'Meal updated!' : 'Meal added!');
@@ -185,23 +190,29 @@ export default function MealsScreen() {
   }
 
   function openAddItem(meal) {
-    setAddItemMeal(meal); setSelectedItemId(''); setItemQty('1');
+    setAddItemMeal(meal); setItemMode('inventory');
+    setSelectedItemId(''); setItemQty('1'); setCustomName(''); setCustomUnit('');
     setShowAddItemModal(true);
   }
 
   async function saveItem() {
-    if (!selectedItemId) { toast('Please select an item', 'error'); return; }
     const qty = parseFloat(itemQty);
     if (!qty || qty <= 0) { toast('Quantity must be > 0', 'error'); return; }
-    const item = inventoryItems.find(i => i._id === selectedItemId);
-    const unitId = item?.unit_id?._id || item?.unit_id || undefined;
+
+    let payload;
+    if (itemMode === 'inventory') {
+      if (!selectedItemId) { toast('Please select an item', 'error'); return; }
+      const item = inventoryItems.find(i => i._id === selectedItemId);
+      const unitId = item?.unit_id?._id || item?.unit_id || undefined;
+      payload = { inventory_item_id: selectedItemId, unit_id: unitId, quantity_used: qty };
+    } else {
+      if (!customName.trim()) { toast('Please enter an item name', 'error'); return; }
+      payload = { custom_name: customName.trim(), custom_unit: customUnit.trim() || undefined, quantity_used: qty };
+    }
+
     setSavingItem(true);
     try {
-      await api.addMealItem(addItemMeal._id, {
-        inventory_item_id: selectedItemId,
-        unit_id: unitId,
-        quantity_used: qty,
-      });
+      await api.addMealItem(addItemMeal._id, payload);
       setShowAddItemModal(false);
       const items = await api.getAllFamilyItems().catch(() => []);
       setInventoryItems(items);
@@ -223,7 +234,7 @@ export default function MealsScreen() {
 
   const grouped = groupByType();
   const mealType2 = detailMeal?.meal_type || 'Lunch';
-  const detailAccent = MEAL_TYPE_META[mealType2]?.color || '#00897B';
+  const detailAccent = MEAL_TYPE_META[mealType2]?.color || 'var(--color-primary)';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--color-background)' }}>
@@ -327,6 +338,32 @@ export default function MealsScreen() {
               })}
             </div>
           </div>
+
+          {/* Servings / number of people */}
+          <div>
+            <p style={{ fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 13, marginBottom: 8, color: 'var(--color-text-primary)' }}>
+              How many people can eat this?
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <button type="button" onClick={() => setServings(s => Math.max(1, s - 1))} style={{
+                width: 40, height: 40, borderRadius: 12, border: '2px solid var(--color-border)',
+                background: 'var(--color-white)', cursor: 'pointer', fontSize: 20, fontWeight: 700,
+                color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>−</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 90, justifyContent: 'center' }}>
+                <span style={{ fontSize: 18 }}>👥</span>
+                <span style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 20, color: 'var(--color-text-primary)' }}>{servings}</span>
+                <span style={{ fontFamily: 'var(--font-family)', fontSize: 13, color: 'var(--color-text-secondary)' }}>
+                  {servings === 1 ? 'person' : 'people'}
+                </span>
+              </div>
+              <button type="button" onClick={() => setServings(s => Math.min(50, s + 1))} style={{
+                width: 40, height: 40, borderRadius: 12, border: '2px solid var(--color-border)',
+                background: 'var(--color-white)', cursor: 'pointer', fontSize: 20, fontWeight: 700,
+                color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>+</button>
+            </div>
+          </div>
         </div>
       </Modal>
 
@@ -359,7 +396,7 @@ export default function MealsScreen() {
             {detailMeal && (
               <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{
-                  padding: 10, background: MEAL_TYPE_META[detailMeal.meal_type]?.bg || '#D1ECEB',
+                  padding: 10, background: MEAL_TYPE_META[detailMeal.meal_type]?.bg || 'var(--color-primary-surface)',
                   borderRadius: 12,
                 }}>
                   <span style={{ fontSize: 24 }}>{MEAL_TYPE_META[detailMeal.meal_type]?.emoji || '🍽️'}</span>
@@ -370,6 +407,7 @@ export default function MealsScreen() {
                   </p>
                   <p style={{ fontFamily: 'var(--font-family)', fontSize: 13, color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
                     {detailMeal.meal_type} · {formatDateLabel(selectedDate)}
+                    {detailMeal.servings ? ` · 👥 ${detailMeal.servings} ${detailMeal.servings === 1 ? 'person' : 'people'}` : ''}
                   </p>
                 </div>
                 <button onClick={() => setShowDetail(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999' }}>✕</button>
@@ -402,8 +440,9 @@ export default function MealsScreen() {
                     detailItems.map(item => {
                       const invItem = item.inventory_item_id;
                       const unit = item.unit_id;
-                      const itemName = invItem?.item_name || 'Unknown';
-                      const unitName = unit?.unit_name || '';
+                      const isCustom = !invItem;
+                      const itemName = invItem?.item_name || item.custom_name || 'Unknown';
+                      const unitName = unit?.unit_name || item.custom_unit || '';
                       return (
                         <div key={item._id} style={{
                           display: 'flex', alignItems: 'center', gap: 12,
@@ -411,10 +450,18 @@ export default function MealsScreen() {
                           background: '#f9f9f9', borderRadius: 12, border: '1px solid #eee',
                         }}>
                           <div style={{ padding: 8, background: detailAccent + '1A', borderRadius: 8 }}>
-                            <span style={{ fontSize: 16 }}>📦</span>
+                            <span style={{ fontSize: 16 }}>{isCustom ? '📝' : '📦'}</span>
                           </div>
                           <div style={{ flex: 1 }}>
-                            <p style={{ fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 13, color: 'var(--color-text-primary)', margin: 0 }}>{itemName}</p>
+                            <p style={{ fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 13, color: 'var(--color-text-primary)', margin: 0 }}>
+                              {itemName}
+                              {isCustom && (
+                                <span style={{
+                                  marginLeft: 6, fontSize: 10, fontWeight: 600, color: '#9C6700',
+                                  background: '#FFF3CD', borderRadius: 6, padding: '1px 6px', verticalAlign: 'middle',
+                                }}>not in inventory</span>
+                              )}
+                            </p>
                             <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>{item.quantity_used} {unitName}</p>
                           </div>
                           <button onClick={() => removeItem(item._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E53935' }}>
@@ -455,36 +502,77 @@ export default function MealsScreen() {
 
       {/* Add Item Modal */}
       <Modal open={showAddItemModal} onClose={() => setShowAddItemModal(false)}
-        title="Add Ingredient"
+        title="Add Item"
         actions={<>
           <ModalCancelBtn onClick={() => setShowAddItemModal(false)} />
-          <ModalPrimaryBtn label={savingItem ? '…' : 'Add'} disabled={savingItem || !selectedItemId} onClick={saveItem} />
+          <ModalPrimaryBtn
+            label={savingItem ? '…' : 'Add'}
+            disabled={savingItem || (itemMode === 'inventory' ? !selectedItemId : !customName.trim())}
+            onClick={saveItem}
+          />
         </>}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SelectField
-            label="Select from Inventory"
-            value={selectedItemId} onChange={setSelectedItemId}
-            options={[
-              { value: '', label: 'Choose an item' },
-              ...inventoryItems.map(i => {
-                const unit = i.unit_id;
-                const uName = unit?.unit_name || '';
-                return { value: i._id, label: `${i.item_name} (${i.quantity} ${uName})` };
-              }),
-            ]}
-          />
-          <FormField label="Quantity to use" value={itemQty} onChange={setItemQty} type="number" min="0.01" step="0.01" />
-          {selectedItemId && (() => {
-            const it = inventoryItems.find(i => i._id === selectedItemId);
-            if (!it) return null;
-            const uName = it.unit_id?.unit_name || '';
-            return (
+          {/* Mode toggle: inventory vs new item */}
+          <div style={{ display: 'flex', gap: 8, background: 'var(--color-primary-surface)', padding: 4, borderRadius: 12 }}>
+            {[
+              { key: 'inventory', label: '📦 From Inventory' },
+              { key: 'custom', label: '📝 New Item' },
+            ].map(opt => {
+              const sel = itemMode === opt.key;
+              return (
+                <button key={opt.key} type="button" onClick={() => setItemMode(opt.key)} style={{
+                  flex: 1, padding: '8px 10px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                  background: sel ? 'var(--color-primary)' : 'transparent',
+                  color: sel ? '#fff' : 'var(--color-text-secondary)',
+                  fontFamily: 'var(--font-family)', fontWeight: sel ? 600 : 500, fontSize: 13,
+                }}>{opt.label}</button>
+              );
+            })}
+          </div>
+
+          {itemMode === 'inventory' ? (
+            <>
+              <SelectField
+                label="Select from Inventory"
+                value={selectedItemId} onChange={setSelectedItemId}
+                options={[
+                  { value: '', label: 'Choose an item' },
+                  ...inventoryItems.map(i => {
+                    const unit = i.unit_id;
+                    const uName = unit?.unit_name || '';
+                    return { value: i._id, label: `${i.item_name} (${i.quantity} ${uName})` };
+                  }),
+                ]}
+              />
+              <FormField label="Quantity to use" value={itemQty} onChange={setItemQty} type="number" min="0.01" step="0.01" />
+              {selectedItemId && (() => {
+                const it = inventoryItems.find(i => i._id === selectedItemId);
+                if (!it) return null;
+                const uName = it.unit_id?.unit_name || '';
+                return (
+                  <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+                    Available: {it.quantity} {uName}
+                  </p>
+                );
+              })()}
+            </>
+          ) : (
+            <>
+              <FormField label="Item Name" value={customName} onChange={setCustomName} placeholder="e.g. Salt, Olive oil" required />
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <FormField label="Quantity" value={itemQty} onChange={setItemQty} type="number" min="0.01" step="0.01" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <FormField label="Unit (optional)" value={customUnit} onChange={setCustomUnit} placeholder="cups, pcs…" />
+                </div>
+              </div>
               <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
-                Available: {it.quantity} {uName}
+                This item isn't tracked in inventory, so nothing will be deducted.
               </p>
-            );
-          })()}
+            </>
+          )}
         </div>
       </Modal>
     </div>
@@ -514,8 +602,14 @@ function MealCard({ meal, meta, onView, onEdit, onDelete }) {
         <span style={{ fontSize: 22 }}>{meta.emoji}</span>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 15, color: 'var(--color-text-primary)', margin: 0 }}>
-          {meal.meal_name || 'Untitled'}
+        <p style={{ fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 15, color: 'var(--color-text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{meal.meal_name || 'Untitled'}</span>
+          {meal.servings > 0 && (
+            <span style={{
+              flexShrink: 0, fontSize: 11, fontWeight: 600, color: meta.color, background: meta.bg,
+              borderRadius: 10, padding: '1px 8px', display: 'inline-flex', alignItems: 'center', gap: 3,
+            }}>👥 {meal.servings}</span>
+          )}
         </p>
         {recipeName && (
           <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, color: '#E65100', margin: '2px 0 0' }}>

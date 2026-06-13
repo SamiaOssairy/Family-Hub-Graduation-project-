@@ -5,9 +5,9 @@ const PALETTE = [
   { bg: '#E3F2FD', text: '#1565C0', border: '#90CAF9' },
   { bg: '#FFF3E0', text: '#E65100', border: '#FFCC80' },
   { bg: '#FCE4EC', text: '#C2185B', border: '#F48FB1' },
-  { bg: '#D1ECEB', text: '#00897B', border: '#95C5C1' },
+  { bg: 'var(--color-primary-surface)', text: 'var(--color-primary)', border: 'var(--color-border)' },
   { bg: '#F3E5F5', text: '#7B1FA2', border: '#CE93D8' },
-  { bg: '#E4F5F4', text: '#00897B', border: '#95C5C1' },
+  { bg: 'var(--color-background)', text: 'var(--color-primary)', border: 'var(--color-border)' },
 ];
 
 export default function Avatar({ name = '', size = 40 }) {

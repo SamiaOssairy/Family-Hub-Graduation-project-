@@ -24,7 +24,7 @@
 
 /* ── Profile Card ─────────────────────────────────────────────── */
 .ss-profile-card {
-  background: linear-gradient(135deg, #00897B 0%, #00352E 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-text-primary) 100%);
   border-radius: var(--radius-card);
   padding: 24px 20px;
   display: flex;

@@ -10,7 +10,7 @@ import { useToast } from '../../components/common/Toast';
 import * as api from '../../api/apiService';
 
 // ── Colors (mirrors Flutter _pieColors) ────────────────────────
-const PIE_COLORS = ['#00897B', '#5BA89E', '#FB8C00', '#5FA09A', '#7B1FA2', '#E91E63'];
+const PIE_COLORS = ['var(--color-primary)', 'var(--color-primary-light)', '#FB8C00', 'var(--color-text-secondary)', '#7B1FA2', '#E91E63'];
 
 // ── Category icons (mirrors Flutter catIcons) ──────────────────
 const CAT_ICONS = {
@@ -33,6 +33,74 @@ function formatDate(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) +
     ', ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Build the Overview/Trend view-model the tabs expect, from the budget's
+// allocations (categories) + the recorded expenses. The backend /budget/analytics
+// endpoint returns a different (combined-family) shape, so we derive these here.
+function buildAnalyticsModel(budget, expenses) {
+  const totalBudget = +(budget.total_amount || 0);
+
+  const byCat = {};   // category name -> { spent, count }
+  const byDate = {};  // YYYY-MM-DD     -> spent
+  let spentFromExpenses = 0;
+
+  for (const e of expenses) {
+    const amt = +(e.amount || 0);
+    spentFromExpenses += amt;
+
+    const cat = e.category || 'Uncategorized';
+    if (!byCat[cat]) byCat[cat] = { spent: 0, count: 0 };
+    byCat[cat].spent += amt;
+    byCat[cat].count += 1;
+
+    const d = e.expense_date ? new Date(e.expense_date) : null;
+    if (d && !Number.isNaN(d.getTime())) {
+      const key = d.toISOString().slice(0, 10);
+      byDate[key] = (byDate[key] || 0) + amt;
+    }
+  }
+
+  const totalSpent = +(budget.total_spent ?? budget.spent_amount ?? spentFromExpenses) || spentFromExpenses;
+
+  const cats = Array.isArray(budget.categories) ? budget.categories : [];
+  const pieFromAllocations = cats.map((c) => {
+    const name = c.name || c.title || 'Category';
+    const fromExp = byCat[name] || { spent: 0, count: 0 };
+    return {
+      category_name: name,
+      allocated_amount: +(c.allocated_amount || 0),
+      spent_amount: +(c.spent_amount || fromExp.spent || 0),
+      expense_count: fromExp.count,
+    };
+  });
+
+  // Include any expense categories that have no matching allocation
+  const allocatedNames = new Set(pieFromAllocations.map((p) => p.category_name));
+  const extraFromExpenses = Object.keys(byCat)
+    .filter((name) => !allocatedNames.has(name))
+    .map((name) => ({
+      category_name: name,
+      allocated_amount: 0,
+      spent_amount: byCat[name].spent,
+      expense_count: byCat[name].count,
+    }));
+
+  const pie = [...pieFromAllocations, ...extraFromExpenses].filter(
+    (c) => c.spent_amount > 0 || c.allocated_amount > 0
+  );
+
+  const daily = Object.keys(byDate)
+    .sort()
+    .map((k) => ({ _id: k, daily_spent: byDate[k] }));
+
+  return {
+    total_budget: totalBudget,
+    total_spent: totalSpent,
+    total_remaining: Math.max(0, totalBudget - totalSpent),
+    pie_chart_data: pie,
+    daily_trend_data: daily,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -63,17 +131,18 @@ export default function BudgetAnalyticsScreen() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [analyticsData, expensesData] = await Promise.all([
-        api.getBudgetAnalytics(budgetId),
-        api.getExpensesByBudget(budgetId).catch(() => []),
-      ]);
-      setAnalytics(analyticsData);
-      setExpenses(Array.isArray(expensesData) ? expensesData : []);
+      const expensesData = await api.getExpensesByBudget(budgetId).catch(() => []);
+      const exp = Array.isArray(expensesData) ? expensesData : [];
+      setExpenses(exp);
+      // Derive Overview/Trend data from the budget allocations + recorded expenses
+      setAnalytics(buildAnalyticsModel(budget, exp));
     } catch (e) {
       toast(e.message, 'error');
     } finally {
       setLoading(false);
     }
+    // budget comes from route state and is stable for this screen's lifetime
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [budgetId]);
 
   useEffect(() => { loadData(); }, [loadData]);
@@ -402,7 +471,7 @@ function ExpensesTab({ expenses }) {
                 <span style={{
                   padding: '2px 6px', borderRadius: 6,
                   background: 'var(--color-primary-surface)',
-                  fontFamily: 'var(--font-family)', fontSize: 8, fontWeight: 600, color: 'var(--color-dark, #00352E)',
+                  fontFamily: 'var(--font-family)', fontSize: 8, fontWeight: 600, color: 'var(--color-dark, var(--color-text-primary))',
                 }}>
                   {category}
                 </span>

@@ -140,8 +140,8 @@ export default function CreateTaskScreen() {
         return;
       }
 
-      toast('Task template created successfully', 'success');
-      navigate(-1);
+      toast('Task created! Now assign it to a family member.', 'success');
+      navigate('/task-management', { replace: true });
     } catch (e) {
       toast('Error: ' + (e?.response?.data?.message || e.message), 'error');
     } finally {

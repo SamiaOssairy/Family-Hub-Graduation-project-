@@ -89,12 +89,15 @@ const finalizeRedeemExpense = async (redeemRequest) => {
 // Request redemption (any member can request)
 // Can be for wishlist item OR custom request (school trip, event, etc.)
 exports.requestRedemption = catchAsync(async (req, res, next) => {
-  const { wishlist_item_id, request_details, point_deduction, payment_method, money_used, points_used } = req.body;
-  
-  if (!request_details) {
+  const { wishlist_item_id, point_deduction, payment_method, money_used, points_used } = req.body;
+  // request_details is derived from the wishlist item when one is given, so it
+  // is only required for custom (non-wishlist) redemption requests.
+  let request_details = req.body.request_details;
+
+  if (!wishlist_item_id && !request_details) {
     return next(new AppError("Please provide request details (what you want to redeem)", 400));
   }
-  
+
   let finalPointDeduction = 0;
   const paymentMethod = payment_method || 'points';
   const requestedMoneyUsed = Number(money_used || 0);
@@ -121,6 +124,8 @@ exports.requestRedemption = catchAsync(async (req, res, next) => {
     
     finalPointDeduction = item.required_points;
     itemDetails = item;
+    // Default the request label to the item name when not supplied.
+    if (!request_details) request_details = item.item_name;
   } else {
     // OPTION 2: Custom redemption request (school trip, event tickets, etc.)
     if (!point_deduction || point_deduction <= 0) {

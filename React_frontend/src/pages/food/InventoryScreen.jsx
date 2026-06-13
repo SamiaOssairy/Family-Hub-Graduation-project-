@@ -12,7 +12,7 @@ import FormField, { SelectField } from '../../components/common/FormField';
 import { useToast } from '../../components/common/Toast';
 import * as api from '../../api/apiService';
 
-const CAT_COLORS = ['#00897B','#5BA89E','#FB8C00','#5FA09A','#7B1FA2','#E91E63','#1565C0','#6D4C41','#00352E'];
+const CAT_COLORS = ['var(--color-primary)','var(--color-primary-light)','#FB8C00','var(--color-text-secondary)','#7B1FA2','#E91E63','#1565C0','#6D4C41','var(--color-text-primary)'];
 const SORT_OPTIONS = [
   { value: 'name', label: 'Name' },
   { value: 'quantity', label: 'Quantity' },
@@ -195,8 +195,9 @@ export default function InventoryScreen() {
         threshold_quantity: +(iForm.threshold_quantity || 1),
         unit_id: iForm.unit_id,
         item_category: iForm.category_id,
-        purchase_date: iForm.purchase_date || undefined,
-        expiry_date: iForm.expiry_date || undefined,
+        // null (not undefined) so clearing a date actually clears it on the backend
+        purchase_date: iForm.purchase_date || null,
+        expiry_date: iForm.expiry_date || null,
       };
       if (editItem) {
         await api.updateInventoryItem(editItem._id, data);

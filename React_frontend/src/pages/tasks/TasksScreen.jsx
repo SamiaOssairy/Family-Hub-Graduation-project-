@@ -1,234 +1,133 @@
 // ═══════════════════════════════════════════════════════════════
-// Tasks Screen — mirrors Flutter tasks_screen.dart exactly
+// TasksScreen — PERSONAL task view for EVERY member (parent & child).
+// Shows only the logged-in member's own tasks, grouped by status:
+//   To Do · Waiting Approval · Done (rewarded) · Needs Redo.
+// A celebratory banner appears when a parent approved a task since the
+// member last opened this screen (the in-app "approval notification").
+// Parents also get a "Manage" button → the parent task-management hub.
 // ═══════════════════════════════════════════════════════════════
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { CheckSquare, RefreshCw, Trash2, X, Plus, Clock, CheckCircle, CircleDot } from 'lucide-react';
+import { CheckSquare, RefreshCw, Clock, Settings, PartyPopper, X } from 'lucide-react';
 import AppBar, { IconBtn } from '../../components/common/AppBar';
 import Avatar from '../../components/common/Avatar';
-import StatusBadge from '../../components/common/StatusBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import EmptyState from '../../components/common/EmptyState';
 import Modal, { ModalCancelBtn, ModalPrimaryBtn } from '../../components/common/Modal';
-import FormField, { SelectField } from '../../components/common/FormField';
 import { useToast } from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import * as api from '../../api/apiService';
 
-// ── Helpers ───────────────────────────────────────────────────
-function progressFromStatus(status) {
-  if (status === 'completed' || status === 'approved') return 1.0;
-  if (status === 'pending_approval') return 0.8;
-  if (status === 'in_progress') return 0.5;
-  return 0.0;
-}
-
-function dotColorFromStatus(status) {
-  const map = {
-    approved: '#00BFA5', completed: '#1E88E5', pending_approval: '#1E88E5',
-    in_progress: '#1E88E5', rejected: '#FF5252', late: '#FF5252',
-  };
-  return map[status] || '#FB8C00';
-}
-
-function formatDeadlineShort(deadline) {
-  if (!deadline) return '';
-  try {
-    const date = new Date(deadline);
-    const now = new Date();
-    const diff = date - now;
-    if (diff < 0) return 'Overdue';
-    const hours = Math.floor(diff / 36e5);
-    if (hours < 24) return `${hours}h left`;
-    return `${date.getDate()}/${date.getMonth() + 1}`;
-  } catch { return ''; }
-}
-
+// ── Status → display meta ──────────────────────────────────────
 function rewardLabel(task) {
   if (task.rewardType === 'money') return `${(task.moneyReward || 0).toFixed(2)} EGP`;
   if (task.rewardType === 'both') return `${task.points} pts + ${(task.moneyReward || 0).toFixed(2)} EGP`;
   return `${task.points} pts`;
 }
-
 function rewardEmoji(task) {
   if (task.rewardType === 'money') return '💰';
   if (task.rewardType === 'both') return '⭐💰';
   return '⭐';
 }
+function formatDeadline(deadline) {
+  if (!deadline) return '';
+  const date = new Date(deadline);
+  const now = new Date();
+  const diff = date - now;
+  if (diff < 0) return 'Overdue';
+  const hours = Math.floor(diff / 36e5);
+  if (hours < 24) return `${hours}h left`;
+  const days = Math.floor(hours / 24);
+  return `${days}d left`;
+}
 
 function fromJson(json) {
-  const status = json.status || 'assigned';
   return {
     id: json._id || '',
-    title: json.task_id?.title || json.title || 'Unknown Task',
-    description: json.task_id?.description || json.description || '',
-    isMandatory: json.task_id?.is_mandatory || json.is_mandatory || false,
-    status,
+    title: json.task_id?.title || 'Unknown Task',
+    description: json.task_id?.description || '',
+    isMandatory: json.task_id?.is_mandatory || false,
+    status: json.status || 'assigned',
     points: json.assigned_points || 0,
-    rewardType: json.task_id?.reward_type || json.reward_type || 'points',
-    moneyReward: +(json.task_id?.money_reward || json.money_reward || 0),
+    penaltyPoints: json.penalty_points || 0,
+    rewardType: json.task_id?.reward_type || 'points',
+    moneyReward: +(json.task_id?.money_reward || 0),
     deadline: json.deadline || null,
-    progress: progressFromStatus(status),
     notes: json.notes || '',
     assignmentApproved: json.assignment_approved !== false,
-    isSelectedToDelete: false,
   };
 }
 
-// ═══════════════════════════════════════════════════════════════
+// Section buckets
+const SECTIONS = [
+  { key: 'todo',     title: 'To Do',            emoji: '📋', color: '#FB8C00', desc: 'Tasks you still need to finish' },
+  { key: 'waiting',  title: 'Waiting Approval', emoji: '⏳', color: '#1E88E5', desc: 'Done — waiting for a parent to approve your reward' },
+  { key: 'redo',     title: 'Needs Redo',       emoji: '🔁', color: '#E53935', desc: 'A parent asked you to redo these' },
+  { key: 'done',     title: 'Done & Rewarded',  emoji: '✅', color: 'var(--color-primary)', desc: 'Approved — you earned the reward!' },
+  { key: 'pending',  title: 'Pending Start',    emoji: '🕓', color: '#8E24AA', desc: 'Waiting for a parent to approve the assignment' },
+];
+
+function bucketOf(task) {
+  if (!task.assignmentApproved) return 'pending';
+  switch (task.status) {
+    case 'completed': return 'waiting';
+    case 'approved':  return 'done';
+    case 'rejected':
+    case 'late':      return 'redo';
+    default:          return 'todo'; // assigned / in_progress
+  }
+}
+
 export default function TasksScreen() {
-  const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
-  const { memberMail, username } = useAuth();
+  const { memberMail, username, isParent } = useAuth();
+  const { language } = useTheme();
+  const t = (en, ar) => (language === 'ar' ? ar : en);
 
-  const [activeTab, setActiveTab] = useState(0); // 0 = Mandatory, 1 = Available
-  const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [mandatoryTasks, setMandatoryTasks] = useState([]);
-  const [availableTasks, setAvailableTasks] = useState([]);
-  const [memberName, setMemberName] = useState('');
-  const [memberType, setMemberType] = useState('');
-  const [currentMail, setCurrentMail] = useState('');
-  const [categories, setCategories] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [memberName, setMemberName] = useState(username || '');
+  const [newlyApproved, setNewlyApproved] = useState([]); // celebratory banner
 
-  // Modal state
-  const [showAddModal, setShowAddModal]   = useState(false);
-  const [showComplete, setShowComplete]   = useState(false);
-  const [selectedTask, setSelectedTask]   = useState(null);
-  const [taskName, setTaskName]           = useState('');
-  const [taskDesc, setTaskDesc]           = useState('');
-  const [selectedCat, setSelectedCat]     = useState('');
-  const [saving, setSaving]              = useState(false);
+  // Complete confirmation modal
+  const [showComplete, setShowComplete] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  // ── Load tasks ───────────────────────────────────────────────
+  const seenKey = `seenApprovedTasks_${memberMail || 'me'}`;
+
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const tasks = await api.getMyTasks();
-      const mandatory = [], available = [];
-      let mail = '';
+      const raw = await api.getMyTasks();
+      const items = raw.map(fromJson);
+      setTasks(items);
 
-      if (tasks.length > 0) {
-        mail = tasks[0].member_mail || '';
+      if (!memberName) {
+        const mail = raw[0]?.member_mail || memberMail;
+        if (mail) setMemberName(mail.split('@')[0]);
       }
 
-      for (const t of tasks) {
-        const item = fromJson(t);
-        if (item.isMandatory) mandatory.push(item);
-        else available.push(item);
-      }
-
-      if (!mail) {
-        try {
-          const wallet = await api.getMyWallet();
-          mail = wallet.member_mail || '';
-        } catch {}
-      }
-
-      if (mail) {
-        try {
-          const members = await api.getAllMembers();
-          const match = members.find(m => m.mail === mail);
-          if (match) {
-            setMemberName(match.username || mail.split('@')[0]);
-            setMemberType(match.member_type_id?.type || '');
-          } else {
-            setMemberName(mail.split('@')[0]);
-          }
-          setCurrentMail(mail);
-        } catch {
-          setCurrentMail(mail);
-          setMemberName(mail.split('@')[0]);
-        }
-      }
-
-      try {
-        const cats = await api.getAllTaskCategories();
-        setCategories(cats);
-        if (cats.length > 0) setSelectedCat(cats[0]._id || '');
-      } catch {}
-
-      setMandatoryTasks(mandatory);
-      setAvailableTasks(available);
+      // ── Detect tasks approved since last visit → notification ──
+      let seen = [];
+      try { seen = JSON.parse(localStorage.getItem(seenKey)) || []; } catch { seen = []; }
+      const approvedNow = items.filter(it => it.status === 'approved').map(it => it.id);
+      const fresh = items.filter(it => it.status === 'approved' && !seen.includes(it.id));
+      if (fresh.length > 0) setNewlyApproved(fresh);
+      // Persist the full current approved set as "seen"
+      localStorage.setItem(seenKey, JSON.stringify(approvedNow));
     } catch (e) {
       toast('Error loading tasks: ' + e.message, 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [memberMail]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
 
-  // ── Delete mode ──────────────────────────────────────────────
-  function toggleDeleteMode() {
-    setIsDeleteMode(prev => !prev);
-    setMandatoryTasks(t => t.map(x => ({ ...x, isSelectedToDelete: false })));
-    setAvailableTasks(t => t.map(x => ({ ...x, isSelectedToDelete: false })));
-  }
-
-  async function deleteSelected() {
-    const toDelete = [
-      ...mandatoryTasks.filter(x => x.isSelectedToDelete),
-      ...availableTasks.filter(x => x.isSelectedToDelete),
-    ];
-    if (toDelete.length === 0) { setIsDeleteMode(false); return; }
-    try {
-      await Promise.all(toDelete.map(x => api.deleteTask(x.id)));
-      setMandatoryTasks(t => t.filter(x => !x.isSelectedToDelete));
-      setAvailableTasks(t => t.filter(x => !x.isSelectedToDelete));
-      toast.success(`${toDelete.length} task(s) deleted`);
-    } catch {
-      toast.error('Failed to delete tasks');
-    }
-    setIsDeleteMode(false);
-  }
-
-  function toggleSelect(id) {
-    const update = t => t.map(x => x.id === id ? { ...x, isSelectedToDelete: !x.isSelectedToDelete } : x);
-    setMandatoryTasks(update);
-    setAvailableTasks(update);
-  }
-
-  // ── Add new task ─────────────────────────────────────────────
-  async function addNewTask() {
-    if (!taskName.trim() || !selectedCat || !currentMail) return;
-    setSaving(true);
-    try {
-      const resp = await api.createTask({
-        title: taskName.trim(),
-        description: taskDesc.trim(),
-        category_id: selectedCat,
-        is_mandatory: activeTab === 0,
-        reward_type: 'points',
-        money_reward: 0,
-      });
-      const taskId = resp?.data?.task?._id || '';
-      if (!taskId) throw new Error('Task creation failed');
-
-      await api.assignTask({
-        task_id: taskId,
-        member_mail: currentMail,
-        assigned_points: 10,
-        penalty_points: 0,
-        deadline: new Date(Date.now() + 7 * 864e5).toISOString(),
-        priority: 0,
-      });
-
-      setTaskName(''); setTaskDesc('');
-      setShowAddModal(false);
-      toast(t('taskAdded'));
-      loadTasks();
-    } catch (e) {
-      toast('Error: ' + e.message, 'error');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  // ── Complete task ────────────────────────────────────────────
-  function openCompleteDialog(task) {
+  function openComplete(task) {
     setSelectedTask(task);
     setShowComplete(true);
   }
@@ -241,392 +140,218 @@ export default function TasksScreen() {
       setShowComplete(false);
       const reward = resp?.data?.rewardSummary;
       if (reward) {
+        // Parent completing own task → instant reward
         const pts = reward.points_awarded || 0;
         const money = reward.money_awarded || 0;
-        const type = reward.reward_type || 'points';
         let msg = '🎉 ';
-        if (type === 'points' || type === 'both') msg += `+${pts} pts `;
-        if (type === 'money' || type === 'both') msg += `+${money.toFixed(2)} EGP`;
-        toast(msg.trim());
+        if (reward.reward_type === 'points' || reward.reward_type === 'both') msg += `+${pts} pts `;
+        if (reward.reward_type === 'money' || reward.reward_type === 'both') msg += `+${money.toFixed(2)} EGP`;
+        toast(msg.trim(), 'success');
+      } else {
+        toast(t('Submitted! Waiting for a parent to approve.', 'تم الإرسال! في انتظار موافقة أحد الوالدين.'), 'success');
       }
       loadTasks();
     } catch (e) {
-      toast('Error: ' + e.message, 'error');
+      toast('Error: ' + (e?.response?.data?.message || e.message), 'error');
     } finally {
       setSaving(false);
     }
   }
 
-  // ── Render task card ─────────────────────────────────────────
-  const renderTaskCard = (task) => {
-    const dotColor = dotColorFromStatus(task.status);
-    const isSelected = isDeleteMode && task.isSelectedToDelete;
-    const isWaiting = task.assignmentApproved && task.status === 'completed';
-    const isRejected = task.assignmentApproved && task.status === 'rejected';
-    const canComplete = task.assignmentApproved && (task.status === 'assigned' || task.status === 'in_progress');
-    const isDone = task.status === 'approved';
+  // Group tasks into buckets
+  const buckets = {};
+  SECTIONS.forEach(s => { buckets[s.key] = []; });
+  tasks.forEach(task => { buckets[bucketOf(task)].push(task); });
 
-    const cardBorderColor = isSelected ? '#E53935' : isWaiting ? '#1E88E5' : isRejected ? '#E53935' : 'var(--color-border)';
-    const cardBorderWidth = isSelected || isWaiting || isRejected ? 2 : 1;
+  const totalNewPoints = newlyApproved.reduce((sum, t2) => sum + (t2.points || 0), 0);
+
+  // ── Task card ────────────────────────────────────────────────
+  const renderCard = (task, section) => {
+    const canComplete = task.assignmentApproved && ['assigned', 'in_progress'].includes(task.status);
+    const canRedo = task.assignmentApproved && ['rejected', 'late'].includes(task.status);
+    const overdue = task.deadline && new Date(task.deadline) < new Date() && canComplete;
 
     return (
-      <div
-        key={task.id}
-        onClick={() => isDeleteMode && toggleSelect(task.id)}
-        style={{
-          marginBottom: 12,
-          padding: 14,
-          background: isSelected ? 'rgba(229,57,53,0.08)' : 'var(--color-white)',
-          borderRadius: 18,
-          border: `${cardBorderWidth}px solid ${cardBorderColor}`,
-          boxShadow: 'var(--shadow-card)',
-          cursor: isDeleteMode ? 'pointer' : 'default',
-        }}
-      >
-        {/* Title row */}
+      <div key={task.id} style={{
+        marginBottom: 10, padding: 14,
+        background: 'var(--color-white)', borderRadius: 16,
+        border: `1px solid ${overdue ? '#E53935' : 'var(--color-border)'}`,
+        boxShadow: 'var(--shadow-card)',
+      }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <div style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: dotColor, marginTop: 5, flexShrink: 0,
-          }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: section.color, marginTop: 6, flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{
-              fontFamily: 'var(--font-family)', fontWeight: 600,
-              fontSize: 13, color: 'var(--color-text-primary)',
-              margin: 0, wordBreak: 'break-word',
-            }}>{task.title}</p>
-            {task.description && (
-              <p style={{
-                fontFamily: 'var(--font-family)', fontSize: 10,
-                color: 'var(--color-text-secondary)', margin: '2px 0 0',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>{task.description}</p>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, flexWrap: 'wrap' }}>
-              {task.deadline && (
-                <>
-                  <Clock size={10} color="var(--color-text-secondary)" />
-                  <span style={{ fontFamily: 'var(--font-family)', fontSize: 9, color: 'var(--color-text-secondary)' }}>
-                    {formatDeadlineShort(task.deadline)}
-                  </span>
-                </>
+            <p style={{ fontFamily: 'var(--font-family)', fontWeight: 600, fontSize: 14, color: 'var(--color-text-primary)', margin: 0, wordBreak: 'break-word' }}>
+              {task.title}
+              {task.isMandatory && (
+                <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, color: '#C62828', background: '#FFEBEE', borderRadius: 6, padding: '1px 6px', verticalAlign: 'middle' }}>
+                  {t('mandatory', 'إلزامي')}
+                </span>
               )}
-              <span style={{ fontSize: 11 }}>{rewardEmoji(task)}</span>
-              <span style={{
-                fontFamily: 'var(--font-family)', fontSize: 10,
-                fontWeight: 600, color: 'var(--color-primary)',
-              }}>{rewardLabel(task)}</span>
-            </div>
-          </div>
-          {isDeleteMode ? (
-            task.isSelectedToDelete
-              ? <CheckCircle size={22} color="#E53935" />
-              : <CircleDot size={22} color="var(--color-text-secondary)" />
-          ) : (
-            <StatusBadge status={task.status} />
-          )}
-        </div>
-
-        {/* Progress bar */}
-        <div style={{ marginTop: 10 }}>
-          <div style={{
-            height: 4, borderRadius: 3,
-            background: 'var(--color-border-light)',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              height: '100%', width: `${task.progress * 100}%`,
-              background: dotColor, borderRadius: 3,
-              transition: 'width 0.3s ease',
-            }} />
-          </div>
-          <p style={{
-            fontFamily: 'var(--font-family)', fontSize: 9,
-            color: dotColor, fontWeight: 500, marginTop: 4,
-          }}>Complete: {Math.round(task.progress * 100)}%</p>
-        </div>
-
-        {/* Notes */}
-        {task.notes && !isDeleteMode && (
-          isRejected ? (
-            <div style={{
-              marginTop: 8, padding: 10,
-              background: '#FFEBEE', borderRadius: 10,
-              border: '1px solid #FFCDD2',
-            }}>
-              <p style={{ fontFamily: 'var(--font-family)', fontSize: 9, fontWeight: 600, color: '#C62828', margin: 0 }}>
-                {t('rejectedByParent')}
-              </p>
-              <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: '#E53935', margin: '2px 0 0' }}>
-                {task.notes}
-              </p>
-            </div>
-          ) : (
-            <div style={{
-              marginTop: 8, padding: 8,
-              background: '#FFFDE7', borderRadius: 8,
-              border: '1px solid #FFE082',
-              display: 'flex', gap: 6, alignItems: 'flex-start',
-            }}>
-              <span style={{ fontSize: 12 }}>📝</span>
-              <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: '#F57F17', margin: 0 }}>
-                {task.notes}
-              </p>
-            </div>
-          )
-        )}
-
-        {/* Waiting approval info */}
-        {isWaiting && !isDeleteMode && (
-          <div style={{
-            marginTop: 8, padding: 9,
-            background: '#E3F2FD', borderRadius: 10,
-            border: '1px solid #90CAF9',
-            display: 'flex', gap: 6, alignItems: 'center',
-          }}>
-            <span style={{ fontSize: 14 }}>⏳</span>
-            <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: '#1565C0', fontWeight: 500, margin: 0 }}>
-              {t('submittedForApproval')}
             </p>
+            {task.description && (
+              <p style={{ fontFamily: 'var(--font-family)', fontSize: 11, color: 'var(--color-text-secondary)', margin: '3px 0 0' }}>{task.description}</p>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11 }}>{rewardEmoji(task)}</span>
+              <span style={{ fontFamily: 'var(--font-family)', fontSize: 11, fontWeight: 600, color: 'var(--color-primary)' }}>{rewardLabel(task)}</span>
+              {task.penaltyPoints > 0 && (
+                <span style={{ fontFamily: 'var(--font-family)', fontSize: 10, fontWeight: 600, color: '#E53935' }}>
+                  ⚠️ −{task.penaltyPoints} pts {t('if late', 'إذا تأخرت')}
+                </span>
+              )}
+              {task.deadline && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontFamily: 'var(--font-family)', fontSize: 10, color: overdue ? '#E53935' : 'var(--color-text-secondary)', fontWeight: overdue ? 700 : 400 }}>
+                  <Clock size={11} /> {formatDeadline(task.deadline)}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Rejection / penalty note */}
+        {task.notes && (section.key === 'redo') && (
+          <div style={{ marginTop: 8, padding: 10, background: '#FFEBEE', borderRadius: 10, border: '1px solid #FFCDD2' }}>
+            <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: '#C62828', margin: 0, whiteSpace: 'pre-wrap' }}>{task.notes}</p>
           </div>
         )}
 
-        {/* Mark Complete button */}
-        {(canComplete || isRejected) && !isDeleteMode && (
-          <button
-            onClick={() => openCompleteDialog(task)}
-            style={{
-              width: '100%', marginTop: 10, padding: '10px 0',
-              background: 'linear-gradient(90deg, var(--color-primary), var(--color-primary-light))',
-              border: 'none', borderRadius: 10, cursor: 'pointer',
-              fontFamily: 'var(--font-family)', fontSize: 12,
-              fontWeight: 700, color: '#fff',
-              boxShadow: '0 2px 6px rgba(0,137,123,0.25)',
-            }}
-          >
-            {isRejected ? t('markCompleteAgain') : t('markComplete')}
+        {/* Action button */}
+        {(canComplete || canRedo) && (
+          <button onClick={() => openComplete(task)} style={{
+            width: '100%', marginTop: 10, padding: '10px 0',
+            background: 'linear-gradient(90deg, var(--color-primary), var(--color-primary-light))',
+            border: 'none', borderRadius: 10, cursor: 'pointer',
+            fontFamily: 'var(--font-family)', fontSize: 12, fontWeight: 700, color: '#fff',
+            boxShadow: '0 2px 6px rgba(0,137,123,0.25)',
+          }}>
+            {canRedo ? t('Mark Complete Again', 'وضع علامة مكتمل مرة أخرى') : t('Mark as Complete', 'وضع علامة مكتمل')}
           </button>
         )}
       </div>
     );
   };
 
-  const displayTasks = activeTab === 0 ? mandatoryTasks : availableTasks;
+  const visibleSections = SECTIONS.filter(s => buckets[s.key].length > 0);
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column',
-      minHeight: '100vh', background: 'var(--color-background)',
-    }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--color-background)' }}>
       <AppBar
-        title={t('myTasks')}
+        title={t('My Tasks', 'مهامي')}
         actions={
           <>
+            {isParent && <IconBtn icon={Settings} onClick={() => navigate('/task-management')} />}
             <IconBtn icon={RefreshCw} onClick={loadTasks} />
-            <IconBtn
-              icon={isDeleteMode ? X : Trash2}
-              onClick={toggleDeleteMode}
-              color={isDeleteMode ? '#E53935' : 'var(--color-primary)'}
-            />
           </>
         }
       />
 
       {loading ? <LoadingSpinner /> : (
-        <div style={{ flex: 1, maxWidth: 600, margin: '0 auto', width: '100%', padding: '0 0 88px' }}>
+        <div style={{ flex: 1, maxWidth: 600, margin: '0 auto', width: '100%', padding: '8px 16px 88px' }}>
           {/* Member header */}
-          {memberName && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 16px 10px' }}>
-              <div style={{ position: 'relative' }}>
-                <Avatar name={memberName} size={42} />
-                <div style={{
-                  position: 'absolute', bottom: 0, right: 0,
-                  width: 10, height: 10, borderRadius: '50%',
-                  background: 'var(--color-primary)',
-                  border: '1.5px solid var(--color-background)',
-                }} />
-              </div>
-              <div>
-                <p style={{ fontFamily: 'var(--font-family)', fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-                  {memberName}
-                </p>
-                <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: 'var(--color-text-secondary)', margin: 0 }}>
-                  {memberType ? `${memberType} · ` : ''}{mandatoryTasks.length + availableTasks.length} {t('tasks')}
-                </p>
-              </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 0 12px' }}>
+            <Avatar name={memberName || 'Me'} size={42} />
+            <div>
+              <p style={{ fontFamily: 'var(--font-family)', fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+                {memberName || username}
+              </p>
+              <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: 'var(--color-text-secondary)', margin: 0 }}>
+                {isParent ? t('Parent', 'والد/والدة') : t('Member', 'فرد')} · {tasks.length} {t('tasks', 'مهام')}
+              </p>
             </div>
-          )}
-
-          {/* Tab bar */}
-          <div style={{
-            margin: '0 16px 12px',
-            padding: 3,
-            background: 'var(--color-primary-surface)',
-            borderRadius: 25,
-            border: '1px solid var(--color-border)',
-            display: 'flex', gap: 0,
-          }}>
-            {[t('mandatory'), t('available')].map((label, i) => {
-              const count = i === 0 ? mandatoryTasks.length : availableTasks.length;
-              return (
-                <button
-                  key={i}
-                  onClick={() => setActiveTab(i)}
-                  style={{
-                    flex: 1, padding: '8px 0',
-                    background: activeTab === i ? 'var(--color-primary)' : 'transparent',
-                    border: 'none', borderRadius: 22, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    fontFamily: 'var(--font-family)', fontSize: 12, fontWeight: 600,
-                    color: activeTab === i ? '#fff' : 'var(--color-text-secondary)',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  {label}
-                  {count > 0 && (
-                    <span style={{
-                      width: 17, height: 17, borderRadius: '50%',
-                      background: i === 0 ? '#E53935' : 'var(--color-primary-light)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 8, fontWeight: 700, color: '#fff',
-                    }}>{count}</span>
-                  )}
-                </button>
-              );
-            })}
           </div>
 
-          {/* Section header */}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '0 16px', marginBottom: 10,
-          }}>
-            <span style={{ fontFamily: 'var(--font-family)', fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-              {activeTab === 0 ? t('mandatoryTasks') : t('availableTasks')}
-            </span>
-            <span style={{
-              fontFamily: 'var(--font-family)', fontSize: 11, color: 'var(--color-text-secondary)',
-              fontWeight: 500,
-              background: 'var(--color-primary-surface)',
-              borderRadius: 10, padding: '3px 10px',
-              border: '1px solid var(--color-border)',
+          {/* Parent shortcut to management */}
+          {isParent && (
+            <button onClick={() => navigate('/task-management')} style={{
+              width: '100%', marginBottom: 14, padding: '11px 14px',
+              background: 'var(--color-primary-surface)', border: '1px solid var(--color-border)',
+              borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
+              fontFamily: 'var(--font-family)', fontSize: 13, fontWeight: 600, color: 'var(--color-primary)',
             }}>
-              {displayTasks.length} {t('tasks')}
-            </span>
-          </div>
-
-          {/* Task list */}
-          <div style={{ padding: '0 16px' }}>
-            {displayTasks.length === 0
-              ? <EmptyState icon={CheckSquare} message={t('noTasksInSection')} />
-              : displayTasks.map(renderTaskCard)
-            }
-          </div>
-        </div>
-      )}
-
-      {/* FAB / Delete buttons */}
-      <div style={{
-        position: 'fixed', bottom: 20, left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 200,
-        width: isDeleteMode ? 'calc(100% - 40px)' : 'auto',
-        maxWidth: isDeleteMode ? 560 : 'auto',
-      }}>
-        {isDeleteMode ? (
-          <button onClick={deleteSelected} style={{
-            width: '100%', padding: '14px 0',
-            background: '#E53935', border: 'none', borderRadius: 12,
-            fontFamily: 'var(--font-family)', fontSize: 14, fontWeight: 600, color: '#fff',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            boxShadow: '0 4px 16px rgba(229,57,53,0.35)',
-          }}>
-            <Trash2 size={18} />
-            {t('deleteSelected')}
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate('/create-task', { state: { categories } })}
-            style={{
-              width: 56, height: 56, borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-light))',
-              border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff',
-            }}
-          >
-            <Plus size={28} />
-          </button>
-        )}
-      </div>
-
-      {/* Add Task Modal */}
-      <Modal
-        open={showAddModal}
-        onClose={() => { setShowAddModal(false); setTaskName(''); setTaskDesc(''); }}
-        title={t('addNewTask')}
-        actions={
-          <>
-            <ModalCancelBtn onClick={() => { setShowAddModal(false); setTaskName(''); setTaskDesc(''); }} />
-            <ModalPrimaryBtn
-              label={saving ? '…' : t('add')}
-              disabled={saving || !taskName.trim() || !selectedCat || !currentMail}
-              onClick={addNewTask}
-            />
-          </>
-        }
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <FormField label={t('taskName')} value={taskName} onChange={setTaskName} required placeholder="e.g. Clean the kitchen" />
-          <FormField label={t('description')} value={taskDesc} onChange={setTaskDesc} placeholder="Optional…" />
-          {categories.length > 0 && (
-            <SelectField
-              label={t('category')}
-              value={selectedCat}
-              onChange={setSelectedCat}
-              options={categories.map(c => ({ value: c._id, label: c.title || c.name || 'Unknown' }))}
-              required
-            />
+              <Settings size={18} />
+              {t('Manage everyone\'s tasks, approvals & templates', 'إدارة مهام الجميع والموافقات والقوالب')}
+              <span style={{ marginLeft: 'auto' }}>›</span>
+            </button>
           )}
-          {(categories.length === 0 || !currentMail) && (
+
+          {/* 🎉 Approval notification banner */}
+          {newlyApproved.length > 0 && (
             <div style={{
-              padding: 10, background: '#FFF8E1',
-              borderRadius: 8, border: '1px solid #FFE082',
+              marginBottom: 14, padding: 14, borderRadius: 14,
+              background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-light))',
+              boxShadow: 'var(--shadow-primary)', position: 'relative',
             }}>
-              <p style={{ fontFamily: 'var(--font-family)', fontSize: 11, color: '#E65100', margin: 0 }}>
-                {categories.length === 0
-                  ? 'No categories available. Ask a parent to create one first.'
-                  : 'Could not identify your account. Please refresh.'}
+              <button onClick={() => setNewlyApproved([])} style={{
+                position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.25)',
+                border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
+              }}><X size={14} /></button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <PartyPopper size={22} color="#fff" />
+                <p style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 15, color: '#fff', margin: 0 }}>
+                  {t('Your task was approved!', 'تمت الموافقة على مهمتك!')}
+                </p>
+              </div>
+              <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, color: 'rgba(255,255,255,0.95)', margin: 0 }}>
+                {newlyApproved.map(t2 => t2.title).join(', ')}
+                {totalNewPoints > 0 && ` — +${totalNewPoints} ${t('points earned', 'نقطة مكتسبة')} 🎉`}
               </p>
             </div>
           )}
-        </div>
-      </Modal>
 
-      {/* Complete Task Confirmation Modal */}
+          {/* Sections */}
+          {tasks.length === 0 ? (
+            <EmptyState icon={CheckSquare} message={t('No tasks assigned to you yet', 'لا توجد مهام مسندة إليك بعد')} />
+          ) : (
+            visibleSections.map(section => (
+              <div key={section.key} style={{ marginBottom: 18 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 16 }}>{section.emoji}</span>
+                  <span style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 14, color: section.color }}>
+                    {section.title}
+                  </span>
+                  <span style={{
+                    background: 'var(--color-primary-surface)', color: 'var(--color-text-secondary)',
+                    borderRadius: 10, padding: '1px 8px', fontSize: 10, fontWeight: 700,
+                  }}>{buckets[section.key].length}</span>
+                </div>
+                <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: 'var(--color-text-hint)', margin: '0 0 8px 24px' }}>
+                  {section.desc}
+                </p>
+                {buckets[section.key].map(task => renderCard(task, section))}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Complete confirmation */}
       <Modal
         open={showComplete}
         onClose={() => setShowComplete(false)}
-        title={`✅ ${t('completeTask')}`}
+        title={`✅ ${t('Complete Task', 'إكمال المهمة')}`}
         actions={
           <>
             <ModalCancelBtn onClick={() => setShowComplete(false)} />
-            <ModalPrimaryBtn label={saving ? '…' : 'Yes, Complete!'} disabled={saving} onClick={confirmComplete} />
+            <ModalPrimaryBtn label={saving ? '…' : t('Yes, I finished it', 'نعم، لقد أنهيتها')} disabled={saving} onClick={confirmComplete} />
           </>
         }
       >
         {selectedTask && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <p style={{ fontFamily: 'var(--font-family)', fontSize: 13, color: 'var(--color-text-primary)' }}>
-              Mark "<strong>{selectedTask.title}</strong>" as completed?
+              {t('Mark', 'وضع علامة')} "<strong>{selectedTask.title}</strong>" {t('as complete?', 'كمكتملة؟')}
             </p>
-            <div style={{
-              padding: 10, background: 'var(--color-primary-surface)',
-              borderRadius: 10, border: '1px solid var(--color-border)',
-            }}>
+            <div style={{ padding: 10, background: 'var(--color-primary-surface)', borderRadius: 10, border: '1px solid var(--color-border)' }}>
               <p style={{ fontFamily: 'var(--font-family)', fontSize: 12, fontWeight: 600, color: 'var(--color-primary)', margin: 0 }}>
-                Reward: {rewardLabel(selectedTask)}
+                {t('Reward', 'المكافأة')}: {rewardLabel(selectedTask)}
               </p>
+              {!isParent && (
+                <p style={{ fontFamily: 'var(--font-family)', fontSize: 10, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+                  {t('A parent will review it before the reward is added.', 'سيقوم أحد الوالدين بمراجعتها قبل إضافة المكافأة.')}
+                </p>
+              )}
             </div>
           </div>
         )}

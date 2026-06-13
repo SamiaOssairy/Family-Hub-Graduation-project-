@@ -25,7 +25,7 @@ function alertColor(type) {
     case 'out_of_stock': return '#E53935';
     case 'expiring_soon': return '#F9A825';
     case 'expired': return '#C62828';
-    default: return '#00897B';
+    default: return 'var(--color-primary)';
   }
 }
 
@@ -181,7 +181,7 @@ export default function InventoryAlertsScreen() {
               <div style={{ width: 96, height: 96, borderRadius: 48, background: 'var(--color-primary-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                 <Bell size={48} color="var(--color-primary)" />
               </div>
-              <p style={{ fontFamily: 'var(--font-family)', fontSize: 18, fontWeight: 700, color: '#00352E', margin: 0 }}>
+              <p style={{ fontFamily: 'var(--font-family)', fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
                 {filterType !== 'all' ? `No ${alertLabel(filterType)} alerts` : 'No Alerts'}
               </p>
               <p style={{ fontFamily: 'var(--font-family)', fontSize: 13, color: '#9E9E9E', marginTop: 8 }}>
@@ -284,7 +284,7 @@ function AlertCard({ alert, onMarkRead, onDelete }) {
 
         {/* Item name */}
         {itemName && (
-          <p style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 15, color: '#00352E', margin: '0 0 2px' }}>{itemName}</p>
+          <p style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 15, color: 'var(--color-text-primary)', margin: '0 0 2px' }}>{itemName}</p>
         )}
 
         {/* Category */}
@@ -314,7 +314,7 @@ function AlertCard({ alert, onMarkRead, onDelete }) {
 
         {/* Fallback message */}
         {!itemName && message && (
-          <p style={{ fontFamily: 'var(--font-family)', fontSize: 13, color: '#00352E', margin: '4px 0 0', fontWeight: isRead ? 400 : 500 }}>
+          <p style={{ fontFamily: 'var(--font-family)', fontSize: 13, color: 'var(--color-text-primary)', margin: '4px 0 0', fontWeight: isRead ? 400 : 500 }}>
             {message}
           </p>
         )}

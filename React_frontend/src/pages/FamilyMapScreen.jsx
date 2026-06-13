@@ -27,7 +27,7 @@ const DEFAULT_CENTER = [30.0444, 31.2357];
 // ── Marker color palette (matches Flutter's _markerColors) ───────────────────
 const MARKER_COLORS = [
   '#1E88E5', '#E53935', '#43A047', '#FB8C00',
-  '#8E24AA', '#00897B', '#D81B60', '#6D4C41',
+  '#8E24AA', 'var(--color-primary)', '#D81B60', '#6D4C41',
 ];
 // "You" marker color
 const MY_COLOR = '#1AA7EC';
@@ -67,6 +67,24 @@ function relativeTime(dt) {
   return new Date(dt).toLocaleDateString();
 }
 
+// Emoji per notification type (location + inventory) for the notification center
+function alertIcon(alert) {
+  if (alert.source === 'inventory') {
+    switch (alert.alertType) {
+      case 'low_stock':     return '📦';
+      case 'expiring_soon': return '⏰';
+      case 'expired':       return '⚠️';
+      default:              return '📦';
+    }
+  }
+  switch (alert.alertType) {
+    case 'sos':              return '🆘';
+    case 'sharing_disabled': return '🚫';
+    case 'geofence':         return '📍';
+    default:                 return '📍';
+  }
+}
+
 function memberPresence(loc) {
   const lu = loc.last_updated;
   if (!lu) return 'No location update yet';
@@ -89,7 +107,7 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
 
 // ── Create a custom Leaflet DivIcon for a family member ───────────────────────
 function buildMemberIcon(initStr, color, name, isOnline) {
-  const dot = isOnline ? '#00897B' : '#9E9E9E';
+  const dot = isOnline ? 'var(--color-primary)' : '#9E9E9E';
   const firstWord = (name || '').split(' ')[0];
   const html = `
     <div style="display:flex;flex-direction:column;align-items:center;width:90px;">
@@ -239,10 +257,11 @@ export default function FamilyMapScreen() {
       // Sync GPS
       await syncMyLocation();
 
-      // Parallel: family locations + alert count
-      const [famRes, alertCountRes] = await Promise.allSettled([
+      // Parallel: family locations + location alert count + inventory alert count
+      const [famRes, alertCountRes, invCountRes] = await Promise.allSettled([
         api.get('/location/family'),
         api.get('/location/alerts/unread-count'),
+        api.get('/inventory-alerts/unread-count'),
       ]);
 
       let locations = [];
@@ -253,6 +272,9 @@ export default function FamilyMapScreen() {
       let unread = 0;
       if (alertCountRes.status === 'fulfilled') {
         unread = alertCountRes.value.data?.data?.count || 0;
+      }
+      if (invCountRes.status === 'fulfilled') {
+        unread += invCountRes.value.data?.data?.unreadCount || 0;
       }
 
       // Filter out self
@@ -334,29 +356,72 @@ export default function FamilyMapScreen() {
     }
   }
 
-  // ── Alerts sheet ─────────────────────────────────────────────────────────
+  // ── Unified notification center (location + inventory) ─────────────────────
   async function openAlerts() {
-    try {
-      const res = await api.get('/location/alerts');
-      setAlertsList(res.data?.data?.alerts || []);
-    } catch { setAlertsList([]); }
     setShowAlerts(true);
+    // Refresh inventory threshold/expiry alerts before reading them
+    try { await api.post('/inventory-alerts/generate'); } catch { /* silent */ }
+
+    const [locRes, invRes] = await Promise.allSettled([
+      api.get('/location/alerts'),
+      api.get('/inventory-alerts'),
+    ]);
+
+    const merged = [];
+    if (locRes.status === 'fulfilled') {
+      for (const a of (locRes.value.data?.data?.alerts || [])) {
+        merged.push({
+          id: a._id || '',
+          source: 'location',
+          alertType: a.alert_type || '',
+          message: a.message || 'Location alert',
+          isRead: a.is_read === true,
+          time: a.created_at || a.createdAt || null,
+        });
+      }
+    }
+    if (invRes.status === 'fulfilled') {
+      for (const a of (invRes.value.data?.data?.alerts || [])) {
+        merged.push({
+          id: a._id || '',
+          source: 'inventory',
+          alertType: a.alert_type || '',
+          message: a.alert_message || a.message || 'Inventory alert',
+          isRead: a.is_read === true,
+          time: a.createdAt || a.created_at || null,
+        });
+      }
+    }
+    // Newest first; unread above read when timestamps tie
+    merged.sort((x, y) => {
+      const tx = x.time ? new Date(x.time).getTime() : 0;
+      const ty = y.time ? new Date(y.time).getTime() : 0;
+      return ty - tx;
+    });
+    setAlertsList(merged);
   }
 
   async function markAllRead() {
     try {
-      await api.patch('/location/alerts/read-all');
+      await Promise.allSettled([
+        api.patch('/location/alerts/read-all'),
+        api.patch('/inventory-alerts/mark-all-read'),
+      ]);
       setUnreadAlerts(0);
+      setAlertsList(prev => prev.map(a => ({ ...a, isRead: true })));
     } catch { /* silent */ }
-    setShowAlerts(false);
   }
 
-  async function markOneRead(alertId) {
+  async function markOneRead(alert) {
     try {
-      await api.patch(`/location/alerts/${alertId}/read`);
+      if (alert.source === 'inventory') {
+        await api.patch(`/inventory-alerts/${alert.id}/read`);
+      } else {
+        await api.patch(`/location/alerts/${alert.id}/read`);
+      }
       setUnreadAlerts(prev => Math.max(0, prev - 1));
+      setAlertsList(prev => prev.map(a => (a.id === alert.id ? { ...a, isRead: true } : a)));
     } catch { /* silent */ }
-    setShowAlerts(false);
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -591,32 +656,31 @@ export default function FamilyMapScreen() {
             <div className="fm-sheet-handle" />
             <div className="fm-sheet-header">
               <span className="fm-sheet-icon">🔔</span>
-              <span className="fm-sheet-title">Location Notifications</span>
+              <span className="fm-sheet-title">Notifications</span>
               <button className="fm-sheet-mark-all" onClick={markAllRead}>Mark all read</button>
             </div>
             <div className="fm-sheet-divider" />
             <div className="fm-sheet-list">
               {alertsList.length === 0 ? (
-                <div className="fm-sheet-empty">No location notifications yet</div>
+                <div className="fm-sheet-empty">No notifications yet</div>
               ) : (
                 alertsList.map((alert, i) => {
-                  const isRead  = alert.is_read === true;
-                  const alertId = alert._id || '';
-                  const message = alert.message || 'Location alert';
-                  const time    = alert.created_at ? relativeTime(alert.created_at) : '';
+                  const time = alert.time ? relativeTime(alert.time) : '';
                   return (
-                    <div key={alertId || i} className={`fm-alert-row ${isRead ? 'read' : 'unread'}`}>
-                      <div className={`fm-alert-icon ${isRead ? 'read' : ''}`}>📍</div>
+                    <div key={alert.id || i} className={`fm-alert-row ${alert.isRead ? 'read' : 'unread'}`}>
+                      <div className={`fm-alert-icon ${alert.isRead ? 'read' : ''}`}>{alertIcon(alert)}</div>
                       <div className="fm-alert-body">
-                        <span className={`fm-alert-msg ${isRead ? '' : 'bold'}`}>{message}</span>
-                        <span className="fm-alert-time">{time}</span>
+                        <span className={`fm-alert-msg ${alert.isRead ? '' : 'bold'}`}>{alert.message}</span>
+                        <span className="fm-alert-time">
+                          {alert.source === 'inventory' ? 'Inventory' : 'Location'}{time ? ` · ${time}` : ''}
+                        </span>
                       </div>
-                      {!isRead && (
-                        <button className="fm-alert-read-btn" onClick={() => markOneRead(alertId)}>
+                      {!alert.isRead && (
+                        <button className="fm-alert-read-btn" onClick={() => markOneRead(alert)}>
                           Read
                         </button>
                       )}
-                      {isRead && <span className="fm-alert-done">✓</span>}
+                      {alert.isRead && <span className="fm-alert-done">✓</span>}
                     </div>
                   );
                 })

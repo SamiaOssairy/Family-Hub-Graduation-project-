@@ -54,7 +54,8 @@ const isAllowedOrigin = (origin) => {
   if (configuredOrigins.includes(origin)) return true;
   if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;
   if (/^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return true;
-  if (/\.vercel\.app$/.test(origin)) return true; // Vercel deployments
+  if (/\.vercel\.app$/.test(origin)) return true;        // Vercel deployments
+  if (/\.trycloudflare\.com$/.test(origin)) return true; // Cloudflare quick tunnels (phone demos)
   return false;
 };
 

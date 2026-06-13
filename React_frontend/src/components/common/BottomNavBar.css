@@ -14,7 +14,7 @@
   justify-content: space-around;
   align-items: center;
   padding: 6px 4px;
-  z-index: 100;
+  z-index: 1100; /* above Leaflet panes/controls (max 1000) */
 }
 
 .bnav-item {

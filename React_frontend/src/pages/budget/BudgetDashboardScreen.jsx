@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart2, Event, RefreshCw, Plus, CheckCircle, XCircle, Bell } from 'lucide-react';
+import { BarChart2, Event, RefreshCw, Plus, CheckCircle, XCircle, Bell, ShieldOff } from 'lucide-react';
 import AppBar, { IconBtn } from '../../components/common/AppBar';
 import BottomNavBar from '../../components/common/BottomNavBar';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -12,20 +12,20 @@ import { useAuth } from '../../context/AuthContext';
 import * as api from '../../api/apiService';
 
 // ── Color helpers (mirrors _categoryColor & _memberColors) ─────────────────
-const PIE_COLORS = ['#00897B','#5BA89E','#FB8C00','#5FA09A','#7B1FA2','#E91E63'];
+const PIE_COLORS = ['var(--color-primary)','var(--color-primary-light)','#FB8C00','var(--color-text-secondary)','#7B1FA2','#E91E63'];
 const MEMBER_COLORS = [
   { bg:'#E3F2FD', text:'#1565C0', border:'#90CAF9' },
   { bg:'#FFF3E0', text:'#E65100', border:'#FFCC80' },
   { bg:'#FCE4EC', text:'#C2185B', border:'#F48FB1' },
-  { bg:'#D1ECEB', text:'#00352E', border:'#8CBFBB' },
+  { bg:'var(--color-primary-surface)', text:'var(--color-text-primary)', border:'var(--color-text-hint)' },
 ];
 
 function categoryColor(name, index) {
   const n = (name || '').toLowerCase();
-  if (n.includes('grocer') || n.includes('food')) return '#00897B';
-  if (n.includes('util')) return '#5BA89E';
+  if (n.includes('grocer') || n.includes('food')) return 'var(--color-primary)';
+  if (n.includes('util')) return 'var(--color-primary-light)';
   if (n.includes('entertain')) return '#FB8C00';
-  if (n.includes('educ')) return '#5FA09A';
+  if (n.includes('educ')) return 'var(--color-text-secondary)';
   if (n.includes('transport') || n.includes('travel')) return '#7B1FA2';
   if (n.includes('health') || n.includes('medical')) return '#E91E63';
   return PIE_COLORS[index % PIE_COLORS.length];
@@ -206,6 +206,7 @@ export default function BudgetDashboardScreen() {
 
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [noAccess, setNoAccess] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -217,7 +218,8 @@ export default function BudgetDashboardScreen() {
       const data = await api.getBudgets();
       setBudgets(Array.isArray(data) ? data : []);
     } catch (e) {
-      toast(e.message, 'error');
+      if (e.response?.status === 403) { setNoAccess(true); }
+      else { toast(e.message, 'error'); }
     } finally {
       setLoading(false);
     }
@@ -285,6 +287,26 @@ export default function BudgetDashboardScreen() {
       <div style={{ flex: 1, maxWidth: 700, margin: '0 auto', width: '100%', paddingBottom: 80 }}>
         {loading
           ? <LoadingSpinner />
+          : noAccess
+            ? (
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '60px 24px', textAlign: 'center',
+              }}>
+                <div style={{
+                  width: 80, height: 80, borderRadius: 20, background: 'var(--color-primary-surface)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20,
+                }}>
+                  <ShieldOff size={40} color="var(--color-text-hint)" />
+                </div>
+                <p style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 18, color: 'var(--color-text-primary)', margin: '0 0 8px' }}>
+                  Parents Only
+                </p>
+                <p style={{ fontFamily: 'var(--font-family)', fontSize: 14, color: 'var(--color-text-secondary)', margin: 0, maxWidth: 280, lineHeight: 1.5 }}>
+                  The budget section is managed by your parents. Ask them if you need anything!
+                </p>
+              </div>
+            )
           : budgets.length === 0
             ? <EmptyBudgetState onCreate={() => setShowCreate(true)} />
             : (
@@ -308,16 +330,18 @@ export default function BudgetDashboardScreen() {
         }
       </div>
 
-      {/* FAB */}
-      <button onClick={() => setShowCreate(true)} style={{
-        position: 'fixed', bottom: 80, right: 20,
-        width: 54, height: 54, borderRadius: '50%', border: 'none', cursor: 'pointer',
-        background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-light))',
-        boxShadow: '0 4px 12px rgba(0,137,123,0.35)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10,
-      }}>
-        <Plus size={26} color="#fff" />
-      </button>
+      {/* FAB — only for parents */}
+      {!noAccess && (
+        <button onClick={() => setShowCreate(true)} style={{
+          position: 'fixed', bottom: 80, right: 20,
+          width: 54, height: 54, borderRadius: '50%', border: 'none', cursor: 'pointer',
+          background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-light))',
+          boxShadow: '0 4px 12px rgba(0,137,123,0.35)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10,
+        }}>
+          <Plus size={26} color="#fff" />
+        </button>
+      )}
 
       <BottomNavBar activeIndex={1} />
 
@@ -369,7 +393,7 @@ function HeroCard({ budget }) {
   return (
     <div style={{
       padding: 16, borderRadius: 18,
-      background: 'linear-gradient(135deg, #00352E, #5BA89E)',
+      background: 'linear-gradient(135deg, var(--color-text-primary), var(--color-primary-light))',
       boxShadow: '0 6px 16px rgba(0,137,123,0.30)',
       marginBottom: 12, position: 'relative', overflow: 'hidden',
     }}>

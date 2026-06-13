@@ -8,16 +8,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import {
-  getAllMembers, getCombinedBalance, getAllAssignedTasks,
+  getAllMembers, getCombinedBalance, getAllAssignedTasks, getMyTasks,
   getFutureEvents, getPointsRanking, getAllMemberTypes,
-  createMember, deleteMember, createMemberType,
+  createMember, deleteMember,
 } from '../api/apiService';
 import BottomNavBar from '../components/common/BottomNavBar';
 import './HomeScreen.css';
 
 // ── Avatar palette (matches Flutter _avatarColors / _avatarBgs) ───────────────
-const AVATAR_COLORS = ['#1565C0','#6A1B9A','#AD1457','#E65100','#00352E','#00897B'];
-const AVATAR_BGS   = ['#E3F2FD','#F3E5F5','#FCE4EC','#FFF3E0','#D1ECEB','#E4F5F4'];
+const AVATAR_COLORS = ['#1565C0','#6A1B9A','#AD1457','#E65100','var(--color-text-primary)','var(--color-primary)'];
+const AVATAR_BGS   = ['#E3F2FD','#F3E5F5','#FCE4EC','#FFF3E0','var(--color-primary-surface)','var(--color-background)'];
 
 function getAvatarEmoji(memberType) {
   const t = (memberType || '').toLowerCase();
@@ -29,8 +29,8 @@ function getAvatarEmoji(memberType) {
 // ── Task helpers (matches Flutter _taskDotColor / _taskBadge) ─────────────────
 function taskDotColor(status) {
   switch (status) {
-    case 'approved':    return '#00897B';
-    case 'completed':   return '#5BA89E';
+    case 'approved':    return 'var(--color-primary)';
+    case 'completed':   return 'var(--color-primary-light)';
     case 'in_progress': return '#1565C0';
     case 'late':        return '#FF5252';
     case 'rejected':    return '#9E9E9E';
@@ -40,8 +40,8 @@ function taskDotColor(status) {
 
 function taskBadge(status) {
   switch (status) {
-    case 'approved':    return { label: 'Approved', bg: '#D1ECEB', fg: '#00352E' };
-    case 'completed':   return { label: 'Done ✓',   bg: '#D1ECEB', fg: '#00897B' };
+    case 'approved':    return { label: 'Approved', bg: 'var(--color-primary-surface)', fg: 'var(--color-text-primary)' };
+    case 'completed':   return { label: 'Done ✓',   bg: 'var(--color-primary-surface)', fg: 'var(--color-primary)' };
     case 'in_progress': return { label: 'Active',   bg: '#E3F2FD', fg: '#1565C0' };
     case 'late':        return { label: 'Late',     bg: '#FFEBEE', fg: '#C62828' };
     case 'rejected':    return { label: 'Rejected', bg: '#F5F5F5', fg: '#9E9E9E' };
@@ -51,7 +51,7 @@ function taskBadge(status) {
 
 // ── Event helpers ─────────────────────────────────────────────────────────────
 const EVENT_ICONS  = ['✈️','🎁','🎉','🛍️','🏖️','🎂'];
-const EVENT_COLORS = ['#5BA89E','#FB8C00','#00897B','#AD1457','#6A1B9A','#00352E'];
+const EVENT_COLORS = ['var(--color-primary-light)','#FB8C00','var(--color-primary)','#AD1457','#6A1B9A','var(--color-text-primary)'];
 const MEDALS       = ['🥇','🥈','🥉'];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,7 +115,8 @@ export default function HomeScreen() {
     finally { setWalletLoading(false); }
   }
   async function loadTasks() {
-    try   { setRecentTasks(await getAllAssignedTasks()); }
+    // Parents see the whole family's tasks; everyone else sees only their own.
+    try   { setRecentTasks(await (isParent ? getAllAssignedTasks() : getMyTasks())); }
     catch { /* silent */ }
     finally { setTasksLoading(false); }
   }
@@ -169,22 +170,31 @@ export default function HomeScreen() {
       setAddError(t('Email and username are required', 'البريد الإلكتروني واسم المستخدم مطلوبان'));
       return;
     }
+    if (!addForm.birth_date) {
+      setAddError(t('Birth date is required', 'تاريخ الميلاد مطلوب'));
+      return;
+    }
+    // Backend expects member_type as the type NAME (e.g. "Child"), like Flutter sends
+    const typeName = showNewType
+      ? newTypeName.trim()
+      : (memberTypes.find(mt => mt._id === addForm.member_type_id)?.type || '');
+    if (!typeName) {
+      setAddError(t('Please select a member type', 'يرجى اختيار نوع العضو'));
+      return;
+    }
     setAddLoading(true); setAddError('');
     try {
-      let typeId = addForm.member_type_id;
-      if (showNewType && newTypeName.trim()) {
-        const res = await createMemberType(newTypeName.trim());
-        typeId = res?.data?.memberType?._id || res?.data?._id || '';
-      }
-      const payload = { mail: addForm.mail.trim().toLowerCase(), username: addForm.username.trim() };
-      if (addForm.birth_date) payload.birth_date = addForm.birth_date;
-      if (typeId) payload.member_type_id = typeId;
-      await createMember(payload);
+      await createMember({
+        mail: addForm.mail.trim().toLowerCase(),
+        username: addForm.username.trim(),
+        birth_date: addForm.birth_date,
+        member_type: typeName,
+      });
       setShowAddMember(false);
       showToast(t('Member added successfully', 'تم إضافة العضو'));
       loadMembers();
     } catch (e) {
-      setAddError(e?.response?.data?.message || t('Failed to add member', 'فشل إضافة العضو'));
+      setAddError(e?.response?.data?.message || e?.message || t('Failed to add member', 'فشل إضافة العضو'));
     } finally {
       setAddLoading(false);
     }
@@ -282,7 +292,7 @@ export default function HomeScreen() {
           {/* ── Stat Cards ──────────────────────────────────────────────────── */}
           <div className="hs-stat-row">
             <div className="hs-stat-card">
-              <div className="hs-stat-icon" style={{ background: '#E4F5F4' }}>💰</div>
+              <div className="hs-stat-icon" style={{ background: 'var(--color-background)' }}>💰</div>
               <div className="hs-stat-body">
                 <span className="hs-stat-value">
                   {walletLoading ? '...' : `${moneyBalance.toFixed(0)} EGP`}
@@ -306,8 +316,10 @@ export default function HomeScreen() {
           {/* ── Tasks Teaser ────────────────────────────────────────────────── */}
           <div className="hs-section">
             <div className="hs-section-row">
-              <span className="hs-section-label">{t("TODAY'S TASKS", 'مهام اليوم')}</span>
-              <button className="hs-see-all" onClick={() => navigate('/task-management')}>
+              <span className="hs-section-label">
+                {isParent ? t("TODAY'S TASKS", 'مهام اليوم') : t('MY TASKS', 'مهامي')}
+              </span>
+              <button className="hs-see-all" onClick={() => navigate(isParent ? '/task-management' : '/tasks')}>
                 {t('See all', 'عرض الكل')}
               </button>
             </div>
@@ -315,9 +327,13 @@ export default function HomeScreen() {
               {tasksLoading ? (
                 <div className="hs-center-pad"><div className="hs-spinner" /></div>
               ) : recentTasks.length === 0 ? (
-                <div className="hs-empty-row" onClick={() => navigate('/task-management')}>
+                <div className="hs-empty-row" onClick={() => navigate(isParent ? '/task-management' : '/tasks')}>
                   <span>📋</span>
-                  <span className="hs-empty-text">{t('No tasks assigned yet — tap to manage', 'لا توجد مهام بعد — اضغط للإدارة')}</span>
+                  <span className="hs-empty-text">
+                    {isParent
+                      ? t('No tasks assigned yet — tap to manage', 'لا توجد مهام بعد — اضغط للإدارة')
+                      : t('No tasks for you yet — tap to view', 'لا توجد مهام لك بعد — اضغط للعرض')}
+                  </span>
                   <span className="hs-chevron">›</span>
                 </div>
               ) : (
@@ -328,11 +344,12 @@ export default function HomeScreen() {
                   const status = task.status || 'assigned';
                   const badge  = taskBadge(status);
                   return (
-                    <div key={task._id || i} className={`hs-task-row${isLast ? '' : ' has-border'}`}>
+                    <div key={task._id || i} className={`hs-task-row${isLast ? '' : ' has-border'}`}
+                      onClick={() => navigate(isParent ? '/task-management' : '/tasks')} style={{ cursor: 'pointer' }}>
                       <div className="hs-task-dot" style={{ background: taskDotColor(status) }} />
                       <div className="hs-task-info">
                         <span className="hs-task-title">{title}</span>
-                        <span className="hs-task-assignee">{getMemberName(mail)}</span>
+                        {isParent && <span className="hs-task-assignee">{getMemberName(mail)}</span>}
                       </div>
                       <div className="hs-badge" style={{ background: badge.bg, color: badge.fg }}>{badge.label}</div>
                     </div>

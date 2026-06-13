@@ -32,6 +32,7 @@ import TaskManagementScreen from './pages/tasks/TaskManagementScreen';
 import CreateTaskScreen     from './pages/tasks/CreateTaskScreen';
 import RewardsScreen        from './pages/tasks/RewardsScreen';
 import RedeemScreen         from './pages/tasks/RedeemScreen';
+import WishlistScreen       from './pages/tasks/WishlistScreen';
 import FamilyPointsScreen   from './pages/tasks/FamilyPointsScreen';
 import StatusScreen         from './pages/tasks/StatusScreen';
 
@@ -98,6 +99,7 @@ export default function App() {
         <Route path="/task-management" element={<ProtectedRoute><TaskManagementScreen /></ProtectedRoute>} />
         <Route path="/rewards"         element={<ProtectedRoute><RewardsScreen /></ProtectedRoute>} />
         <Route path="/redeem"          element={<ProtectedRoute><RedeemScreen /></ProtectedRoute>} />
+        <Route path="/wishlist"        element={<ProtectedRoute><WishlistScreen /></ProtectedRoute>} />
         <Route path="/family-points"   element={<ProtectedRoute><FamilyPointsScreen /></ProtectedRoute>} />
         <Route path="/status"          element={<ProtectedRoute><StatusScreen /></ProtectedRoute>} />
 

@@ -248,6 +248,16 @@ export async function deleteWishlistItem(itemId) {
   await api.delete(`/wishlist/items/${itemId}`);
 }
 
+export async function getWishlistCategories() {
+  const res = await api.get('/wishlist-categories');
+  return res.data?.data?.categories || [];
+}
+
+export async function getMemberWishlist(memberMail) {
+  const res = await api.get(`/wishlist/${encodeURIComponent(memberMail)}`);
+  return res.data?.data || { items: [] };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // REDEEM
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -283,8 +293,8 @@ export async function cancelRedemption(redeemId) {
   await api.delete(`/redeem/${redeemId}/cancel`);
 }
 
-export async function acceptRedemption(redeemId) {
-  const res = await api.patch(`/redeem/${redeemId}/accept`);
+export async function acceptRedemption(redeemId, accept = true) {
+  const res = await api.patch(`/redeem/${redeemId}/accept`, { accept });
   return res.data;
 }
 
@@ -772,18 +782,59 @@ export async function deactivateAccount(email, password) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // BUDGET — PERIOD BUDGETS
 // ═══════════════════════════════════════════════════════════════════════════════
+// Mirror of Flutter's _normalizeBudget — maps backend `allocations` to the
+// `categories` shape the dashboard renders.
+function normalizeBudget(budget) {
+  const allocations = Array.isArray(budget.allocations) ? budget.allocations : [];
+  return {
+    ...budget,
+    budget_type: budget.budget_type || 'household',
+    period_type: budget.period_type || 'monthly',
+    total_spent: budget.spent_amount ?? budget.total_spent ?? 0,
+    remaining_amount: budget.remaining_amount ?? ((budget.total_amount || 0) - (budget.spent_amount || 0)),
+    emergency_fund_amount: budget.emergency_fund_amount || 0,
+    emergency_fund_spent: budget.emergency_fund_spent || 0,
+    categories: allocations.map(allocation => {
+      const category = allocation.inventory_category_id;
+      const categoryId = category && typeof category === 'object' ? (category._id || '') : (category || '');
+      const title = category && typeof category === 'object' ? (category.title || 'Uncategorized') : 'Uncategorized';
+      return {
+        _id: categoryId,
+        category_id: categoryId,
+        name: title,
+        allocated_amount: allocation.allocated_amount || 0,
+        spent_amount: allocation.spent_amount || 0,
+        threshold_percentage: allocation.threshold_percentage || 15,
+      };
+    }),
+  };
+}
+
 export async function getBudgets() {
   const res = await api.get('/budget/periods');
-  return res.data?.data?.budgets || res.data?.data || [];
+  const budgets = res.data?.data?.period_budgets || [];
+  return budgets.map(normalizeBudget);
 }
 
 export async function getBudget(budgetId) {
   const res = await api.get(`/budget/periods/${budgetId}`);
-  return res.data?.data?.budget || res.data?.data || {};
+  const budget = res.data?.data?.period_budget || res.data?.data?.budget || res.data?.data || {};
+  return normalizeBudget(budget);
 }
 
+// Mirrors Flutter's createBudget: the backend POST only creates the period —
+// allocations and allowances must be saved with separate PUT calls.
 export async function createBudget(data) {
-  const res = await api.post('/budget/periods', data);
+  const { allocations = [], allowances = [], ...period } = data;
+  const res = await api.post('/budget/periods', period);
+  const periodId = res.data?.data?.period_budget?._id;
+
+  if (periodId && allocations.length > 0) {
+    await api.put(`/budget/periods/${periodId}/allocations`, { allocations });
+  }
+  if (periodId && allowances.length > 0) {
+    await api.put(`/budget/periods/${periodId}/allowances`, { allowances });
+  }
   return res.data;
 }
 
@@ -840,8 +891,10 @@ export async function getBudgetAnalytics(periodBudgetId) {
 }
 
 export async function getExpensesByBudget(periodBudgetId) {
-  const res = await api.get(`/budget/expenses?period_budget_id=${periodBudgetId}`);
-  return res.data?.data?.expenses || [];
+  // There is no GET /budget/expenses endpoint — the recorded expenses come back
+  // from the analytics endpoint as `expense_details` (same as the Flutter app).
+  const res = await api.get(`/budget/analytics?period_budget_id=${periodBudgetId}`);
+  return res.data?.data?.expense_details || [];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -12,6 +12,9 @@ export default function FormField({
     background: 'var(--color-background)',
     border: '1px solid var(--color-border)',
     borderRadius: 'var(--radius-input)', padding: '10px 12px',
+    // Guaranteed height so an EMPTY date input (which collapses on iOS Safari)
+    // stays the same height as a filled one and as the other fields.
+    minHeight: 42,
     outline: 'none', boxSizing: 'border-box',
     transition: 'border-color 0.2s',
     ...extraStyle,

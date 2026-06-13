@@ -33,7 +33,7 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00897B, #5BA89E);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   display: flex;
   align-items: center;
   justify-content: center;

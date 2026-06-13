@@ -180,7 +180,7 @@
 .pc-empty-icon {
   width: 88px;
   height: 88px;
-  background: linear-gradient(135deg, #00897B, #5BA89E);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   border-radius: 26px;
   display: flex;
   align-items: center;
@@ -295,7 +295,7 @@
 }
 
 .pc-bubble.user {
-  background: linear-gradient(135deg, var(--color-primary), #5BA89E);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   border-radius: 18px 18px 4px 18px;   /* topLeft topRight bottomRight bottomLeft */
   box-shadow: 0 2px 8px rgba(0,137,123,0.25);
 }
@@ -404,7 +404,7 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), #5BA89E);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   border: none;
   color: white;
   font-size: 16px;

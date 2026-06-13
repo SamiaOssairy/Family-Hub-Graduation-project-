@@ -50,3 +50,6 @@ app.*.map.json
 # Node dependencies & build output
 **/node_modules/
 React_frontend/build/
+
+# Claude Code local config (not part of the project)
+.claude/

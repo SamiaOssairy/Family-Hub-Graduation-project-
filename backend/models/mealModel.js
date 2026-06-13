@@ -25,6 +25,11 @@ const mealSchema = new mongoose.Schema({
     ref: 'Recipe',
     default: null
   },
+  servings: {
+    type: Number,
+    default: 1,
+    min: [1, 'Servings must be at least 1']
+  },
   created_by: {
     type: String,
     required: [true, 'Please provide who created the meal'],

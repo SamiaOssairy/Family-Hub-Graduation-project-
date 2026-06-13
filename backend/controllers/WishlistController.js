@@ -5,6 +5,26 @@ const WishlistItem = require("../models/wishlist_itemModel");
 const WishlistCategory = require("../models/wishlist_categoryModel");
 const Member = require("../models/MemberModel");
 
+// Resolve a wishlist category id. If a category_id is given, verify it belongs
+// to the family. If none is given, find-or-create a shared "General" category so
+// any member can add items even when no categories were set up by a parent.
+// Returns the category ObjectId, or null after calling next(err).
+async function resolveWishlistCategory(category_id, familyId, next) {
+  if (category_id) {
+    const category = await WishlistCategory.findOne({ _id: category_id, family_id: familyId });
+    if (!category) {
+      next(new AppError("Category not found or doesn't belong to your family", 404));
+      return null;
+    }
+    return category._id;
+  }
+  let general = await WishlistCategory.findOne({ family_id: familyId, title: 'General' });
+  if (!general) {
+    general = await WishlistCategory.create({ family_id: familyId, title: 'General' });
+  }
+  return general._id;
+}
+
 //========================================================================================
 // Get my wishlist
 exports.getMyWishlist = catchAsync(async (req, res, next) => {
@@ -87,34 +107,30 @@ exports.getMemberWishlist = catchAsync(async (req, res, next) => {
 // Add item to wishlist
 exports.addWishlistItem = catchAsync(async (req, res, next) => {
   const { item_name, required_points, category_id, description, priority } = req.body;
-  
-  if (!item_name || !required_points || !category_id) {
-    return next(new AppError("Please provide item_name, required_points, and category_id", 400));
+
+  if (!item_name || required_points === undefined || required_points === null) {
+    return next(new AppError("Please provide item_name and required_points", 400));
   }
-  
-  // Verify category exists and belongs to family
-  const category = await WishlistCategory.findOne({ 
-    _id: category_id, 
-    family_id: req.familyAccount._id 
-  });
-  
-  if (!category) {
-    return next(new AppError("Category not found or doesn't belong to your family", 404));
-  }
-  
+
+  // Resolve the category: use the provided one, or fall back to a shared
+  // "General" category (auto-created) so members who can't manage categories
+  // can still add wishlist items.
+  const categoryId = await resolveWishlistCategory(category_id, req.familyAccount._id, next);
+  if (!categoryId) return; // resolveWishlistCategory already sent the error
+
   // Get or create wishlist
   let wishlist = await Wishlist.findOne({ member_mail: req.member.mail, family_id: req.familyAccount._id });
   if (!wishlist) {
-    wishlist = await Wishlist.create({ 
+    wishlist = await Wishlist.create({
       member_mail: req.member.mail,
       family_id: req.familyAccount._id,
       title: 'My Wishlist'
     });
   }
-  
+
   const newItem = await WishlistItem.create({
     wishlist_id: wishlist._id,
-    category_id,
+    category_id: categoryId,
     item_name,
     required_points,
     assigned_by: req.member.mail,
@@ -136,44 +152,37 @@ exports.addWishlistItem = catchAsync(async (req, res, next) => {
 exports.addWishlistItemToMember = catchAsync(async (req, res, next) => {
   const { memberMail } = req.params;
   const { item_name, required_points, category_id, description, priority } = req.body;
-  
-  if (!item_name || !required_points || !category_id) {
-    return next(new AppError("Please provide item_name, required_points, and category_id", 400));
+
+  if (!item_name || required_points === undefined || required_points === null) {
+    return next(new AppError("Please provide item_name and required_points", 400));
   }
-  
+
   // Verify member belongs to family
-  const member = await Member.findOne({ 
-    mail: memberMail, 
-    family_id: req.familyAccount._id 
+  const member = await Member.findOne({
+    mail: memberMail,
+    family_id: req.familyAccount._id
   });
-  
+
   if (!member) {
     return next(new AppError("Member not found in your family", 404));
   }
-  
-  // Verify category
-  const category = await WishlistCategory.findOne({ 
-    _id: category_id, 
-    family_id: req.familyAccount._id 
-  });
-  
-  if (!category) {
-    return next(new AppError("Category not found", 404));
-  }
-  
+
+  const categoryId = await resolveWishlistCategory(category_id, req.familyAccount._id, next);
+  if (!categoryId) return;
+
   // Get or create wishlist
   let wishlist = await Wishlist.findOne({ member_mail: memberMail, family_id: req.familyAccount._id });
   if (!wishlist) {
-    wishlist = await Wishlist.create({ 
+    wishlist = await Wishlist.create({
       member_mail: memberMail,
       family_id: req.familyAccount._id,
       title: `${member.username}'s Wishlist`
     });
   }
-  
+
   const newItem = await WishlistItem.create({
     wishlist_id: wishlist._id,
-    category_id,
+    category_id: categoryId,
     item_name,
     required_points,
     assigned_by: req.member.mail,

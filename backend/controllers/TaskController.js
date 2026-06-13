@@ -484,28 +484,48 @@ exports.completeTask = catchAsync(async (req, res, next) => {
     return next(new AppError("This task is already completed and rewarded", 400));
   }
 
-  if (taskDetail.status !== 'assigned' && taskDetail.status !== 'in_progress' && taskDetail.status !== 'completed') {
+  // Allow re-submitting a task that was rejected or marked late.
+  const completableStatuses = ['assigned', 'in_progress', 'completed', 'rejected', 'late'];
+  if (!completableStatuses.includes(taskDetail.status)) {
     return next(new AppError("This task cannot be completed from its current status", 400));
   }
 
-  taskDetail.status = 'approved';
+  // A Parent is the approval authority — when a Parent completes their OWN task
+  // it is auto-approved and rewarded. Anyone else must wait for a Parent to review.
+  const isParentCompleter = req.member.member_type_id?.type === 'Parent';
+
+  if (isParentCompleter) {
+    taskDetail.status = 'approved';
+    taskDetail.completed_at = Date.now();
+    taskDetail.approved_at = Date.now();
+    taskDetail.approved_by = req.member.mail;
+    if (notes) taskDetail.notes = notes;
+    await taskDetail.save();
+
+    const rewardSummary = await applyTaskRewards({
+      task: taskDetail.task_id,
+      taskDetail,
+      familyId: req.familyAccount._id,
+      actorMail: req.member.mail,
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Task completed and rewards applied successfully.",
+      data: { taskDetail, rewardSummary }
+    });
+  }
+
+  // Non-parent → submit for parent approval. No reward until a parent approves.
+  taskDetail.status = 'completed';
   taskDetail.completed_at = Date.now();
-  taskDetail.approved_at = Date.now();
-  taskDetail.approved_by = req.member.mail;
   if (notes) taskDetail.notes = notes;
   await taskDetail.save();
 
-  const rewardSummary = await applyTaskRewards({
-    task: taskDetail.task_id,
-    taskDetail,
-    familyId: req.familyAccount._id,
-    actorMail: req.member.mail,
-  });
-  
   res.status(200).json({
     status: "success",
-    message: "Task completed and rewards applied successfully.",
-    data: { taskDetail, rewardSummary }
+    message: "Task submitted! Waiting for a parent to approve and release your reward.",
+    data: { taskDetail }
   });
 });
 

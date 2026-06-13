@@ -942,7 +942,7 @@ Inventory (a "container", e.g. "Fridge", "Pantry") — type: Food|Electronics|Cl
 - Each list has a title, `is_completed`, and `GroceryItem[]`
 
 ---
-
+=
 ### Location Module
 
 **Purpose:** Real-time family location tracking with privacy controls. Members can share their location with the family, request location permission from specific members, set geofence alerts, and share point-in-time location snapshots.

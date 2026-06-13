@@ -20,7 +20,7 @@ import * as api from '../../api/apiService';
 import './CombinedAnalyticsScreen.css';
 
 // ── Chart colour palette (mirrors Flutter _chartColors) ─────────
-const CHART_COLORS = ['#00897B', '#5BA89E', '#5E35B1', '#F57C00', '#D81B60', '#1E88E5'];
+const CHART_COLORS = ['var(--color-primary)', 'var(--color-primary-light)', '#5E35B1', '#F57C00', '#D81B60', '#1E88E5'];
 
 // ── Helpers ──────────────────────────────────────────────────────
 function money(v) { return Number(v || 0).toFixed(2); }
@@ -216,7 +216,7 @@ export default function CombinedAnalyticsScreen() {
               title="Money as Allowance / Rewards"
               value={`${money(overview.total_money_given_as_allowance_rewards)} EGP`}
               Icon={Heart}
-              color="#00897B"
+              color="var(--color-primary)"
             />
           </div>
 
@@ -256,7 +256,7 @@ export default function CombinedAnalyticsScreen() {
             ) : (
               <>
                 <div className="ca-bar-legend">
-                  <span><span className="ca-legend-dot" style={{background:'#00897B'}} /> Earned</span>
+                  <span><span className="ca-legend-dot" style={{background:'var(--color-primary)'}} /> Earned</span>
                   <span><span className="ca-legend-dot" style={{background:'#EF6C00'}} /> Redeemed</span>
                 </div>
                 <ResponsiveContainer width="100%" height={220}>
@@ -265,7 +265,7 @@ export default function CombinedAnalyticsScreen() {
                     <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                     <YAxis tick={{ fontSize: 10 }} width={36} />
                     <RechartTooltip />
-                    <Bar dataKey="earned"   name="Earned"   fill="#00897B" radius={[3,3,0,0]} />
+                    <Bar dataKey="earned"   name="Earned"   fill="var(--color-primary)" radius={[3,3,0,0]} />
                     <Bar dataKey="redeemed" name="Redeemed" fill="#EF6C00" radius={[3,3,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -329,7 +329,7 @@ export default function CombinedAnalyticsScreen() {
           {/* ── Budget health ────────────────────────────── */}
           <Panel title="Budget Health Indicators">
             <BudgetHealthBar title="Rewards category"         data={budgetHealth.rewards}         color="#6A1B9A" />
-            <BudgetHealthBar title="Allowances category"      data={budgetHealth.allowances}      color="#00897B" />
+            <BudgetHealthBar title="Allowances category"      data={budgetHealth.allowances}      color="var(--color-primary)" />
             <BudgetHealthBar title="Personal budget tracker"  data={budgetHealth.personal_budget} color="#1565C0" />
             {alerts.map((alert, i) => (
               <div key={i} className="ca-alert">

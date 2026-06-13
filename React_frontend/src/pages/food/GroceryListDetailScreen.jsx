@@ -240,7 +240,7 @@ function ItemTile({ item, onToggle, onDelete }) {
       {/* Name */}
       <span style={{
         flex: 1, fontFamily: 'var(--font-family)', fontSize: 15, fontWeight: 500,
-        color: isChecked ? '#9E9E9E' : '#00352E',
+        color: isChecked ? '#9E9E9E' : 'var(--color-text-primary)',
         textDecoration: isChecked ? 'line-through' : 'none',
       }}>
         {name}

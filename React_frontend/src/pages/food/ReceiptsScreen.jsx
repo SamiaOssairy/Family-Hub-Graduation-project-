@@ -262,7 +262,7 @@ function ReceiptCard({ receipt, onEdit, onDelete }) {
             const unit = item.unit || '';
             return (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontFamily: 'var(--font-family)', fontSize: 13, color: '#00352E' }}>
+                <span style={{ fontFamily: 'var(--font-family)', fontSize: 13, color: 'var(--color-text-primary)' }}>
                   {item.quantity || 1} {unit ? unit + ' ' : ''}{item.name || ''}
                 </span>
                 <span style={{ fontFamily: 'var(--font-family)', fontSize: 13, fontWeight: 500, color: '#1A1A1A' }}>
@@ -414,7 +414,7 @@ function ReceiptDialog({ receipt, onClose, onSaved, toast }) {
           <div style={{ height: 18 }} />
           {/* Line Items */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 15, color: '#00352E' }}>Items</span>
+            <span style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 15, color: 'var(--color-text-primary)' }}>Items</span>
             <button onClick={addLineItem} style={{ background: 'var(--color-primary-surface)', border: '1px solid var(--color-border)', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Plus size={14} color="var(--color-primary)" />
               <span style={{ fontFamily: 'var(--font-family)', fontSize: 12, color: 'var(--color-primary)', fontWeight: 500 }}>Add Item</span>
@@ -609,7 +609,7 @@ function ScanPreviewDialog({ scanned, imageBase64, inventories, onClose, onSaved
 
           <div style={{ height: 18 }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 15, color: '#00352E' }}>Items ({items.length})</span>
+            <span style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 15, color: 'var(--color-text-primary)' }}>Items ({items.length})</span>
             {items.length > 0 && (
               <button onClick={toggleAll} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-family)', fontSize: 12, color: 'var(--color-primary)' }}>
                 {items.every(i => i.addToInventory) ? 'Deselect all' : 'Select all'}
@@ -644,7 +644,7 @@ function ScanPreviewDialog({ scanned, imageBase64, inventories, onClose, onSaved
               <hr style={{ border: 'none', borderTop: '1px solid #E0E0E0', margin: '18px 0 8px' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 14, color: '#00352E', margin: 0 }}>Add to Inventory</p>
+                  <p style={{ fontFamily: 'var(--font-family)', fontWeight: 700, fontSize: 14, color: 'var(--color-text-primary)', margin: 0 }}>Add to Inventory</p>
                   <p style={{ fontFamily: 'var(--font-family)', fontSize: 11, color: '#9E9E9E', margin: '2px 0 0' }}>Checked items will be added to your selected inventory</p>
                 </div>
                 <input type="checkbox" checked={addToInventory} onChange={e => setAddToInventory(e.target.checked)} style={{ width: 20, height: 20, accentColor: 'var(--color-primary)', cursor: 'pointer' }} />

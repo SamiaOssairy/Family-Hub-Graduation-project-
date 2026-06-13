@@ -16,9 +16,9 @@ import * as api from '../../api/apiService';
 const CATEGORIES = ['Breakfast','Lunch','Dinner','Dessert','Snack','Appetizer','Main Course','Side Dish','Beverage','Other'];
 
 const CAT_COLORS = {
-  Breakfast: '#FB8C00', Lunch: '#00897B', Dinner: '#1565C0',
+  Breakfast: '#FB8C00', Lunch: 'var(--color-primary)', Dinner: '#1565C0',
   Dessert: '#E91E63', Snack: '#9C27B0', Appetizer: '#00BCD4',
-  'Main Course': '#00897B', 'Side Dish': '#795548', Beverage: '#0288D1', Other: '#607D8B',
+  'Main Course': 'var(--color-primary)', 'Side Dish': '#795548', Beverage: '#0288D1', Other: '#607D8B',
 };
 
 export default function RecipesScreen() {

@@ -54,6 +54,12 @@ export const authAPI = {
     return res.data;
   },
 
+  // Forgot password — backend emails a reset link to the family account owner
+  forgotPassword: async (mail) => {
+    const res = await api.post('/auth/forgotPassword', { mail });
+    return res.data;
+  },
+
   // Sign up — create new family + parent member
   signup: async ({ familyTitle, mail, username, password, birthDate }) => {
     const res = await api.post('/auth/signup', {

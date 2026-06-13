@@ -30,11 +30,69 @@ const FamilyIcon = () => (
   </svg>
 );
 
+// ─── Saved accounts sheet (long-press the logo, like Flutter / Instagram) ─────
+function SavedAccountsSheet({ accounts, onPick, onClose }) {
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000,
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', padding: '16px 20px 28px',
+        maxHeight: '60vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ccc', margin: '0 auto 14px' }} />
+        <h3 style={{ margin: '0 0 14px', fontSize: 17 }}>Saved accounts</h3>
+        {accounts.length === 0 ? (
+          <p style={{ color: '#888', fontSize: 13 }}>
+            No saved accounts yet. Accounts you log into on this device will appear here.
+          </p>
+        ) : accounts.map((acc) => {
+          const famName = acc.family?.Title || acc.family?.title || 'Family';
+          const userName = acc.member?.username || acc.member?.mail || 'Member';
+          return (
+            <button
+              key={acc.key}
+              onClick={() => onPick(acc)}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                padding: '10px 12px', marginBottom: 8, borderRadius: 12, cursor: 'pointer',
+                border: '1px solid var(--border)', background: '#F8FDFC', textAlign: 'left' }}
+            >
+              <div style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                background: 'var(--primary-surface)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                color: 'var(--primary)', fontWeight: 700, fontSize: 16 }}>
+                {userName[0]?.toUpperCase() || 'A'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userName}</span>
+                <span style={{ fontSize: 12, color: '#888' }}>{famName} · {acc.member?.mail}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Step 1: Enter Email ──────────────────────────────────────────────────────
 function StepEmail({ onNext, onGoSignup }) {
   const [email,   setEmail]   = useState('');
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
+  const [showAccounts, setShowAccounts] = useState(false);
+  const { savedAccounts, switchAccount } = useAuth();
+  const navigate = useNavigate();
+  const pressTimer = React.useRef(null);
+
+  // Long-press (600ms) on the logo opens the saved-accounts sheet — parity with Flutter
+  const startPress = () => {
+    pressTimer.current = setTimeout(() => setShowAccounts(true), 600);
+  };
+  const cancelPress = () => {
+    if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,10 +114,29 @@ function StepEmail({ onNext, onGoSignup }) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        {/* Logo */}
-        <div className="auth-logo-circle">
+        {/* Logo — long-press to show saved accounts */}
+        <div
+          className="auth-logo-circle"
+          onMouseDown={startPress}
+          onMouseUp={cancelPress}
+          onMouseLeave={cancelPress}
+          onTouchStart={startPress}
+          onTouchEnd={cancelPress}
+          onTouchMove={cancelPress}
+          onContextMenu={(e) => e.preventDefault()}
+          style={{ cursor: 'pointer', WebkitTouchCallout: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
+          title="Hold to show saved accounts"
+        >
           <FamilyIcon />
         </div>
+        {savedAccounts.length > 0 && (
+          <p style={{
+            textAlign: 'center', fontSize: 10.5, color: 'var(--text-hint)',
+            margin: '6px 0 0', fontFamily: 'Poppins, sans-serif',
+          }}>
+            Hold the logo to switch account
+          </p>
+        )}
 
         <h1 className="auth-heading">Welcome Back!</h1>
         <p className="auth-subheading">Enter your email to find your family</p>
@@ -92,6 +169,17 @@ function StepEmail({ onNext, onGoSignup }) {
           <button onClick={onGoSignup}>Sign up</button>
         </p>
       </div>
+
+      {showAccounts && (
+        <SavedAccountsSheet
+          accounts={savedAccounts}
+          onClose={() => setShowAccounts(false)}
+          onPick={(acc) => {
+            switchAccount(acc);
+            navigate('/home', { replace: true });
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -167,7 +255,21 @@ function StepPassword({ email, family, onBack, onSuccess }) {
   const [error,        setError]        = useState('');
   const [loading,      setLoading]      = useState(false);
   const [firstLogin,   setFirstLogin]   = useState(false);
+  const [resetMsg,     setResetMsg]     = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
   const { login } = useAuth();
+
+  const handleForgotPassword = async () => {
+    setError(''); setResetMsg(''); setResetLoading(true);
+    try {
+      await authAPI.forgotPassword(email);
+      setResetMsg('A password reset link was sent to the family account email.');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not send the reset email. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -209,6 +311,11 @@ function StepPassword({ email, family, onBack, onSuccess }) {
         <p className="auth-subheading">{email}</p>
 
         {error && <div className="error-box">{error}</div>}
+        {resetMsg && (
+          <div className="error-box" style={{ background: '#EAF7F0', borderColor: '#BFE5D2', color: '#1E7D4F' }}>
+            {resetMsg}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="input-wrapper">
@@ -227,6 +334,19 @@ function StepPassword({ email, family, onBack, onSuccess }) {
               onClick={() => setShowPassword(!showPassword)}
             >
               <EyeIcon open={showPassword} />
+            </button>
+          </div>
+
+          <div style={{ textAlign: 'right', marginTop: -4 }}>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={resetLoading}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                color: 'var(--primary)', fontSize: 13, fontWeight: 600,
+                fontFamily: 'Poppins, sans-serif' }}
+            >
+              {resetLoading ? 'Sending…' : 'Forgot password?'}
             </button>
           </div>
 

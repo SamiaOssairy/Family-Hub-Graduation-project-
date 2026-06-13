@@ -17,6 +17,9 @@
   position: relative;
   overflow: hidden;
   margin-bottom: 56px; /* BottomNavBar height */
+  /* Contain Leaflet's internal z-indexes (400-1000) in their own stacking
+     context so the map can never paint over the fixed bottom nav. */
+  z-index: 0;
 }
 
 /* ── Loading / error states ────────────────────────────────────── */

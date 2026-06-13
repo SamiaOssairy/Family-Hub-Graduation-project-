@@ -10,28 +10,29 @@ import './DashboardScreen.css';
 
 // ── Module definitions (matches Flutter _modules list exactly) ────────────────
 const MODULES = [
-  { label: 'Tasks',      labelAr: 'المهام',         emoji: '✅', route: '/tasks',                iconBg: '#D1ECEB', iconColor: '#00897B' },
-  { label: 'Budget',     labelAr: 'الميزانية',       emoji: '💰', route: '/budget',               iconBg: '#E4F5F4', iconColor: '#00897B' },
+  { label: 'Tasks',      labelAr: 'المهام',         emoji: '✅', route: '/tasks',                iconBg: 'var(--color-primary-surface)', iconColor: 'var(--color-primary)' },
+  { label: 'Budget',     labelAr: 'الميزانية',       emoji: '💰', route: '/budget',               iconBg: 'var(--color-background)', iconColor: 'var(--color-primary)' },
   { label: 'Events',     labelAr: 'الأحداث',         emoji: '📅', route: '/future-events',        iconBg: '#FFF3E0', iconColor: '#E65100' },
-  { label: 'Wallet',     labelAr: 'المحفظة',         emoji: '💳', route: '/combined-wallet',      iconBg: '#D1ECEB', iconColor: '#00352E' },
+  { label: 'Wallet',     labelAr: 'المحفظة',         emoji: '💳', route: '/combined-wallet',      iconBg: 'var(--color-primary-surface)', iconColor: 'var(--color-text-primary)' },
   { label: 'Rewards',    labelAr: 'المكافآت',        emoji: '🏆', route: '/rewards',              iconBg: '#FFF8E1', iconColor: '#F9A825' },
+  { label: 'Wishlist',   labelAr: 'الأمنيات',        emoji: '⭐', route: '/wishlist',             iconBg: '#FFF8E1', iconColor: '#F9A825' },
   { label: 'Redeem',     labelAr: 'استبدال',         emoji: '🎁', route: '/redeem',               iconBg: '#FCE4EC', iconColor: '#AD1457' },
   { label: 'Status',     labelAr: 'الحالة',          emoji: '📈', route: '/status',               iconBg: '#E3F2FD', iconColor: '#1565C0' },
   { label: 'Points',     labelAr: 'النقاط',          emoji: '⭐', route: '/family-points',        iconBg: '#FCE4EC', iconColor: '#AD1457' },
   { label: 'Food Hub',   labelAr: 'مركز الطعام',     emoji: '🍽️', route: '/food-hub',             iconBg: '#FFF3E0', iconColor: '#E65100' },
   { label: 'Inventory',  labelAr: 'المخزون',         emoji: '📦', route: '/inventory',            iconBg: '#EDE7F6', iconColor: '#6A1B9A' },
-  { label: 'Recipes',    labelAr: 'الوصفات',         emoji: '📖', route: '/recipes',              iconBg: '#E4F5F4', iconColor: '#00897B' },
+  { label: 'Recipes',    labelAr: 'الوصفات',         emoji: '📖', route: '/recipes',              iconBg: 'var(--color-background)', iconColor: 'var(--color-primary)' },
   { label: 'Meals',      labelAr: 'الوجبات',         emoji: '🍴', route: '/meals',                iconBg: '#E0F7FA', iconColor: '#00838F' },
   { label: 'Leftovers',  labelAr: 'بقايا الطعام',   emoji: '🥡', route: '/leftovers',            iconBg: '#FBE9E7', iconColor: '#BF360C' },
   { label: 'Receipts',   labelAr: 'الإيصالات',       emoji: '🧾', route: '/receipts',             iconBg: '#E8EAF6', iconColor: '#283593' },
-  { label: 'Groceries',  labelAr: 'البقالة',         emoji: '🛒', route: '/groceries',            iconBg: '#D1ECEB', iconColor: '#00352E' },
+  { label: 'Groceries',  labelAr: 'البقالة',         emoji: '🛒', route: '/groceries',            iconBg: 'var(--color-primary-surface)', iconColor: 'var(--color-text-primary)' },
   { label: 'Categories', labelAr: 'الفئات',          emoji: '📂', route: '/inventory-categories', iconBg: '#F3E5F5', iconColor: '#7B1FA2' },
   { label: 'Analytics',  labelAr: 'التحليلات',        emoji: '📊', route: '/combined-analytics',   iconBg: '#E3F2FD', iconColor: '#1565C0' },
 ];
 
 // Routes actually implemented in the React app
 const IMPLEMENTED = new Set([
-  '/home', '/tasks', '/task-management', '/rewards', '/redeem',
+  '/home', '/tasks', '/task-management', '/rewards', '/redeem', '/wishlist',
   '/family-points', '/status', '/food-hub', '/recipes', '/meals',
   '/meal-suggestions', '/leftovers', '/inventory', '/inventory-categories',
   '/inventory-alerts', '/groceries', '/receipts', '/planning-chat',

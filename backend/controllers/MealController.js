@@ -10,7 +10,7 @@ const RecipeIngredient = require("../models/recipeIngredientModel");
 //========================================================================================
 // Create a meal plan
 exports.createMeal = catchAsync(async (req, res, next) => {
-  const { meal_name, meal_date, meal_type, recipe_id } = req.body;
+  const { meal_name, meal_date, meal_type, recipe_id, servings } = req.body;
 
   if (!meal_name || !meal_date || !meal_type) {
     return next(new AppError("Please provide meal_name, meal_date, and meal_type", 400));
@@ -40,6 +40,7 @@ exports.createMeal = catchAsync(async (req, res, next) => {
     meal_date,
     meal_type,
     recipe_id: recipe_id || null,
+    servings: servings && servings > 0 ? servings : 1,
     created_by: req.member.mail
   });
 
@@ -109,7 +110,7 @@ exports.getMeal = catchAsync(async (req, res, next) => {
 // Update a meal
 exports.updateMeal = catchAsync(async (req, res, next) => {
   const { mealId } = req.params;
-  const { meal_name, meal_date, meal_type, recipe_id } = req.body;
+  const { meal_name, meal_date, meal_type, recipe_id, servings } = req.body;
 
   const meal = await Meal.findOne({
     _id: mealId,
@@ -124,6 +125,7 @@ exports.updateMeal = catchAsync(async (req, res, next) => {
   if (meal_date) meal.meal_date = meal_date;
   if (meal_type) meal.meal_type = meal_type;
   if (recipe_id !== undefined) meal.recipe_id = recipe_id;
+  if (servings !== undefined && servings > 0) meal.servings = servings;
 
   await meal.save();
   await meal.populate('recipe_id');
@@ -161,10 +163,13 @@ exports.deleteMeal = catchAsync(async (req, res, next) => {
 // Add items to a meal (deducts from inventory)
 exports.addMealItem = catchAsync(async (req, res, next) => {
   const { mealId } = req.params;
-  const { inventory_item_id, unit_id, quantity_used } = req.body;
+  const { inventory_item_id, unit_id, quantity_used, custom_name, custom_unit } = req.body;
 
-  if (!inventory_item_id || !unit_id || !quantity_used) {
-    return next(new AppError("Please provide inventory_item_id, unit_id, and quantity_used", 400));
+  if (!quantity_used) {
+    return next(new AppError("Please provide quantity_used", 400));
+  }
+  if (!inventory_item_id && !(custom_name && custom_name.trim())) {
+    return next(new AppError("Please provide either an inventory item or a custom item name", 400));
   }
 
   // Verify meal belongs to family
@@ -177,52 +182,69 @@ exports.addMealItem = catchAsync(async (req, res, next) => {
     return next(new AppError("Meal not found", 404));
   }
 
-  // Verify inventory item belongs to family
-  const inventoryItem = await InventoryItem.findById(inventory_item_id)
-    .populate('inventory_id');
-
-  if (!inventoryItem) {
-    return next(new AppError("Inventory item not found", 404));
-  }
-
-  const inventory = await Inventory.findOne({
-    _id: inventoryItem.inventory_id._id,
-    family_id: req.familyAccount._id
-  });
-
-  if (!inventory) {
-    return next(new AppError("Inventory item doesn't belong to your family", 404));
-  }
-
-  // Check if enough quantity available
-  if (inventoryItem.quantity < quantity_used) {
-    return next(new AppError(
-      `Not enough ${inventoryItem.item_name}. Available: ${inventoryItem.quantity}, Needed: ${quantity_used}`,
-      400
-    ));
-  }
-
-  // Create meal item
-  const mealItem = await MealItem.create({
-    meal_id: mealId,
-    inventory_item_id,
-    unit_id,
-    quantity_used
-  });
-
-  // Deduct from inventory
-  inventoryItem.quantity -= quantity_used;
-  await inventoryItem.save();
-
-  await mealItem.populate(['inventory_item_id', 'unit_id']);
-
-  // Check for low stock alert
   const alerts = [];
-  if (inventoryItem.quantity <= inventoryItem.threshold_quantity) {
-    alerts.push({
-      type: 'low_stock',
-      message: `Low stock: ${inventoryItem.item_name} (${inventoryItem.quantity} remaining)`
+  let mealItem;
+
+  if (inventory_item_id) {
+    // ── Tracked inventory item: verify ownership and deduct quantity ──
+    if (!unit_id) {
+      return next(new AppError("Please provide the unit for an inventory item", 400));
+    }
+
+    const inventoryItem = await InventoryItem.findById(inventory_item_id)
+      .populate('inventory_id');
+
+    if (!inventoryItem) {
+      return next(new AppError("Inventory item not found", 404));
+    }
+
+    const inventory = await Inventory.findOne({
+      _id: inventoryItem.inventory_id._id,
+      family_id: req.familyAccount._id
     });
+
+    if (!inventory) {
+      return next(new AppError("Inventory item doesn't belong to your family", 404));
+    }
+
+    // Check if enough quantity available
+    if (inventoryItem.quantity < quantity_used) {
+      return next(new AppError(
+        `Not enough ${inventoryItem.item_name}. Available: ${inventoryItem.quantity}, Needed: ${quantity_used}`,
+        400
+      ));
+    }
+
+    mealItem = await MealItem.create({
+      meal_id: mealId,
+      inventory_item_id,
+      unit_id,
+      quantity_used
+    });
+
+    // Deduct from inventory
+    inventoryItem.quantity -= quantity_used;
+    await inventoryItem.save();
+
+    await mealItem.populate(['inventory_item_id', 'unit_id']);
+
+    if (inventoryItem.quantity <= inventoryItem.threshold_quantity) {
+      alerts.push({
+        type: 'low_stock',
+        message: `Low stock: ${inventoryItem.item_name} (${inventoryItem.quantity} remaining)`
+      });
+    }
+  } else {
+    // ── Custom free-text item: not in inventory, nothing to deduct ──
+    mealItem = await MealItem.create({
+      meal_id: mealId,
+      custom_name: custom_name.trim(),
+      custom_unit: custom_unit && custom_unit.trim() ? custom_unit.trim() : null,
+      unit_id: unit_id || null,
+      quantity_used
+    });
+
+    if (unit_id) await mealItem.populate('unit_id');
   }
 
   res.status(201).json({

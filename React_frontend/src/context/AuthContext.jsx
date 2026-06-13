@@ -185,15 +185,28 @@ export function AuthProvider({ children }) {
         localStorage.setItem('memberMail',  data.mail        || '');
         localStorage.setItem('isFirstLogin', data.isFirstLogin ? 'true' : 'false');
         setIsFirstLogin(data.isFirstLogin || false);
-        setMember({
+        const flatMember = {
           _id: data.memberId || '',
           username: data.username || '',
           mail: data.mail || '',
           member_type_id: { type: data.memberType || '' },
-        });
-        setFamily({
+        };
+        const flatFamily = {
           _id: data.familyId || '',
           Title: data.familyTitle || '',
+        };
+        setMember(flatMember);
+        setFamily(flatFamily);
+        // Remember this account for the quick account switcher (long-press on login)
+        const account = {
+          token: tok,
+          member: flatMember,
+          family: flatFamily,
+          key: `${flatFamily._id}_${flatMember._id}`,
+        };
+        setSavedAccounts(prev => {
+          const filtered = prev.filter(a => a.key !== account.key);
+          return [account, ...filtered].slice(0, 10);
         });
       }
     } else {
@@ -253,7 +266,16 @@ export function AuthProvider({ children }) {
     setToken(account.token);
     setMember(account.member);
     setFamily(account.family);
+    setIsFirstLogin(false);
     localStorage.setItem('token', account.token);
+    // Keep the flat keys legacy screens read in sync
+    localStorage.setItem('memberType',  account.member?.member_type_id?.type || '');
+    localStorage.setItem('username',    account.member?.username || '');
+    localStorage.setItem('familyTitle', account.family?.Title || account.family?.title || '');
+    localStorage.setItem('familyId',    String(account.family?._id || ''));
+    localStorage.setItem('memberId',    String(account.member?._id || ''));
+    localStorage.setItem('memberMail',  account.member?.mail || '');
+    localStorage.setItem('isFirstLogin', 'false');
   };
 
   const removeAccount = (key) => {
