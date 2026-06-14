@@ -11,7 +11,7 @@ const Budget = require("../models/budgetModel");
 const FutureEvent = require("../models/futureEventModel");
 const Member = require("../models/MemberModel");
 const MemberType = require("../models/MemberTypeModel");
-const { recordBalanceWalletDetail } = require('../Utils/balanceWalletDetailHelper');
+const { recordBalanceWalletDetail } = require('../utils/balanceWalletDetailHelper');
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 

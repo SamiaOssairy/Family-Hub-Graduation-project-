@@ -21,7 +21,7 @@ const PeriodBudget = require('../models/periodBudgetModel');
 const BudgetAllocation = require('../models/budgetAllocationModel');
 const InventoryCategory = require('../models/inventoryCategoryModel');
 const BalanceWalletDetail = require('../models/balanceWalletDetailModel');
-const { recordBalanceWalletDetail } = require('../Utils/balanceWalletDetailHelper');
+const { recordBalanceWalletDetail } = require('../utils/balanceWalletDetailHelper');
 
 const DEFAULT_MONEY_TO_POINTS_RATE = 10;
 const DEFAULT_POINTS_TO_MONEY_RATE = 0.05;

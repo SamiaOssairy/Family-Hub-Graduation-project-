@@ -10,7 +10,7 @@ const PointWallet = require("../models/point_walletModel");
 const PointHistory = require("../models/point_historyModel");
 const MemberWallet = require("../models/memberWalletModel");
 const WalletTransaction = require("../models/walletTransactionModel");
-const { recordBalanceWalletDetail } = require('../Utils/balanceWalletDetailHelper');
+const { recordBalanceWalletDetail } = require('../utils/balanceWalletDetailHelper');
 
 const TASKS_REWARDS_CATEGORY = "Tasks/Rewards";
 
