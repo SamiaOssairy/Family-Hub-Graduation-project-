@@ -67,16 +67,7 @@ function relativeTime(dt) {
   return new Date(dt).toLocaleDateString();
 }
 
-// Emoji per notification type (location + inventory) for the notification center
 function alertIcon(alert) {
-  if (alert.source === 'inventory') {
-    switch (alert.alertType) {
-      case 'low_stock':     return '📦';
-      case 'expiring_soon': return '⏰';
-      case 'expired':       return '⚠️';
-      default:              return '📦';
-    }
-  }
   switch (alert.alertType) {
     case 'sos':              return '🆘';
     case 'sharing_disabled': return '🚫';
@@ -257,11 +248,10 @@ export default function FamilyMapScreen() {
       // Sync GPS
       await syncMyLocation();
 
-      // Parallel: family locations + location alert count + inventory alert count
-      const [famRes, alertCountRes, invCountRes] = await Promise.allSettled([
+      // Parallel: family locations + location alert count (location only)
+      const [famRes, alertCountRes] = await Promise.allSettled([
         api.get('/location/family'),
         api.get('/location/alerts/unread-count'),
-        api.get('/inventory-alerts/unread-count'),
       ]);
 
       let locations = [];
@@ -272,9 +262,6 @@ export default function FamilyMapScreen() {
       let unread = 0;
       if (alertCountRes.status === 'fulfilled') {
         unread = alertCountRes.value.data?.data?.count || 0;
-      }
-      if (invCountRes.status === 'fulfilled') {
-        unread += invCountRes.value.data?.data?.unreadCount || 0;
       }
 
       // Filter out self
@@ -359,54 +346,31 @@ export default function FamilyMapScreen() {
   // ── Unified notification center (location + inventory) ─────────────────────
   async function openAlerts() {
     setShowAlerts(true);
-    // Refresh inventory threshold/expiry alerts before reading them
-    try { await api.post('/inventory-alerts/generate'); } catch { /* silent */ }
 
-    const [locRes, invRes] = await Promise.allSettled([
-      api.get('/location/alerts'),
-      api.get('/inventory-alerts'),
-    ]);
-
-    const merged = [];
-    if (locRes.status === 'fulfilled') {
-      for (const a of (locRes.value.data?.data?.alerts || [])) {
-        merged.push({
-          id: a._id || '',
-          source: 'location',
-          alertType: a.alert_type || '',
-          message: a.message || 'Location alert',
-          isRead: a.is_read === true,
-          time: a.created_at || a.createdAt || null,
-        });
-      }
+    try {
+      const locRes = await api.get('/location/alerts');
+      const alerts = (locRes.data?.data?.alerts || []).map(a => ({
+        id: a._id || '',
+        source: 'location',
+        alertType: a.alert_type || '',
+        message: a.message || 'Location alert',
+        isRead: a.is_read === true,
+        time: a.created_at || a.createdAt || null,
+      }));
+      alerts.sort((x, y) => {
+        const tx = x.time ? new Date(x.time).getTime() : 0;
+        const ty = y.time ? new Date(y.time).getTime() : 0;
+        return ty - tx;
+      });
+      setAlertsList(alerts);
+    } catch {
+      setAlertsList([]);
     }
-    if (invRes.status === 'fulfilled') {
-      for (const a of (invRes.value.data?.data?.alerts || [])) {
-        merged.push({
-          id: a._id || '',
-          source: 'inventory',
-          alertType: a.alert_type || '',
-          message: a.alert_message || a.message || 'Inventory alert',
-          isRead: a.is_read === true,
-          time: a.createdAt || a.created_at || null,
-        });
-      }
-    }
-    // Newest first; unread above read when timestamps tie
-    merged.sort((x, y) => {
-      const tx = x.time ? new Date(x.time).getTime() : 0;
-      const ty = y.time ? new Date(y.time).getTime() : 0;
-      return ty - tx;
-    });
-    setAlertsList(merged);
   }
 
   async function markAllRead() {
     try {
-      await Promise.allSettled([
-        api.patch('/location/alerts/read-all'),
-        api.patch('/inventory-alerts/mark-all-read'),
-      ]);
+      await api.patch('/location/alerts/read-all');
       setUnreadAlerts(0);
       setAlertsList(prev => prev.map(a => ({ ...a, isRead: true })));
     } catch { /* silent */ }
@@ -414,11 +378,7 @@ export default function FamilyMapScreen() {
 
   async function markOneRead(alert) {
     try {
-      if (alert.source === 'inventory') {
-        await api.patch(`/inventory-alerts/${alert.id}/read`);
-      } else {
-        await api.patch(`/location/alerts/${alert.id}/read`);
-      }
+      await api.patch(`/location/alerts/${alert.id}/read`);
       setUnreadAlerts(prev => Math.max(0, prev - 1));
       setAlertsList(prev => prev.map(a => (a.id === alert.id ? { ...a, isRead: true } : a)));
     } catch { /* silent */ }
@@ -672,7 +632,7 @@ export default function FamilyMapScreen() {
                       <div className="fm-alert-body">
                         <span className={`fm-alert-msg ${alert.isRead ? '' : 'bold'}`}>{alert.message}</span>
                         <span className="fm-alert-time">
-                          {alert.source === 'inventory' ? 'Inventory' : 'Location'}{time ? ` · ${time}` : ''}
+                          Location{time ? ` · ${time}` : ''}
                         </span>
                       </div>
                       {!alert.isRead && (

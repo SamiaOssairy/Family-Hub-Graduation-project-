@@ -2,10 +2,11 @@
 // DashboardScreen — React equivalent of flutter_app/lib/pages/dashboard_screen.dart
 // Module hub with 16 categories grid, announcements, family events.
 // ═══════════════════════════════════════════════════════════════════════════════
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import BottomNavBar from '../components/common/BottomNavBar';
+import api from '../api/apiService';
 import './DashboardScreen.css';
 
 // ── Module definitions (matches Flutter _modules list exactly) ────────────────
@@ -64,6 +65,78 @@ export default function DashboardScreen() {
   const [eventTitle, setEventTitle]         = useState('');
   const [eventDesc, setEventDesc]           = useState('');
 
+  // Notifications (inventory alerts)
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const [notifList, setNotifList] = useState([]);
+
+  const loadUnreadCount = useCallback(async () => {
+    try {
+      const res = await api.get('/inventory-alerts/unread-count');
+      setUnreadCount(res.data?.data?.unreadCount || 0);
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { loadUnreadCount(); }, [loadUnreadCount]);
+
+  async function openNotifs() {
+    setShowNotifs(true);
+    api.post('/inventory-alerts/generate').catch(() => {});
+    try {
+      const res = await api.get('/inventory-alerts');
+      const alerts = (res.data?.data?.alerts || []).map(a => ({
+        id: a._id || '',
+        alertType: a.alert_type || '',
+        message: a.alert_message || a.message || 'Inventory alert',
+        isRead: a.is_read === true,
+        time: a.createdAt || a.created_at || null,
+      }));
+      alerts.sort((x, y) => {
+        const tx = x.time ? new Date(x.time).getTime() : 0;
+        const ty = y.time ? new Date(y.time).getTime() : 0;
+        return ty - tx;
+      });
+      setNotifList(alerts);
+    } catch {
+      setNotifList([]);
+    }
+  }
+
+  async function markAllNotifsRead() {
+    try {
+      await api.patch('/inventory-alerts/mark-all-read');
+      setUnreadCount(0);
+      setNotifList(prev => prev.map(a => ({ ...a, isRead: true })));
+    } catch { /* silent */ }
+  }
+
+  async function markOneNotifRead(alert) {
+    try {
+      await api.patch(`/inventory-alerts/${alert.id}/read`);
+      setNotifList(prev => prev.map(a => a.id === alert.id ? { ...a, isRead: true } : a));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch { /* silent */ }
+  }
+
+  function notifIcon(alertType) {
+    switch (alertType) {
+      case 'low_stock':     return '📦';
+      case 'expiring_soon': return '⏰';
+      case 'expired':       return '⚠️';
+      default:              return '📦';
+    }
+  }
+
+  function relativeTime(dt) {
+    const diff = Date.now() - new Date(dt).getTime();
+    const mins  = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    if (mins < 1)   return 'just now';
+    if (mins < 60)  return `${mins} min ago`;
+    if (hours < 24) return `${hours} hr ago`;
+    return new Date(dt).toLocaleDateString();
+  }
+
   // Toast
   const [toast, setToast] = useState(null);
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2500); };
@@ -112,7 +185,10 @@ export default function DashboardScreen() {
               <span className="ds-header-title">{t('Family Dashboard', 'لوحة العائلة')}</span>
               <span className="ds-header-sub">{t('Manage your family activities', 'إدارة أنشطة عائلتك')}</span>
             </div>
-            <button className="ds-notif-btn" title={t('Notifications', 'الإشعارات')}>🔔</button>
+            <button className="ds-notif-btn" title={t('Notifications', 'الإشعارات')} onClick={openNotifs}>
+              🔔
+              {unreadCount > 0 && <span className="ds-notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+            </button>
           </div>
 
           {/* ── Categories / Modules ─────────────────────────────────────── */}
@@ -247,6 +323,45 @@ export default function DashboardScreen() {
             <div className="ds-dialog-actions">
               <button className="ds-btn-text" onClick={() => setShowEventModal(false)}>{t('Cancel', 'إلغاء')}</button>
               <button className="ds-btn-primary" onClick={addEvent}>{t('Add', 'إضافة')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Notification Bottom Sheet ───────────────────────────────── */}
+      {showNotifs && (
+        <div className="ds-overlay" onClick={() => setShowNotifs(false)}>
+          <div className="ds-notif-sheet" onClick={e => e.stopPropagation()}>
+            <div className="ds-notif-sheet-handle" />
+            <div className="ds-notif-sheet-header">
+              <span style={{ fontSize: 20 }}>🔔</span>
+              <span className="ds-notif-sheet-title">{t('Notifications', 'الإشعارات')}</span>
+              <button className="ds-notif-mark-all" onClick={markAllNotifsRead}>{t('Mark all read', 'قراءة الكل')}</button>
+            </div>
+            <div className="ds-notif-divider" />
+            <div className="ds-notif-list">
+              {notifList.length === 0 ? (
+                <div className="ds-notif-empty">{t('No notifications yet', 'لا توجد إشعارات')}</div>
+              ) : (
+                notifList.map((alert, i) => {
+                  const time = alert.time ? relativeTime(alert.time) : '';
+                  return (
+                    <div key={alert.id || i} className={`ds-notif-row ${alert.isRead ? 'read' : 'unread'}`}>
+                      <div className={`ds-notif-icon ${alert.isRead ? 'read' : ''}`}>{notifIcon(alert.alertType)}</div>
+                      <div className="ds-notif-body">
+                        <span className={`ds-notif-msg ${alert.isRead ? '' : 'bold'}`}>{alert.message}</span>
+                        <span className="ds-notif-time">{time}</span>
+                      </div>
+                      {!alert.isRead && (
+                        <button className="ds-notif-read-btn" onClick={() => markOneNotifRead(alert)}>
+                          {t('Read', 'قراءة')}
+                        </button>
+                      )}
+                      {alert.isRead && <span className="ds-notif-done">✓</span>}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
