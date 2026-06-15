@@ -87,7 +87,7 @@ export default function PlanningChatScreen() {
     setLoading(true);
     try {
       const res = await api.post('/planning/chat', { message: msg });
-      const reply = res.data?.data?.reply || t('No response', 'لا يوجد رد');
+      const reply = res.data?.data?.response || t('No response', 'لا يوجد رد');
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     } catch (e) {
       const errMsg = e?.response?.data?.message
