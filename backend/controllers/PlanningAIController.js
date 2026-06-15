@@ -195,10 +195,14 @@ const buildSystemPrompt = (ctx, familyTitle) => {
     (l) => `  • ${l.item_name}: ${l.quantity} ${l.unit_id?.name || 'units'} — expires ${fmt(l.expiry_date)}`
   ).join('\n') || '  (none)';
 
+  const now = new Date();
+  const todayStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Africa/Cairo' });
+
   return `You are a smart, friendly Family Planning AI Assistant for the "${familyTitle}" family.
 You have access to real, live data from the family's app. Use it to answer questions accurately.
 
-Today: ${new Date().toLocaleDateString('en-GB')}
+IMPORTANT — TODAY'S DATE IS: ${todayStr}
+Always use this date as "today" when answering. Never guess or use a different date.
 
 ═══════════════════════════════════════════════
 FAMILY MEMBERS
