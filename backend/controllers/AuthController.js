@@ -13,7 +13,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
 
-//========================================================================================
+//===============B=========================================================================
 
 // Get families linked to an email so user can choose which family to login to
 exports.getFamiliesByMail = catchAsync(async (req, res, next) => {
